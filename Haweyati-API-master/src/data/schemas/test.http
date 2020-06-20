@@ -1,0 +1,14 @@
+POST http://localhost:4000/dumpsters
+Content-Type: application/json
+
+{
+  "size": 1,
+  "description": "new dumpster",
+  "images": []
+}
+
+###
+GET http://localhost:4000/dumpsters
+Accept: application/json
+
+###
