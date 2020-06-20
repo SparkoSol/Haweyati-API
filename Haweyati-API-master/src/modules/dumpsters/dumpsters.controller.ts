@@ -13,8 +13,23 @@ export class DumpstersController extends SimpleController<IDumpster> {
   }
 
   @Post()
-  @UseInterceptors(FilesInterceptor('file'))
-  postOverride(@UploadedFiles() files, @Body() dumpster: IDumpster) {
+  @UseInterceptors(FilesInterceptor('images'))
+  postOverride(@UploadedFiles() files, @Body() dumpster: any) {
+    const list = []
+    if (Array.isArray(dumpster.city)) {
+      for (let i = 0; i < dumpster.city.length; ++i) {
+        list.push({
+          city: dumpster.city[i],
+          rent: dumpster.rent[i],
+          days: dumpster.days[i],
+          extraDayPrice: dumpster.extraDayRent[i]
+        })
+      }
+    }
+
+
+    dumpster.pricing = list;
+
     dumpster.images = []
     files.forEach(file => {
       dumpster.images.push({

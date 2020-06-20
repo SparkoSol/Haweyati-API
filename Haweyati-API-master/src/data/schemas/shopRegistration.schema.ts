@@ -5,9 +5,11 @@ export const ShopRegistrationSchema = new Schema({
     location: {
         type: Schema.Types.ObjectId,
         ref: 'location',
-        required: true
+        required: false
     },
     email: String,
     contact: String,
-    city: String
+    city: String,
+    parent: String,
+    services : []
 });

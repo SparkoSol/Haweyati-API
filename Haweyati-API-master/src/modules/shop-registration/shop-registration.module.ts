@@ -5,7 +5,7 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {ShopRegistrationSchema} from "../../data/schemas/shopRegistration.schema";
 
 @Module({
-  imports: [MongooseModule.forFeature([{name:'cityregistration', schema:ShopRegistrationSchema}])],
+  imports: [MongooseModule.forFeature([{name:'shopregistration', schema:ShopRegistrationSchema}])],
   controllers: [ShopRegistrationController],
   providers: [ShopRegistrationService],
   exports: [ShopRegistrationService]

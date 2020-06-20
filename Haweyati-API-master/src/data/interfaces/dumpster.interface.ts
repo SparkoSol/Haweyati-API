@@ -9,6 +9,6 @@ export interface IDumpster extends Document {
       {city:string},
       {rent: number},
       {days: number},
-      {extraDaysPrice: number}
+      {extraDayRent: number}
   ]
 }

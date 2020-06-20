@@ -3,7 +3,7 @@ import { Body, Controller, Post, UploadedFile, UploadedFiles, UseInterceptors } 
 import { SuppliersService } from './suppliers.service';
 import { SimpleController } from 'src/common/lib/simple.controller';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { IConstructionDumpster } from '../../data/interfaces/constructionDumpster.interface';
+import { IDumpster } from '../../data/interfaces/dumpster.interface';
 
 @Controller('suppliers')
 export class SuppliersController extends SimpleController<ISupplier> {

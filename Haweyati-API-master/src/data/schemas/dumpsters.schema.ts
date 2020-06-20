@@ -18,10 +18,21 @@ export const DumpstersSchema = new Schema({
     type: [ImagesSchema],
     required: true
   },
-  pricing : [
-    {city: String},
-    {rent: Number},
-    {days: Number},
-    {extraDaysPrice : Number}
-  ]
+  pricing : [{
+    city: String,
+    rent: Number,
+    days: Number,
+    extraDayRent : Number
+  }]
 });
+
+// [Object: null prototype] {
+//   size: '12',
+//     description: '231316456',
+//     suppliers: '5eede71730717f202c2de3bf',
+//     city: [ 'multan', 'karachi' ],
+//     rent: [ '12', '123' ],
+//     days: [ '45', '54654' ],
+//     extraDayRent: [ '1232', '465' ]
+// }
+

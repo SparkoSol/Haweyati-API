@@ -3,7 +3,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { PersonsService } from './persons.service';
 import { SimpleController } from 'src/common/lib/simple.controller';
 import { SecuredController } from 'src/common/lib/secured.controller';
-import { IConstructionDumpster } from '../../data/interfaces/constructionDumpster.interface';
+import { IDumpster } from '../../data/interfaces/dumpster.interface';
 import {IPersonVerification} from "../../data/interfaces/personVerification.interface";
 
 @Controller('persons')
