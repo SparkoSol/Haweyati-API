@@ -22,21 +22,20 @@ export class DumpstersController extends SimpleController<IDumpster> {
           city: dumpster.city[i],
           rent: dumpster.rent[i],
           days: dumpster.days[i],
-          extraDayPrice: dumpster.extraDayRent[i]
+          extraDayRent: dumpster.extraDayRent[i]
         })
       }
     }
-
+    console.log(dumpster)
 
     dumpster.pricing = list;
-
-    dumpster.images = []
-    files.forEach(file => {
-      dumpster.images.push({
-        name: file.filename,
-        path: file.path
-      })
-    })
+    dumpster.images = files
+    // files.forEach(file => {
+    //   dumpster.images.push({
+    //     name: file.filename,
+    //     path: file.path
+    //   })
+    // })
 
     return this.service.create(dumpster);
   }

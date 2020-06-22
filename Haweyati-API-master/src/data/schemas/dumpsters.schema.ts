@@ -1,5 +1,6 @@
 import { Schema } from "mongoose";
 import { ImagesSchema } from './images.schema';
+import { ShopRegistrationSchema } from './shopRegistration.schema';
 
 /**
  * @version 1.0.0
@@ -14,6 +15,11 @@ export const DumpstersSchema = new Schema({
     type: String,
     required: true
   },
+  suppliers: [{
+    type: Schema.Types.ObjectId,
+    ref: ShopRegistrationSchema,
+    required: false
+  }],
   images: {
     type: [ImagesSchema],
     required: true

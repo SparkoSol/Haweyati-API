@@ -1,10 +1,8 @@
-import {Schema} from "mongoose";
-
-export const LocationSchema = new Schema({
+export const LocationSchema = {
   latitude: {
     type: String,
   },
   longitude: {
     type: String,
   }
-});
+}

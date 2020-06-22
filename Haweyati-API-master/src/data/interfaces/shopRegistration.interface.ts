@@ -1,12 +1,14 @@
-import { Document, Schema } from 'mongoose';
+import { Document } from 'mongoose';
 import { ILocation } from './location.interface';
+import { IImage } from './image.interface';
 
-export interface IShopRegistrationInterface extends Document{
+export interface IShopRegistrationInterface extends Document {
   name: string,
   location: ILocation,
   email:string,
   contact: string,
-  city: string,
+  address: string,
   parent: string,
   services : string[]
+  images : IImage[]
 }

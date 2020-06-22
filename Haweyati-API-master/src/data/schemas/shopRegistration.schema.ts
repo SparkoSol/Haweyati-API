@@ -1,15 +1,20 @@
 import {Schema} from "mongoose";
+import { ImagesSchema } from './images.schema';
+import { LocationSchema } from './location.schema';
 
 export const ShopRegistrationSchema = new Schema({
     name: String,
     location: {
-        type: Schema.Types.ObjectId,
-        ref: 'location',
+        type: LocationSchema,
         required: false
+    },
+    images: {
+      type: [ImagesSchema],
+      required: false
     },
     email: String,
     contact: String,
-    city: String,
+    address: String,
     parent: String,
-    services : []
+    services : [String]
 });

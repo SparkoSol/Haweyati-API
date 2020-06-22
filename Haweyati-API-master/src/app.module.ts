@@ -7,7 +7,6 @@ import { AuthModule } from "./common/auth/auth.module";
 import { DumpstersModule } from './modules/dumpsters/dumpsters.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { DumpsterAvailabilityModule } from './modules/dumpster-availability/dumpster-availability.module';
-import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { StudentModule } from './modules/student/student.module';
 
 @Module({
@@ -17,8 +16,8 @@ import { StudentModule } from './modules/student/student.module';
         PersonsModule,
         DumpstersModule,
         DumpsterAvailabilityModule,
-        SuppliersModule,
         StudentModule,
+
     ],
     controllers: [AppController]
 })
