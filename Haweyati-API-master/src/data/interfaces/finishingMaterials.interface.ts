@@ -2,10 +2,10 @@ import {Document} from "mongoose";
 import { IShopRegistrationInterface } from './shopRegistration.interface';
 import { IImage } from './image.interface';
 
-export interface IBuildingMaterialsInterface extends Document{
+export interface IFinishingMaterialsInterface extends Document{
   name: string,
   description: string,
-  parent: IBuildingMaterialsInterface,
+  parent: IFinishingMaterialsInterface,
   suppliers : IShopRegistrationInterface[],
   images: IImage[],
   pricing: [

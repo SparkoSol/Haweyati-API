@@ -15,10 +15,8 @@ export class DumpstersService extends SimpleService<IDumpster> {
     super(model)
   }
 
-  // async create(document: any): Promise<IDumpster> {
-  //   const shop = await this.service.find(document.supplier);
-  //   shop.services =
-  //
-  //   return super.create(document);
-  // }
+  fetch(id?: string): Promise<IDumpster[] | IDumpster> {
+    if (id) return this.model.findById(id).populate('suppliers').exec()
+    return this.model.find().exec()
+  }
 }

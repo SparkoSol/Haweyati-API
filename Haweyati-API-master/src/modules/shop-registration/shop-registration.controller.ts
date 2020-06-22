@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import {SimpleController} from "../../common/lib/simple.controller";
 import {IShopRegistrationInterface} from "../../data/interfaces/shopRegistration.interface";
 import {ShopRegistrationService} from "./shop-registration.service";
@@ -9,20 +9,18 @@ export class ShopRegistrationController extends SimpleController<IShopRegistrati
     constructor(protected readonly service: ShopRegistrationService) {
         super(service);
     }
-
     @Post()
     @UseInterceptors(FilesInterceptor('images'))
     Post(@UploadedFiles() images, @Body() data: IShopRegistrationInterface): Promise<IShopRegistrationInterface> {
-        console.log("images", images);
         data.images = images
-        console.log("data", data);
-
-        // images.forEach(image => {
-        //     data.images.push({
-        //         filename: image.filename,
-        //         path: image.path
-        //     })
-        // })
         return super.post(data);
+    }
+    @Patch()
+    @UseInterceptors(FilesInterceptor('images'))
+    Patch(@UploadedFiles() images, @Body() data: any): Promise<IShopRegistrationInterface>{
+        console.log(data)
+        console.log(images)
+        data.images = images;
+        return super.patch(data);
     }
 }

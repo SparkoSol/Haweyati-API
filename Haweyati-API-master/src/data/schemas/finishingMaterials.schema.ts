@@ -1,18 +1,19 @@
-import { Schema } from "mongoose";
+import {Schema} from "mongoose";
 import { ImagesSchema } from './images.schema';
 
-/**
- * @version 1.0.0
- * @author Haroon Awan <haroonashrafawan@gmail.com>
- */
-export const DumpstersSchema = new Schema({
-  size: {
+export const FinishingMaterialsSchema = new Schema({
+  name: {
     type: String,
     required: true
   },
   description: {
     type: String,
     required: true
+  },
+  parent: {
+    type: Schema.Types.ObjectId,
+    ref: 'finishingmaterials',
+    required: false
   },
   suppliers: [{
     type: Schema.Types.ObjectId,
@@ -25,8 +26,7 @@ export const DumpstersSchema = new Schema({
   },
   pricing : [{
     city: String,
-    rent: Number,
-    days: Number,
-    extraDayRent : Number
+    price: Number,
+    days: Number
   }]
 });

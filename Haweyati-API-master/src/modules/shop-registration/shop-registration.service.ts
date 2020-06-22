@@ -9,8 +9,4 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     constructor(@InjectModel('shopregistration') protected readonly model:Model<IShopRegistrationInterface>) {
         super(model);
     }
-
-    create(document: IShopRegistrationInterface): Promise<IShopRegistrationInterface> {
-        return super.create(document);
-    }
 }
