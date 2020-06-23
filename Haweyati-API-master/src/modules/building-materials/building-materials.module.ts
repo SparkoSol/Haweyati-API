@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { BuildingMaterialsController } from './building-materials.controller';
 import { BuildingMaterialsService } from './building-materials.service';
 import {MongooseModule} from "@nestjs/mongoose";

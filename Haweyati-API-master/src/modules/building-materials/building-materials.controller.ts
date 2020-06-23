@@ -1,10 +1,10 @@
-import { Body, Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import {SimpleController} from "../../common/lib/simple.controller";
 import {IBuildingMaterialsInterface} from "../../data/interfaces/buildingMaterials.interface";
 import {BuildingMaterialsService} from "./building-materials.service";
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-@Controller('buildingmaterials')
+@Controller('building-materials')
 export class BuildingMaterialsController extends SimpleController<IBuildingMaterialsInterface>{
     constructor(protected readonly service: BuildingMaterialsService) {
         super(service);
@@ -17,7 +17,7 @@ export class BuildingMaterialsController extends SimpleController<IBuildingMater
             for (let i = 0; i < buildingMaterial.city.length; ++i) {
                 list.push({
                     city: buildingMaterial.city[i],
-                    price: buildingMaterial.rent[i],
+                    price: buildingMaterial.price[i],
                     days: buildingMaterial.days[i]
                 })
             }

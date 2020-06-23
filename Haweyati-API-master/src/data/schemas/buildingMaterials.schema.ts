@@ -12,7 +12,7 @@ export const BuildingMaterialsSchema = new Schema({
   },
   parent: {
     type: Schema.Types.ObjectId,
-    ref: 'buildingmaterials',
+    ref: 'buildingmaterialcategory',
     required: false
   },
   suppliers: [{

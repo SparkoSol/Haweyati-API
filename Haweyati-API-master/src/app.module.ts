@@ -8,17 +8,21 @@ import { DumpstersModule } from './modules/dumpsters/dumpsters.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { DumpsterAvailabilityModule } from './modules/dumpster-availability/dumpster-availability.module';
 import { StudentModule } from './modules/student/student.module';
+import { BuildingMaterialsModule } from './modules/building-materials/building-materials.module';
+import { BuildingMaterialCategoryModule } from './modules/building-material-category/building-material-category.module';
 
 @Module({
-    imports: [
-        DbModule,
-        AuthModule,
-        PersonsModule,
-        DumpstersModule,
-        DumpsterAvailabilityModule,
-        StudentModule,
+  imports: [
+    DbModule,
+    AuthModule,
+    PersonsModule,
+    DumpstersModule,
+    DumpsterAvailabilityModule,
+    StudentModule,
+    BuildingMaterialsModule,
+    BuildingMaterialCategoryModule
 
-    ],
-    controllers: [AppController]
+  ],
+  controllers: [AppController]
 })
 export class AppModule {}

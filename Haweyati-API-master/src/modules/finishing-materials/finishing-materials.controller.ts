@@ -17,7 +17,7 @@ export class FinishingMaterialsController extends SimpleController<IFinishingMat
             for (let i = 0; i < finishingMaterial.city.length; ++i) {
                 list.push({
                     city: finishingMaterial.city[i],
-                    price: finishingMaterial.rent[i],
+                    price: finishingMaterial.price[i],
                     days: finishingMaterial.days[i]
                 })
             }

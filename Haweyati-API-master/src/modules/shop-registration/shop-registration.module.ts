@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { ShopRegistrationController } from './shop-registration.controller';
 import { ShopRegistrationService } from './shop-registration.service';
 import {MongooseModule} from "@nestjs/mongoose";
@@ -10,7 +10,8 @@ import { MulterModule } from '@nestjs/platform-express';
     MongooseModule.forFeature([{name:'shopregistration', schema:ShopRegistrationSchema}]),
     MulterModule.register({
       dest : '../uploads'
-    })
+    }),
+    HttpModule
   ],
   controllers: [ShopRegistrationController],
   providers: [ShopRegistrationService],

@@ -12,7 +12,7 @@ export const FinishingMaterialsSchema = new Schema({
   },
   parent: {
     type: Schema.Types.ObjectId,
-    ref: 'finishingmaterials',
+    ref: 'finishingmaterialcategory',
     required: false
   },
   suppliers: [{

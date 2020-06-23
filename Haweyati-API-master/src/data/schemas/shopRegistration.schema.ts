@@ -16,5 +16,6 @@ export const ShopRegistrationSchema = new Schema({
     contact: String,
     address: String,
     parent: String,
+    city: String,
     services : [String]
 });

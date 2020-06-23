@@ -9,6 +9,7 @@ export interface IShopRegistrationInterface extends Document {
   contact: string,
   address: string,
   parent: string,
+  city: string,
   services : string[]
   images : IImage[]
 }

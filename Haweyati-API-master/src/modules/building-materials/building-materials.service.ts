@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import {SimpleService} from "../../common/lib/simple.service";
 import {IBuildingMaterialsInterface} from "../../data/interfaces/buildingMaterials.interface";
 import {InjectModel} from "@nestjs/mongoose";
@@ -18,5 +18,4 @@ export class BuildingMaterialsService extends SimpleService<IBuildingMaterialsIn
         if (id) return this.model.findById(id).populate('suppliers').exec()
         return this.model.find().exec()
     }
-
 }
