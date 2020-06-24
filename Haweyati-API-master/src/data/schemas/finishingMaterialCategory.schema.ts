@@ -11,7 +11,7 @@ export const FinishingMaterialCategorySchema = new Schema({
     required: true
   },
   images: {
-    type: [ImagesSchema],
+    type: ImagesSchema,
     required: true
   }
 });

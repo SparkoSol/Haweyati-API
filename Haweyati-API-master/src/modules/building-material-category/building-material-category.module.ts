@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { BuildingMaterialCategoryService } from './building-material-category.service';
 import { BuildingMaterialCategoryController } from './building-material-category.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BuildingMaterialsSchema } from '../../data/schemas/buildingMaterials.schema';
+import {BuildingMaterialCategorySchema } from '../../data/schemas/buildingMaterialCategory.schema';
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name:'buildingmaterialcategory', schema: BuildingMaterialsSchema}]),
+    MongooseModule.forFeature([{name:'buildingmaterialcategory', schema: BuildingMaterialCategorySchema}]),
     MulterModule.register({
       dest: '../uploads',
     })

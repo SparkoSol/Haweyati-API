@@ -26,7 +26,6 @@ export const BuildingMaterialsSchema = new Schema({
   },
   pricing : [{
     city: String,
-    price: Number,
-    days: Number
+    price: Number
   }]
 });

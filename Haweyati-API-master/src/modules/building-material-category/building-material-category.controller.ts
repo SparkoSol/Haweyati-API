@@ -1,8 +1,8 @@
-import { Body, Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { SimpleController } from '../../common/lib/simple.controller';
 import { IBuildingMaterialCategory } from '../../data/interfaces/buildingMaterialCategory.interface';
 import { BuildingMaterialCategoryService } from './building-material-category.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('building-material-category')
 export class BuildingMaterialCategoryController extends SimpleController<IBuildingMaterialCategory>{
@@ -10,9 +10,9 @@ export class BuildingMaterialCategoryController extends SimpleController<IBuildi
     super(service);
   }
   @Post()
-  @UseInterceptors(FilesInterceptor('images'))
-  postOverride(@UploadedFiles() files, @Body() buildingMaterialCategory: any){
-    buildingMaterialCategory.images = files
+  @UseInterceptors(FileInterceptor('images'))
+  postOverride(@UploadedFile() file, @Body() buildingMaterialCategory: any){
+    buildingMaterialCategory.images = file
     return this.service.create(buildingMaterialCategory);
   }
 }

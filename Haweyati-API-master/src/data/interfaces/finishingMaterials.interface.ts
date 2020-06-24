@@ -10,7 +10,6 @@ export interface IFinishingMaterialsInterface extends Document{
   images: IImage[],
   pricing: [
     {city:string},
-    {price: number},
-    {days: number}
+    {price: number}
   ]
 }

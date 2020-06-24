@@ -18,4 +18,7 @@ export class BuildingMaterialsService extends SimpleService<IBuildingMaterialsIn
         if (id) return this.model.findById(id).populate('suppliers').exec()
         return this.model.find().exec()
     }
+    fetchByParentId(id: string): Promise<IBuildingMaterialsInterface[] | IBuildingMaterialsInterface>{
+        return this.model.find().where('parent', id).exec();
+    }
 }

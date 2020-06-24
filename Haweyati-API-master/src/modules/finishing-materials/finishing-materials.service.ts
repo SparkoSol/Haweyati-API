@@ -18,4 +18,7 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
         if (id) return this.model.findById(id).populate('suppliers').exec()
         return this.model.find().exec()
     }
+    fetchByParentId(id: string): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface>{
+        return this.model.find().where('parent', id).exec();
+    }
 }

@@ -3,11 +3,8 @@ import {SimpleService} from "../../common/lib/simple.service";
 import {IShopRegistrationInterface} from "../../data/interfaces/shopRegistration.interface";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
+import {Client} from "@googlemaps/google-maps-services-js";
 import { computeDistanceBetween, LatLng } from 'spherical-geometry-js';
-import { Observable } from 'rxjs';
-import axios, { AxiosResponse} from 'axios';
-
-
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<IShopRegistrationInterface>{
@@ -28,30 +25,32 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
             })
         return Array.from(newSet);
     }
-
-    getCity(lon: string, lat: string): Promise<AxiosResponse>{
-        console.log(lon, lat)
-        return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng='+lat+','+lon+'&key=AIzaSyDSz2Q7d49FVjGoAW2k8eWFXSdQbbipVc8')
-        // return this.fetchCity(lon, lat)
+    getDistance(p1lat: any, p1lng: any, p2lat: any, p2lng: any){
+        try {
+            const p1latlng = new LatLng(p1lat, p1lng)
+            const p2latlng = new LatLng(p2lat, p2lng)
+            console.log(((computeDistanceBetween(p1latlng, p2latlng))/1000).toFixed(2) + 'KM')
+        }
+        catch (e) {
+            console.log("Can't find distance")
+        }
     }
-
-    private fetchCity(lon: string, lat: string): Promise<AxiosResponse> {
-        const latlng = new LatLng(lat, lon);
-        return new Promise(((resolve, reject) => {
-            try {
-                this.httpService.get('https://maps.googleapis.com/maps/api/geocode/json?latlng='+lat+','+lon+'&key=AIzaSyDSz2Q7d49FVjGoAW2k8eWFXSdQbbipVc8', {
-
-                })
-                  .subscribe(data => resolve(data))
-            } catch (e) {
-                reject(e)
-            }
-        }));
-
-
-        // const p1latlng = new LatLng(p1lat, p1lng);
-        // const p2latlng = new LatLng(p2lat, p2lng);
-        // console.log(computeDistanceBetween(p1latlng, p2latlng));
-
+    getLocationData(lat: any, lng: any){
+        const client = new Client({});
+        client
+          .reverseGeocode({
+              params: {
+                  latlng: [lat, lng],
+                  key: "AIzaSyDSz2Q7d49FVjGoAW2k8eWFXSdQbbipVc8",
+              },
+              timeout: 1000, // milliseconds
+          })
+          .then((r) => {
+              console.log(r.data.results[0].address_components[6].long_name);
+          })
+          .catch((e) => {
+              console.log(e.response)
+              console.log(e.response.data.error_message);
+          });
     }
 }

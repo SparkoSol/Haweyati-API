@@ -7,7 +7,6 @@ import { AuthModule } from "./common/auth/auth.module";
 import { DumpstersModule } from './modules/dumpsters/dumpsters.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { DumpsterAvailabilityModule } from './modules/dumpster-availability/dumpster-availability.module';
-import { StudentModule } from './modules/student/student.module';
 import { BuildingMaterialsModule } from './modules/building-materials/building-materials.module';
 import { BuildingMaterialCategoryModule } from './modules/building-material-category/building-material-category.module';
 
@@ -18,7 +17,6 @@ import { BuildingMaterialCategoryModule } from './modules/building-material-cate
     PersonsModule,
     DumpstersModule,
     DumpsterAvailabilityModule,
-    StudentModule,
     BuildingMaterialsModule,
     BuildingMaterialCategoryModule
 
