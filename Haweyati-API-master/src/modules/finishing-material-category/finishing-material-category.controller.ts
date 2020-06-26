@@ -9,9 +9,10 @@ export class FinishingMaterialCategoryController extends SimpleController<IFinis
   constructor(protected readonly service: FinishingMaterialCategoryService) {
     super(service);
   }
+
   @Post()
   @UseInterceptors(FileInterceptor('images'))
-  postOverride(@UploadedFile() file, @Body() finishingMaterialCategory: any){
+  postOverride(@UploadedFile() file, @Body() finishingMaterialCategory: any) {
     finishingMaterialCategory.images = file
     return this.service.create(finishingMaterialCategory);
   }

@@ -19,5 +19,4 @@ export const PersonsSchema = new Schema({
         required: true
     },
     location: LocationSchema
-
 });

@@ -21,4 +21,5 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
     fetchByParentId(id: string): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface>{
         return this.model.find().where('parent', id).exec();
     }
+
 }

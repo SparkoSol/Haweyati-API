@@ -1,5 +1,5 @@
 import { IPerson } from 'src/data/interfaces/person.interface';
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Patch, Post } from '@nestjs/common';
 import { PersonsService } from './persons.service';
 import { SimpleController } from 'src/common/lib/simple.controller';
 import { SecuredController } from 'src/common/lib/secured.controller';
@@ -12,11 +12,11 @@ export class PersonsController extends SimpleController<IPerson> {
         super(service)
     }
     @Post()
-    sendVerificationCode(@Body() contact: any): Promise<IPersonVerification>{
-        return this.service.sendVerificationCode(contact.contact);
+    sendVerificationCode(@Body() person: any): Promise<IPersonVerification>{
+        return this.service.sendVerificationCode(person);
     }
-    @Post('verify')
-    verifyNumber(@Body() contact: string, code: string): Promise<string>{
-        return this.service.verifyNumber(contact, code);
+    @Patch('verify')
+    verify(@Body() input: any): Promise<any>{
+        return this.service.verifyNumber(input.id, input.code);
     }
 }

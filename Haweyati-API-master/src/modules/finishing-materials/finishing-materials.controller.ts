@@ -13,21 +13,22 @@ export class FinishingMaterialsController extends SimpleController<IFinishingMat
     @Post()
     @UseInterceptors(FilesInterceptor('images'))
     postOverride(@UploadedFiles() files, @Body() finishingMaterial: any) {
-        if (Array.isArray(finishingMaterial.city)) {
-            const list = []
-            for (let i = 0; i < finishingMaterial.city.length; ++i) {
-                list.push({
-                    city: finishingMaterial.city[i],
-                    price: finishingMaterial.price[i]
-                })
-            }
-            finishingMaterial.pricing = list;
-        } else {
-            finishingMaterial.pricing = [{
-                city: finishingMaterial.city,
-                price: finishingMaterial.price
-            }];
-        }
+        console.log(finishingMaterial)
+        // if (Array.isArray(finishingMaterial.city)) {
+        //     const list = []
+        //     for (let i = 0; i < finishingMaterial.city.length; ++i) {
+        //         list.push({
+        //             city: finishingMaterial.city[i],
+        //             price: finishingMaterial.price[i]
+        //         })
+        //     }
+        //     finishingMaterial.pricing = list;
+        // } else {
+        //     finishingMaterial.pricing = [{
+        //         city: finishingMaterial.city,
+        //         price: finishingMaterial.price
+        //     }];
+        // }
 
         finishingMaterial.images = files
         return this.service.create(finishingMaterial);
