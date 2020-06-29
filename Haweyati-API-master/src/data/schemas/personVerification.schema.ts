@@ -1,5 +1,4 @@
 import {Schema} from "mongoose";
-import {PersonsSchema} from "./persons.schema";
 
 export const PersonVerificationSchema = new Schema({
     Person : {

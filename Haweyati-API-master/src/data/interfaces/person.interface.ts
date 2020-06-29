@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IUser } from 'src/common/auth/users/user.interface';
 import { ILocation } from './location.interface';
 

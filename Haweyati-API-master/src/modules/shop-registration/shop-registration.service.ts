@@ -41,7 +41,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
           .reverseGeocode({
               params: {
                   latlng: [lat, lng],
-                  key: "AIzaSyDSz2Q7d49FVjGoAW2k8eWFXSdQbbipVc8",
+                  key: process.env.GOOGLE_MAPS_API_KEY,
               },
               timeout: 1000, // milliseconds
           })

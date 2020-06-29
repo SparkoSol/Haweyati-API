@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import { IPerson } from 'src/data/interfaces/person.interface';
 import { SimpleService } from 'src/common/lib/simple.service';
 import {IPersonVerification} from "../../data/interfaces/personVerification.interface";
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 @Injectable()
 export class PersonsService extends SimpleService<any> {
@@ -26,8 +28,8 @@ export class PersonsService extends SimpleService<any> {
         return (Math.floor(Math.random() * (max - min + 1) + min)).toString();
     }
     async sendVerificationCode(personContact: any) : Promise<IPersonVerification> {
-        const accountSid = 'AC30e02921170b59ec5f6a0c6cd26fbc19'; // Your Account SID from www.twilio.com/console
-        const authToken = 'b5ff24d75bdeedcf2dd0b7d445ae1ee1';   // Your Auth Token from www.twilio.com/console
+        const accountSid = process.env.TWILIO_ACC_SID; // Your Account SID from www.twilio.com/console
+        const authToken = process.env.TWILIO_ACC_AUTH_TOKEN;   // Your Auth Token from www.twilio.com/console
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -36,7 +38,7 @@ export class PersonsService extends SimpleService<any> {
         client.messages.create({
             body: 'Your Verification Code is '+ code,
             to: personContact.contact,  // Text this number
-            from: '+12029464159' // From a valid Twilio number
+            from: process.env.TWILIO_NUMBER // From a valid Twilio number
         })
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
