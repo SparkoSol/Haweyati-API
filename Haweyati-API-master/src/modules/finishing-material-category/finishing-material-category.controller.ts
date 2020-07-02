@@ -13,7 +13,10 @@ export class FinishingMaterialCategoryController extends SimpleController<IFinis
   @Post()
   @UseInterceptors(FileInterceptor('images'))
   postOverride(@UploadedFile() file, @Body() finishingMaterialCategory: any) {
-    finishingMaterialCategory.images = file
+    finishingMaterialCategory.images = [file].map(file1 => ({
+      name: file1.filename,
+      path: file1.path
+    }))
     return this.service.create(finishingMaterialCategory);
   }
 }

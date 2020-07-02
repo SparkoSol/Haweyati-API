@@ -22,10 +22,10 @@ export class ShopRegistrationController extends SimpleController<IShopRegistrati
         return super.patch(data);
     }
 
-    @Get('available/:city')
-    async Get(@Param('city') city: string): Promise<string[]>{
-        this.service.getLocationData(30.157457, 71.524918);
-        this.service.getDistance(30.157457, 71.524918, 31.520370, 74.358749)
-        return this.service.getDataFromCity(city);
+    @Get('available')
+    async Get(@Query() location): Promise<any>{
+        // this.service.getLocationData(30.157457, 71.524918);
+        // this.service.getDistance(30.157457, 71.524918, 31.520370, 74.358749)
+        return this.service.getDataFromCoordinates(location.lat, location.lng);
     }
 }

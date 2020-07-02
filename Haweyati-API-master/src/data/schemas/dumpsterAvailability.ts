@@ -1,6 +1,4 @@
 import { Schema } from "mongoose";
-import { OrdersSchema } from './orders.schema';
-import { DriversSchema } from './drivers.schema';
 
 export const DumpsterAvailabilitySchema = new Schema({
   dumpster: {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import {SimpleController} from "../../common/lib/simple.controller";
 import {IBuildingMaterialsInterface} from "../../data/interfaces/buildingMaterials.interface";
 import {BuildingMaterialsService} from "./building-materials.service";
@@ -27,13 +27,21 @@ export class BuildingMaterialsController extends SimpleController<IBuildingMater
             price: buildingMaterial.price
          }];
       }
-      buildingMaterial.images = files
+      buildingMaterial.images = files?.map(file => ({
+         name: file.filename,
+         path: file.path
+      }))
       return this.service.create(buildingMaterial);
    }
 
    @Get('getbyparent/:id')
    getByParentId(@Param('id') id: string): Promise<IBuildingMaterialsInterface[] | IBuildingMaterialsInterface> {
       return this.service.fetchByParentId(id);
+   }
+
+   @Get('available')
+   async Get(@Query() data): Promise<any>{
+      return await this.service.getByCity(data.city, data.parent);
    }
 
 }

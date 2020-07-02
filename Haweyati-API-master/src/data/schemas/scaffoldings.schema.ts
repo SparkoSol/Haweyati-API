@@ -1,9 +1,28 @@
 import {Schema} from "mongoose";
-import { Options } from '@nestjs/common';
+import { ImagesSchema } from './images.schema';
 
 export const ScaffoldingsSchema = new Schema({
-  name: String,
-  price: Number,
-  type: String,
-  others: Options
+  size: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  suppliers: [{
+    type: Schema.Types.ObjectId,
+    ref: 'shopregistration',
+    required: false
+  }],
+  images: {
+    type: [ImagesSchema],
+    required: true
+  },
+  pricing : [{
+    city: String,
+    rent: Number,
+    days: Number,
+    extraDayRent : Number
+  }]
 });

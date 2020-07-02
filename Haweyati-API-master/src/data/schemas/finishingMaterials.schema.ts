@@ -1,6 +1,5 @@
 import {Schema} from "mongoose";
 import { ImagesSchema } from './images.schema';
-import { FinishingMaterialVarientSchema } from './finishingMaterialVarients.schema';
 
 export const FinishingMaterialsSchema = new Schema({
   name: {
@@ -23,13 +22,15 @@ export const FinishingMaterialsSchema = new Schema({
   }],
   images: {
     type: [ImagesSchema],
-    required: true
+    required: false
   },
-  varients: {
-    type: {
-      name: [String],
-      values: [FinishingMaterialVarientSchema]
-    },
-    required: true
-  }
+  price : {
+    type: Number,
+    required: false
+  },
+   options: [{
+     optionName: String,
+     optionValues: String,
+   }],
+   varient : [Object]
 });

@@ -1,9 +1,16 @@
 import {Document} from "mongoose";
-import { Options } from 'prettier';
+import { IShopRegistrationInterface } from './shopRegistration.interface';
+import { IImage } from './image.interface';
 
 export interface IScaffoldingsInterface extends Document{
-  name: string,
-  price: number,
-  type: string,
-  others: Options
+  size: string,
+  suppliers : IShopRegistrationInterface[],
+  images: IImage[],
+  description: string,
+  pricing: [
+    {city:string},
+    {rent: number},
+    {days: number},
+    {extraDayRent: number}
+  ]
 }

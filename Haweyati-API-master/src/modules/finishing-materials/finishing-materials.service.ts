@@ -7,19 +7,30 @@ import { ShopRegistrationService } from '../shop-registration/shop-registration.
 
 @Injectable()
 export class FinishingMaterialsService extends SimpleService<IFinishingMaterialsInterface>{
-    constructor(
+   constructor(
       @InjectModel('finishingmaterials')
       protected readonly model: Model<IFinishingMaterialsInterface>,
       private readonly service: ShopRegistrationService
-    ) {
-        super(model);
-    }
-    fetch(id?: string): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface> {
-        if (id) return this.model.findById(id).populate('suppliers').exec()
-        return this.model.find().exec()
-    }
-    fetchByParentId(id: string): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface>{
-        return this.model.find().where('parent', id).exec();
-    }
+   ) {
+      super(model);
+   }
+
+   fetch(id?: string): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface> {
+      if (id) return this.model.findById(id).populate('suppliers').exec()
+      return this.model.find().exec()
+   }
+
+   fetchByParentId(id: string): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface>{
+      return this.model.find().where('parent', id).exec();
+   }
+   async getByCity(city: string, parent: string): Promise<any>{
+      const data = await this.service.getDataFromCityName(city, "Finishing Material");
+      const  dump = await this.model.find({ 'suppliers': data}).where('parent', parent).exec()
+      const newSet = new Set()
+      dump.forEach(value => {
+         newSet.add(value);
+      })
+      return Array.from(newSet)
+   }
 
 }

@@ -21,4 +21,18 @@ export class BuildingMaterialsService extends SimpleService<IBuildingMaterialsIn
     fetchByParentId(id: string): Promise<IBuildingMaterialsInterface[] | IBuildingMaterialsInterface>{
         return this.model.find().where('parent', id).exec();
     }
+    async getByCity(city: string, parent: string): Promise<any>{
+        if (city) {
+            const data = await this.service.getDataFromCityName(city, "Building Material");
+            const  dump = await this.model.find({ 'suppliers': data}).where('parent', parent).exec()
+            const newSet = new Set()
+            dump.forEach(value => {
+                newSet.add(value);
+            })
+            return {
+                services : Array.from(newSet)
+            }
+        }
+    }
+
 }

@@ -12,7 +12,10 @@ export class BuildingMaterialCategoryController extends SimpleController<IBuildi
   @Post()
   @UseInterceptors(FileInterceptor('images'))
   postOverride(@UploadedFile() file, @Body() buildingMaterialCategory: any){
-    buildingMaterialCategory.images = file
+    buildingMaterialCategory.images = [file].map(file1 => ({
+      name: file1.filename,
+      path: file1.path
+    }))
     return this.service.create(buildingMaterialCategory);
   }
 }

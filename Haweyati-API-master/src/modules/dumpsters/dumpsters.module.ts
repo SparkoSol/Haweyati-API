@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DumpstersSchema } from '../../data/schemas/dumpsters.schema';
@@ -6,7 +5,6 @@ import { DumpstersController } from './dumpsters.controller';
 import { DumpstersService } from './dumpsters.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { ShopRegistrationModule } from '../shop-registration/shop-registration.module';
-import { ShopRegistrationService } from '../shop-registration/shop-registration.service';
 
 @Module({
   imports: [

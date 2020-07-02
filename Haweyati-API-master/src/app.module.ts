@@ -10,6 +10,8 @@ import { BuildingMaterialCategoryModule } from './modules/building-material-cate
 import { FinishingMaterialCategoryModule } from './modules/finishing-material-category/finishing-material-category.module';
 import { FinishingMaterialsModule } from './modules/finishing-materials/finishing-materials.module';
 import { DriversModule } from './modules/drivers/drivers.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path'
 
 @Module({
   imports: [
@@ -22,7 +24,11 @@ import { DriversModule } from './modules/drivers/drivers.module';
     BuildingMaterialCategoryModule,
     FinishingMaterialCategoryModule,
     FinishingMaterialsModule,
-    DriversModule
+    DriversModule,
+
+    // ServeStaticModule.forRoot({
+    //   renderPath: join(__dirname, '..', '..', 'uploads')
+    // })
   ],
   controllers: [AppController]
 })

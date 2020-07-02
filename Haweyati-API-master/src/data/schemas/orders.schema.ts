@@ -30,6 +30,4 @@ export const OrdersSchema = new Schema({
   status: {
     type: String
   }
-  
-
 });

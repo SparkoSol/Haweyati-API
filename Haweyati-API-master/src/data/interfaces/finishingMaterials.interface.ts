@@ -1,13 +1,18 @@
 import {Document} from "mongoose";
 import { IShopRegistrationInterface } from './shopRegistration.interface';
 import { IImage } from './image.interface';
-import { IFinishingMaterialVarients } from './finishingMaterialVarients.interafce';
+import { IFinishingMaterialCategory } from './finishingMaterialCategory.interface';
 
 export interface IFinishingMaterialsInterface extends Document{
   name: string,
   description: string,
-  parent: IFinishingMaterialsInterface,
+  parent: IFinishingMaterialCategory,
   suppliers : IShopRegistrationInterface[],
   images: IImage[],
-  varients : IFinishingMaterialVarients[]
+  price: number,
+  options: [{
+    optionName: string,
+    optionValues: string
+  }],
+  varient : [object]
 }
