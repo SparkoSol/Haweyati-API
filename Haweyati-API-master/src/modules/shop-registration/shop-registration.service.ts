@@ -5,7 +5,6 @@ import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import {Client} from "@googlemaps/google-maps-services-js";
 import { computeDistanceBetween, LatLng } from 'spherical-geometry-js';
-import { IDumpster } from '../../data/interfaces/dumpster.interface';
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<IShopRegistrationInterface>{
@@ -27,6 +26,10 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
       return Array.from(newSet)
    }
 
+   async getSubsuppliers(id: string): Promise<any>{
+      return this.model.find({parent: id}).exec()
+   }
+
    async getDataFromCoordinates(lat: string, lng: string): Promise<any>{
       const cityName = await this.getLocationData(lat, lng);
 
@@ -42,6 +45,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
          city : cityName
       };
    }
+
    getDistance(p1lat: any, p1lng: any, p2lat: any, p2lng: any){
       try {
          const p1latlng = new LatLng(p1lat, p1lng)
@@ -52,6 +56,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
          console.log("Can't find distance")
       }
    }
+
    async getLocationData(lat: any, lng: any): Promise<any> {
       const client = new Client({});
 

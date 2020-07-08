@@ -23,12 +23,19 @@ export class DumpstersService extends SimpleService<IDumpster> {
   async getByCity(city: string): Promise<any>{
     if (city) {
       const data = await this.service.getDataFromCityName(city, "Construction Dumpster");
-      const  dump = await this.model.find({ 'suppliers': data}).exec()
-      const newSet = new Set()
-      dump.forEach(value => {
-        newSet.add(value);
-      })
-      return Array.from(newSet)
+      const  dump = await this.model.find().exec()
+      const result = [];
+
+      for (const item of dump) {
+        for (const supplier of data) {
+          if (item.suppliers.includes(supplier)) {
+            result.push(item)
+          }
+        }
+      }
+
+      return result
     }
   }
+
 }

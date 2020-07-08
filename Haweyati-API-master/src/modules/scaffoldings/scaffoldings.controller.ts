@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import {SimpleController} from "../../common/lib/simple.controller";
 import {IScaffoldingsInterface} from "../../data/interfaces/scaffoldings.interface";
 import {ScaffoldingsService} from "./scaffoldings.service";
@@ -12,7 +12,7 @@ export class ScaffoldingsController extends SimpleController<IScaffoldingsInterf
 
    @Post()
    @UseInterceptors(FilesInterceptor('images'))
-   postOverride(@UploadedFiles() files, @Body() scaffolding: any) {
+   postOverride(@UploadedFiles() files, @Body() scaffolding: any): any {
       if (Array.isArray(scaffolding.city)) {
          const list = []
          for (let i = 0; i < scaffolding.city.length; ++i) {
@@ -35,4 +35,10 @@ export class ScaffoldingsController extends SimpleController<IScaffoldingsInterf
       scaffolding.images = files
       return this.service.create(scaffolding);
    }
+
+   @Get('getbytype/:type')
+   async get(@Param('type') type:string): Promise<IScaffoldingsInterface[]>{
+      return await this.service.getByType(type);
+   }
+
 }

@@ -21,16 +21,23 @@ export class PersonsService extends SimpleService<any> {
         super(model)
     }
 
+    async fetch(id?: string): Promise<IPerson[] | IPerson> {
+        if (id) return await this.model.findById(id).exec()
+        return await this.model.find().exec()
+    }
+
     fetchByUsername(name: string): Promise<IPerson> {
         return this.model.findOne().where('username', name).exec()
     }
+
     randomIntFromInterval(min, max): string { // min and max included - for generating random number
         return (Math.floor(Math.random() * (max - min + 1) + min)).toString();
     }
-    async sendVerificationCode(personContact: any) : Promise<IPersonVerification> {
+
+    async sendVerificationCode(personContact: IPerson) : Promise<IPerson> {
         const accountSid = process.env.TWILIO_ACC_SID; // Your Account SID from www.twilio.com/console
         const authToken = process.env.TWILIO_ACC_AUTH_TOKEN;   // Your Auth Token from www.twilio.com/console
-
+        console.log(personContact)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const client = new twilio(accountSid, authToken);
@@ -44,7 +51,7 @@ export class PersonsService extends SimpleService<any> {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const person = await super.create(personContact)
-
+        console.log(person)
         const verify = new this.verificationmodel({
             Person: person,
             VerificationCode: code,

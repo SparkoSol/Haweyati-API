@@ -36,7 +36,6 @@ export class FinishingMaterialsController extends SimpleController<IFinishingMat
 
 
          const pricing = []
-         console.log(finishingMaterial)
          if (Array.isArray(finishingMaterial.varientName)) {
             for (let i = 0; i < finishingMaterial.varientName.length; ++i) {
                const data = finishingMaterial.varientName[i].split('/')
@@ -49,7 +48,6 @@ export class FinishingMaterialsController extends SimpleController<IFinishingMat
                pricing.push(pricingObj)
             }
          } else {
-            console.log(finishingMaterial.varientName)
             const priceObj = {}
             const data = finishingMaterial.varientName.includes('/') ? finishingMaterial.varientName.split('/') : finishingMaterial.varientName
             if(Array.isArray(data)) {
@@ -79,6 +77,7 @@ export class FinishingMaterialsController extends SimpleController<IFinishingMat
    getByParentId(@Param('id') id: string): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface> {
       return this.service.fetchByParentId(id);
    }
+
    @Get('available')
    async Get(@Query() data): Promise<any>{
       return await this.service.getByCity(data.city, data.parent);

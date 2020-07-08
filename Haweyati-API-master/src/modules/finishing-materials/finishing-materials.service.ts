@@ -25,12 +25,19 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
    }
    async getByCity(city: string, parent: string): Promise<any>{
       const data = await this.service.getDataFromCityName(city, "Finishing Material");
-      const  dump = await this.model.find({ 'suppliers': data}).where('parent', parent).exec()
-      const newSet = new Set()
-      dump.forEach(value => {
-         newSet.add(value);
-      })
-      return Array.from(newSet)
+      const dump = await this.model.find().where('parent', parent).exec()
+
+      const result = [];
+
+      for (const item of dump) {
+         for (const supplier of data) {
+            if (item.suppliers.includes(supplier)) {
+               result.push(item)
+            }
+         }
+      }
+
+      return result
    }
 
 }

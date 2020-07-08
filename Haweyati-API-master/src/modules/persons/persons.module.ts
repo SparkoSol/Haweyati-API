@@ -4,6 +4,7 @@ import { PersonsService } from './persons.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PersonsSchema } from 'src/data/schemas/persons.schema';
 import {PersonVerificationSchema} from "../../data/schemas/personVerification.schema";
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -18,7 +19,10 @@ import {PersonVerificationSchema} from "../../data/schemas/personVerification.sc
         name: 'personverification',
         schema: PersonVerificationSchema
       }
-    ])
+    ]),
+    MulterModule.register({
+      dest: '../uploads',
+    })
       ],
   controllers: [PersonsController],
   providers: [PersonsService],

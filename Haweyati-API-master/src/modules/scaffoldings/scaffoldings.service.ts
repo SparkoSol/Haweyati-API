@@ -4,20 +4,23 @@ import {IScaffoldingsInterface} from "../../data/interfaces/scaffoldings.interfa
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service';
-import { IDumpster } from '../../data/interfaces/dumpster.interface';
 
 @Injectable()
 export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
-    constructor(
-       @InjectModel('scaffoldings')
-       protected readonly model: Model<IScaffoldingsInterface>,
-       private readonly service: ShopRegistrationService
-    ) {
-        super(model);
+   constructor(
+      @InjectModel('scaffoldings')
+      protected readonly model: Model<IScaffoldingsInterface>,
+      private readonly service: ShopRegistrationService
+   ) {
+      super(model);
+   }
+   fetch(id?: string): Promise<IScaffoldingsInterface[] | IScaffoldingsInterface> {
+      if (id) return this.model.findById(id).populate('suppliers').exec()
+      return this.model.find().exec()
+   }
 
-    }
-    fetch(id?: string): Promise<IScaffoldingsInterface[] | IScaffoldingsInterface> {
-        if (id) return this.model.findById(id).populate('suppliers').exec()
-        return this.model.find().exec()
-    }
+   async getByType(typename: string): Promise<IScaffoldingsInterface[]>{
+      return await this.model.find().where('type', typename).exec();
+   }
+
 }

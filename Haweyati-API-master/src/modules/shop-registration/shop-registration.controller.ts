@@ -12,7 +12,10 @@ export class ShopRegistrationController extends SimpleController<IShopRegistrati
     @Post()
     @UseInterceptors(FilesInterceptor('images'))
     Post(@UploadedFiles() images, @Body() data: IShopRegistrationInterface): Promise<IShopRegistrationInterface> {
-        data.images = images
+        data.images = images.map(file => ({
+            name: file.filename,
+            path: file.path
+        }))
         return super.post(data);
     }
     @Patch()
@@ -28,4 +31,10 @@ export class ShopRegistrationController extends SimpleController<IShopRegistrati
         // this.service.getDistance(30.157457, 71.524918, 31.520370, 74.358749)
         return this.service.getDataFromCoordinates(location.lat, location.lng);
     }
+
+    @Get('getsubsuppliers/:id')
+    async subsuppliers(@Param('id') id: string): Promise<any>{
+        return this.service.getSubsuppliers(id);
+    }
+
 }

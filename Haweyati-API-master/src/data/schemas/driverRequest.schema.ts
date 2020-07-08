@@ -8,7 +8,7 @@ export const DriverRequestSchema = new Schema({
    },
    status : {
       type: String,
-      default: "false",
+      default: "pending",
       required: false
    }
 })
