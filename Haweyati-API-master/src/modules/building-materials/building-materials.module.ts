@@ -5,6 +5,7 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {BuildingMaterialsSchema} from "../../data/schemas/buildingMaterials.schema";
 import { MulterModule } from '@nestjs/platform-express';
 import { ShopRegistrationModule } from '../shop-registration/shop-registration.module';
+import { BuildingMaterialCategoryModule } from "../building-material-category/building-material-category.module";
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { ShopRegistrationModule } from '../shop-registration/shop-registration.m
     MulterModule.register({
       dest: '../uploads',
     }),
-    ShopRegistrationModule
+    ShopRegistrationModule,
+    BuildingMaterialCategoryModule
   ],
   controllers: [BuildingMaterialsController],
   providers: [BuildingMaterialsService],

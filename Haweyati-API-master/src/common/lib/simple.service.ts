@@ -77,9 +77,10 @@ export abstract class SimpleService<T extends Document> {
    * @param {T} document - Document to be Changed.
    * @returns {Promise<T>}
    */
-  change(document: T): Promise<T> {
+  async change(document: T): Promise<T> {
     try {
-      return this.model.findByIdAndUpdate(document._id, document).exec()
+      await this.model.findByIdAndUpdate(document._id, document).exec()
+      return (await this.fetch(document._id)) as T;
     } catch (error) {
       throw new HttpException(error, 500)
     }

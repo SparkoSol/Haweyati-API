@@ -1,11 +1,6 @@
 import {Schema} from "mongoose";
-import { ImagesSchema } from './images.schema';
 
 export const ScaffoldingsSchema = new Schema({
-   size: {
-      type: String,
-      required: true
-   },
    description: {
       type: String,
       required: true
@@ -19,10 +14,6 @@ export const ScaffoldingsSchema = new Schema({
       ref: 'shopregistration',
       required: false
    }],
-   images: {
-      type: [ImagesSchema],
-      required: true
-   },
    pricing : [{
       city: String,
       rent: Number,

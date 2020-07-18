@@ -1,6 +1,5 @@
 import { Schema } from "mongoose";
 import { VehiclesSchema } from './vehicles.schema';
-import { LocationSchema } from './location.schema';
 
 export const DriversSchema = new Schema({
    profile: {
@@ -23,9 +22,5 @@ export const DriversSchema = new Schema({
       type: String,
       required: false,
       default: "Pending"
-   },
-   location: {
-      type: LocationSchema,
-      required: true
    }
 });

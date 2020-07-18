@@ -10,6 +10,5 @@ export interface IDriversInterface extends Document{
    license: string,
    city: string,
    vehicle : IVehicles,
-   status: string,
-   location: ILocation
+   status: string
 }

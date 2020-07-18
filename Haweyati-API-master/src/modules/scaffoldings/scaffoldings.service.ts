@@ -11,16 +11,17 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
       @InjectModel('scaffoldings')
       protected readonly model: Model<IScaffoldingsInterface>,
       private readonly service: ShopRegistrationService
-   ) {
+   )
+   {
       super(model);
    }
+
    fetch(id?: string): Promise<IScaffoldingsInterface[] | IScaffoldingsInterface> {
       if (id) return this.model.findById(id).populate('suppliers').exec()
-      return this.model.find().exec()
+      return this.model.find().populate('suppliers').exec()
    }
 
-   async getByType(typename: string): Promise<IScaffoldingsInterface[]>{
-      return await this.model.find().where('type', typename).exec();
+   async change(document: any): Promise<IScaffoldingsInterface> {
+      return super.change(document);
    }
-
 }

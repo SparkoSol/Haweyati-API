@@ -1,33 +1,58 @@
 import { Schema } from "mongoose";
-import { CustomersSchema } from './customers.schema';
+import { LocationSchema } from "./location.schema";
+import { Timestamp } from "rxjs/internal-compatibility";
+import { ImagesSchema } from "./images.schema";
 
 export const OrdersSchema = new Schema({
-  name: {
+  service: {
     type: String,
     required: true
   },
-  reference: {
+  id: {
     type: String,
+    required:false
   },
-  pickupTime: {
-    type: Date
+  dropoffLocation: {
+    type: LocationSchema,
+    required: true
   },
-  pickupLocation: {
-    type: Location,
+  dropoffAddress : {
+    type: String,
+    required: false
   },
-  deliveryTime: {
-    type: Date
+  dropoffDate: {
+    type: Date,
+    required: true
   },
-  deliveryLocation:{
-    type: Number,
+  dropoffTime: {
+    type: Timestamp,
+    required: false
   },
-  deliveryCharges: {
-    type: Number,
+  image : {
+    type: ImagesSchema,
+    required: false
+  },
+  description: {
+    type: String,
+    required: false
+  },
+  helper: {
+    type: Boolean,
+    required: false,
+    default: 'false'
+  },
+  details: {
+    type: Object,
+    required: true
   },
   customer: {
-    type: CustomersSchema
+    type: Schema.Types.ObjectId,
+    Ref: 'customers',
+    required: true
   },
   status: {
-    type: String
+    type: String,
+    required: false,
+    default: 'Pending'
   }
 });

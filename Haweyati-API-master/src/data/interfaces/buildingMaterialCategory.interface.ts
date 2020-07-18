@@ -5,4 +5,5 @@ export interface IBuildingMaterialCategory extends Document{
   name: string,
   description: string,
   images: IImage
+  status: string
 }

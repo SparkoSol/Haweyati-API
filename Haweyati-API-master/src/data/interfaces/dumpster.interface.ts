@@ -5,12 +5,14 @@ import { IShopRegistrationInterface } from './shopRegistration.interface';
 export interface IDumpster extends Document {
   size: string,
   suppliers : IShopRegistrationInterface[],
-  images: IImage[],
+  image: IImage,
   description: string,
   pricing: [
       {city:string},
       {rent: number},
       {days: number},
-      {extraDayRent: number}
-  ]
+      {extraDayRent: number},
+      {helperPrice: number}
+  ],
+  status: string
 }

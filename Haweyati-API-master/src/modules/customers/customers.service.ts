@@ -19,32 +19,45 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
    async fetch(id?: string): Promise<any> {
       if (id) {
          const data = (await this.model.findById(id).where('status', 'Active').exec()) as ICustomerInterface
-         data.profile = <IPerson>await this.personService.fetch(data.profile.toString());
-         data.profile.username = "";
-         data.profile.password = "";
+
+         if (data){
+            data.profile = <IPerson>await this.personService.fetch(data.profile.toString());
+            if (data.profile != null){
+               data.profile.username = "";
+               data.profile.password = "";
+            }
+         }
          return data;
       }
       else {
          const data = await this.model.find().where('status', 'Active').exec() as ICustomerInterface[];
-         for (let i = 0; i < data.length; ++i) {
-            data[i].profile = <IPerson>await this.personService.fetch(data[i].profile.toString());
-            data[i].profile.username = "";
-            data[i].profile.password = "";
+         if (data){
+            for (let i = 0; i < data.length; ++i) {
+               data[i].profile = <IPerson>await this.personService.fetch(data[i].profile.toString());
+               data[i].profile.username = "";
+               data[i].profile.password = "";
+            }
          }
          return data;
       }
    }
 
-   async getBlocked(id?: string): Promise<any>{
-      if (id)
+   async getBlocked(id?: string, msg?: string): Promise<any>{
+      if (id && msg)
+         return await this.model.findByIdAndUpdate(id, {status: 'Blocked', message: msg}).exec();
+      else if (id && !msg)
          return await this.model.findByIdAndUpdate(id, {status: 'Blocked'}).exec();
       else
       {
          const data = await this.model.find({status: 'Blocked'}).exec()
-         for (let i = 0; i < data.length; ++i) {
-            data[i].profile = <IPerson>await this.personService.fetch(data[i].profile.toString());
-            data[i].profile.username = "";
-            data[i].profile.password = "";
+         if (data){
+            for (let i = 0; i < data.length; ++i) {
+               data[i].profile = <IPerson>await this.personService.fetch(data[i].profile.toString());
+               if (data[i].profile != null){
+                  data[i].profile.username = "";
+                  data[i].profile.password = "";
+               }
+            }
          }
          return data;
       }

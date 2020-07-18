@@ -15,5 +15,10 @@ export const CustomersSchema = new Schema({
     type: String,
     required: false,
     default: 'Active'
+  },
+  message : {
+    type: String,
+    required: false,
+    default: 'Customer is Active'
   }
 });

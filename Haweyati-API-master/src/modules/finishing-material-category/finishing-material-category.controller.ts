@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { SimpleController } from '../../common/lib/simple.controller';
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface';
 import { FinishingMaterialCategoryService } from './finishing-material-category.service';
@@ -17,6 +17,8 @@ export class FinishingMaterialCategoryController extends SimpleController<IFinis
       name: file1.filename,
       path: file1.path
     }))
+
     return this.service.create(finishingMaterialCategory);
   }
+
 }

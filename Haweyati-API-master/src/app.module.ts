@@ -12,6 +12,9 @@ import { DriversModule } from './modules/drivers/drivers.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path'
 import { CustomersModule } from './modules/customers/customers.module';
+import {ServiceRequestsModule} from "./modules/service-requests/service-requests.module";
+import { ScaffoldingsModule } from "./modules/scaffoldings/scaffoldings.module";
+import { FcmModule } from "./modules/fcm/fcm.module";
 
 @Module({
   imports: [
@@ -24,7 +27,10 @@ import { CustomersModule } from './modules/customers/customers.module';
     FinishingMaterialCategoryModule,
     FinishingMaterialsModule,
     DriversModule,
-    CustomersModule
+    CustomersModule,
+    ServiceRequestsModule,
+    ScaffoldingsModule,
+    FcmModule
 
     // ServeStaticModule.forRoot({
     //   renderPath: join(__dirname, '..', '..', 'uploads')

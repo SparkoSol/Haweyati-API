@@ -1,11 +1,12 @@
 export const UsersSchema = {
     username: {
         type: String,
-        // required: true
+        required: false,
+        unique: true
     },
 
     password: {
         type: String,
-        // required: true
+        required: false
     }
 }

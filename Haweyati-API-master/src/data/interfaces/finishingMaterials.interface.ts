@@ -14,5 +14,6 @@ export interface IFinishingMaterialsInterface extends Document{
     optionName: string,
     optionValues: string
   }],
-  varient : [object]
+  varient : [object],
+  status : string
 }

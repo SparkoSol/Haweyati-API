@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { SimpleController } from '../../common/lib/simple.controller';
 import { IBuildingMaterialCategory } from '../../data/interfaces/buildingMaterialCategory.interface';
 import { BuildingMaterialCategoryService } from './building-material-category.service';

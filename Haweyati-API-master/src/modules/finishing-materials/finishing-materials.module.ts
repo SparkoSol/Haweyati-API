@@ -5,6 +5,7 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {FinishingMaterialsSchema} from "../../data/schemas/finishingMaterials.schema";
 import { MulterModule } from '@nestjs/platform-express';
 import { ShopRegistrationModule } from '../shop-registration/shop-registration.module';
+import { FinishingMaterialCategoryModule } from "../finishing-material-category/finishing-material-category.module";
 
 @Module({
   imports:[
@@ -12,7 +13,8 @@ import { ShopRegistrationModule } from '../shop-registration/shop-registration.m
     MulterModule.register({
       dest: '../uploads',
     }),
-    ShopRegistrationModule
+    ShopRegistrationModule,
+    FinishingMaterialCategoryModule
   ],
   providers: [FinishingMaterialsService],
   controllers: [FinishingMaterialsController],

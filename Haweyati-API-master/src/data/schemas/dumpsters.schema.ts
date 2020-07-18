@@ -1,10 +1,6 @@
 import { Schema } from "mongoose";
 import { ImagesSchema } from './images.schema';
 
-/**
- * @version 1.0.0
- * @author Haroon Awan <haroonashrafawan@gmail.com>
- */
 export const DumpstersSchema = new Schema({
   size: {
     type: String,
@@ -19,14 +15,20 @@ export const DumpstersSchema = new Schema({
     ref: 'shopregistration',
     required: false
   }],
-  images: {
-    type: [ImagesSchema],
+  image: {
+    type: ImagesSchema,
     required: true
   },
   pricing : [{
     city: String,
     rent: Number,
     days: Number,
-    extraDayRent : Number
-  }]
+    extraDayRent : Number,
+    helperPrice: Number
+  }],
+  status: {
+    type: String,
+    required: false,
+    default: 'Active'
+  }
 });

@@ -19,7 +19,7 @@ export const PersonsSchema = new Schema({
    },
    image : {
       type: ImagesSchema,
-      required: true
+      required: false
    },
    contact: {
       type: String,

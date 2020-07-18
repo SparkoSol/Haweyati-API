@@ -1,8 +1,10 @@
 import {Schema} from "mongoose";
 import { ImagesSchema } from './images.schema';
 import { LocationSchema } from './location.schema';
+import { UsersSchema } from "../../common/auth/users/users.schema";
 
 export const ShopRegistrationSchema = new Schema({
+   ...UsersSchema,
    name: String,
    location: {
       type: LocationSchema,
@@ -12,10 +14,15 @@ export const ShopRegistrationSchema = new Schema({
       type: [ImagesSchema],
       required: false
    },
-   email: String,
    contact: String,
+   email: String,
    address: String,
    parent: String,
    city: String,
-   services : [String]
+   services : [String],
+   status: {
+      type: String,
+      required: false,
+      default: 'Pending'
+   }
 });

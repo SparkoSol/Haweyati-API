@@ -32,5 +32,10 @@ export const FinishingMaterialsSchema = new Schema({
      optionName: String,
      optionValues: String,
    }],
-   varient : [Object]
+   varient : [Object],
+  status: {
+    type: String,
+    required: false,
+    default: 'Active'
+  }
 });

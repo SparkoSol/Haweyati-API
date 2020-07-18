@@ -5,5 +5,6 @@ import { ILocation } from './location.interface';
 export interface ICustomerInterface extends Document{
    profile: IPerson,
    location: ILocation,
-   status: string
+   status: string,
+   message : string
 }

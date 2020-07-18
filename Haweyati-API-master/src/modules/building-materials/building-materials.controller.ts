@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import {SimpleController} from "../../common/lib/simple.controller";
 import {IBuildingMaterialsInterface} from "../../data/interfaces/buildingMaterials.interface";
 import {BuildingMaterialsService} from "./building-materials.service";
@@ -42,6 +42,18 @@ export class BuildingMaterialsController extends SimpleController<IBuildingMater
    @Get('available')
    async Get(@Query() data): Promise<any>{
       return await this.service.getByCity(data.city, data.parent);
+   }
+
+   //Admin Panel
+   @Get('fromsupplier/:id')
+   async fromSupplier(@Param('id') id: string): Promise<any> {
+      return await this.service.getSuppliers(id);
+   }
+
+   //Deleting Building Material Category here because circular dependencies are not allowed
+   @Delete('deletecategory/:id')
+   async deleteCategory(@Param('id') id: string): Promise<any>{
+      return await this.service.deleteCategory(id);
    }
 
 }

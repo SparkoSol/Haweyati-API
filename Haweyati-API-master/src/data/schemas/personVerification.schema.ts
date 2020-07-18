@@ -7,5 +7,7 @@ export const PersonVerificationSchema = new Schema({
         required: true
     },
     VerificationCode : String,
-    Verified : Boolean
+    Verified : {
+
+        type: Boolean }
 });

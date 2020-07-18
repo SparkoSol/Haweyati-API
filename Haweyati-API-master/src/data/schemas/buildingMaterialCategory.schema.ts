@@ -13,5 +13,10 @@ export const BuildingMaterialCategorySchema = new Schema({
   images: {
     type: ImagesSchema,
     required: true
+  },
+  status: {
+    type: String,
+    required: false,
+    default: 'Active'
   }
 });
