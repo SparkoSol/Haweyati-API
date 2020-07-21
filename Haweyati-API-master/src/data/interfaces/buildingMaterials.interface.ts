@@ -4,7 +4,6 @@ import { IImage } from './image.interface';
 import { IBuildingMaterialCategory } from "./buildingMaterialCategory.interface";
 
 export interface IBuildingMaterialsInterface extends Document{
-  item: import("C:/Users/Zain/Desktop/Haweyati-API-master/Haweyati-API-master/src/data/interfaces/buildingMaterialCategory.interface").IBuildingMaterialCategory;
   name: string,
   description: string,
   parent: IBuildingMaterialCategory,
