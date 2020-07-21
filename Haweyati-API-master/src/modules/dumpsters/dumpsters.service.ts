@@ -50,7 +50,6 @@ export class DumpstersService extends SimpleService<IDumpster> {
                }
             }
          }
-
          return result
       }
    }

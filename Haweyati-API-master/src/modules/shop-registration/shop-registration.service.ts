@@ -3,8 +3,8 @@ import {SimpleService} from "../../common/lib/simple.service";
 import {IShopRegistrationInterface} from "../../data/interfaces/shopRegistration.interface";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
-import {Client} from "@googlemaps/google-maps-services-js";
-import { computeDistanceBetween, LatLng } from 'spherical-geometry-js';
+// import {Client} from "@googlemaps/google-maps-services-js";
+// import { computeDistanceBetween, LatLng } from 'spherical-geometry-js';
 import {ReportUtils} from "../../common/lib/report-utils";
 
 @Injectable()
@@ -117,6 +117,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
    //    return location?.data?.results[0]?.address_components[n-3]?.long_name
    // }
 
+   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
    async generateReport() {
       return ReportUtils.renderReport('SupplierReport.odt', await this.fetch())
    }

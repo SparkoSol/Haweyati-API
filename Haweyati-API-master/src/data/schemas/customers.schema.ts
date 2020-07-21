@@ -19,6 +19,6 @@ export const CustomersSchema = new Schema({
   message : {
     type: String,
     required: false,
-    default: 'Customer is Active'
+    default: 'Reason for customer rejection'
   }
 });
