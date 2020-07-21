@@ -16,6 +16,11 @@ export class CustomersController extends SimpleController<ICustomerInterface>{
       return await this.service.getBlocked();
    }
 
+   @Get('getprofile/:contact')
+   async getProfile(@Param('contact') contact : string): Promise<ICustomerInterface | string>{
+      return await this.service.getProfile(contact);
+   }
+
    @Patch('getblocked/:id')
    async getBlocked(@Param('id') id: string, @Body() message?: any): Promise<any>{
       if (message)

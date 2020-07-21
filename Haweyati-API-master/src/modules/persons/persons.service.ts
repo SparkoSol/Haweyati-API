@@ -20,6 +20,10 @@ export class PersonsService extends SimpleService<any> {
         super(model)
     }
 
+    async fetchFromContact(contact: string): Promise<IPerson>{
+        return await this.model.findOne({contact: contact}).exec()
+    }
+
     async fetch(id?: string): Promise<IPerson[] | IPerson> {
         if (id) return await this.model.findById(id).exec()
         return await this.model.find().exec()

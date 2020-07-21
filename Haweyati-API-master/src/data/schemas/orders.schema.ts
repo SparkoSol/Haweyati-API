@@ -1,6 +1,5 @@
 import { Schema } from "mongoose";
 import { LocationSchema } from "./location.schema";
-import { Timestamp } from "rxjs/internal-compatibility";
 import { ImagesSchema } from "./images.schema";
 
 export const OrdersSchema = new Schema({
@@ -8,7 +7,7 @@ export const OrdersSchema = new Schema({
     type: String,
     required: true
   },
-  id: {
+  itemId: {
     type: String,
     required:false
   },
@@ -25,21 +24,12 @@ export const OrdersSchema = new Schema({
     required: true
   },
   dropoffTime: {
-    type: Timestamp,
+    type: String,
     required: false
   },
   image : {
     type: ImagesSchema,
     required: false
-  },
-  description: {
-    type: String,
-    required: false
-  },
-  helper: {
-    type: Boolean,
-    required: false,
-    default: 'false'
   },
   details: {
     type: Object,

@@ -3,7 +3,7 @@ import { IPerson } from './person.interface';
 import { ILocation } from './location.interface';
 
 export interface ICustomerInterface extends Document{
-   profile: IPerson,
+   profile: IPerson | string,
    location: ILocation,
    status: string,
    message : string

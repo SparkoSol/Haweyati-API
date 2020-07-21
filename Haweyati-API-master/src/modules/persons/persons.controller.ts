@@ -14,9 +14,11 @@ export class PersonsController extends SimpleController<IPerson> {
    @UseInterceptors(FileInterceptor('image'))
    //eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
    async sendVerificationCode(@UploadedFile() file, @Body() person: any): Promise<any>{
-      person.image = {
-         name: file.filename,
-         path: file.path
+      if (file){
+         person.image = {
+            name: file.filename,
+            path: file.path
+         }
       }
       person.username = person.contact
       return  await this.service.create(person);

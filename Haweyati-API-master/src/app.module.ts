@@ -15,6 +15,7 @@ import { CustomersModule } from './modules/customers/customers.module';
 import {ServiceRequestsModule} from "./modules/service-requests/service-requests.module";
 import { ScaffoldingsModule } from "./modules/scaffoldings/scaffoldings.module";
 import { FcmModule } from "./modules/fcm/fcm.module";
+import { OrdersModule } from "./modules/orders/orders.module";
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { FcmModule } from "./modules/fcm/fcm.module";
     CustomersModule,
     ServiceRequestsModule,
     ScaffoldingsModule,
-    FcmModule
+    FcmModule,
+    OrdersModule
 
     // ServeStaticModule.forRoot({
     //   renderPath: join(__dirname, '..', '..', 'uploads')

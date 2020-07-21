@@ -34,13 +34,26 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
          if (data){
             for (let i = 0; i < data.length; ++i) {
                data[i].profile = <IPerson>await this.personService.fetch(data[i].profile.toString());
+               // @ts-ignore
                data[i].profile.username = "";
+               // @ts-ignore
                data[i].profile.password = "";
             }
          }
          return data;
       }
    }
+
+   async getProfile(contact: string): Promise<ICustomerInterface | string>{
+      const person = await this.personService.fetchFromContact(contact);
+      if (person){
+         return await this.model.findOne({profile: person._id}).populate('profile').exec()
+      }
+      else{
+         return "No Data"
+      }
+   }
+
 
    async getBlocked(id?: string, msg?: string): Promise<any>{
       if (id && msg)
@@ -54,7 +67,9 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
             for (let i = 0; i < data.length; ++i) {
                data[i].profile = <IPerson>await this.personService.fetch(data[i].profile.toString());
                if (data[i].profile != null){
+                  // @ts-ignore
                   data[i].profile.username = "";
+                  // @ts-ignore
                   data[i].profile.password = "";
                }
             }
