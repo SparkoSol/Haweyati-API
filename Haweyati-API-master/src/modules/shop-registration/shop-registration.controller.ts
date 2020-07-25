@@ -7,8 +7,8 @@ import {
    Get,
    Param,
    Res,
-   UploadedFile
-} from "@nestjs/common";
+   UploadedFile, HttpException, HttpStatus,
+} from '@nestjs/common';
 import {IShopRegistrationInterface} from "../../data/interfaces/shopRegistration.interface";
 import {ShopRegistrationService} from "./shop-registration.service";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -61,25 +61,27 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
    @Post()
    @UseInterceptors(FileInterceptor('image'))
    async Post(@UploadedFile() image, @Body() data: any) {
-      console.log(data)
+      console.log(image)
       data.image = {
          name : image.filename,
          path : image.path
       }
+      console.log(data.image)
       data.city = 'Multan'
       data.username = data.contact
-      data.image = null
 
 
       const person = await this.service.addProfile(data);
 
-      if (person != null){
+      if (person) {
          data.location = {
             latitude: 30.1575,
             longitude : 71.5249,
             address: data.address
          }
          data.person = person._id;
+         data.image = null
+
 
          //TODO: Uncomment after implementation of maps on admin panel
          // data.location = {
@@ -89,14 +91,11 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
          // }
          // data.city = data.city
 
-         data.username = null;
+         data.username = undefined;
          console.log(data)
          return super.post(image , data);
-      }
-      else{
-
-         console.log('nhi ayi profile')
-         return "Contact already exists";
+      } else {
+         throw new HttpException("Contact Already exists", HttpStatus.NOT_ACCEPTABLE)
       }
    }
 

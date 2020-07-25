@@ -39,8 +39,8 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
       }
       else
       {
-         data.scope = 'supplier';
-         // data.scope.push(data.scope)
+
+         data.scope = ['supplier'];
          return await this.personService.create(data);
       }
    }
