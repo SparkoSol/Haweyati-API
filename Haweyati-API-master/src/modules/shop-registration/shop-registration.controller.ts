@@ -61,27 +61,43 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
    @Post()
    @UseInterceptors(FileInterceptor('image'))
    async Post(@UploadedFile() image, @Body() data: any) {
+      console.log(data)
       data.image = {
          name : image.filename,
          path : image.path
       }
+      data.city = 'Multan'
+      data.username = data.contact
+      data.image = null
+
+
       const person = await this.service.addProfile(data);
 
       if (person != null){
          data.location = {
-            latitude: data.latitude,
-            longitude : data.longitude,
+            latitude: 30.1575,
+            longitude : 71.5249,
             address: data.address
          }
-         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-         // @ts-ignore
-         data.username = data.contact
          data.person = person._id;
-         data.image = null
+
+         //TODO: Uncomment after implementation of maps on admin panel
+         // data.location = {
+         //    latitude: data.latitude,
+         //    longitude : data.longitude,
+         //    address: data.address
+         // }
+         // data.city = data.city
+
+         data.username = null;
+         console.log(data)
          return super.post(image , data);
       }
-      else
+      else{
+
+         console.log('nhi ayi profile')
          return "Contact already exists";
+      }
    }
 
    @Patch('getapproved/:id')

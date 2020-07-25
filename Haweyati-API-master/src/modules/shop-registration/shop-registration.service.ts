@@ -20,9 +20,9 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
    }
 
    async fetch(id?: string): Promise<IShopRegistrationInterface[] | IShopRegistrationInterface> {
-      if (id) return await this.model.findById(id).where('status','Active').exec()
+      if (id) return await this.model.findById(id).where('status','Active').populate('person').exec()
       else {
-         return await this.model.find({parent: null, status: 'Active'}).exec()
+         return await this.model.find({parent: null, status: 'Active'}).populate('person').exec()
       }
    }
 
@@ -30,16 +30,17 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
       const profile = await this.personService.fetchFromContact(data.contact);
       if (profile){
          if (profile.scope.includes('supplier'))
-            return null
+            return null;
          else
          {
-            profile.scope.push(data.scope)
+            profile.scope.push('supplier')
             await this.personService.change(profile)
          }
       }
       else
       {
-         data.scope.push(data.scope)
+         data.scope = 'supplier';
+         // data.scope.push(data.scope)
          return await this.personService.create(data);
       }
    }
