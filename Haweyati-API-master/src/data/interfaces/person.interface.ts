@@ -6,5 +6,5 @@ export interface IPerson extends IUser {
     contact: string,
     email: string,
     image: IImage,
-    type: string
+    scope: [string]
 }

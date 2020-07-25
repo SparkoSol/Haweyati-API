@@ -71,9 +71,6 @@ export class DumpstersController extends ImageController<IDumpster> {
    async Get(@Query() data): Promise<any>{
       return await this.service.getByCity(data.city);
    }
-
-   //For Admin Panel
-   @Get('fromsupplier/:id')
    async getFromSupplier(@Param('id') id: string): Promise<any>{
       return await this.service.fromSuppliers(id);
    }

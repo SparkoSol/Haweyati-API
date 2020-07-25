@@ -19,10 +19,14 @@ export abstract class ImageController<T extends Document> {
    @Post()
    @UseInterceptors(FileInterceptor('image'))
    post(@UploadedFile('file') file, @Body() data: T): Promise<T> {
-      // @ts-ignore
-      data.image = {
-         name: file.filename,
-         path: file.path
+
+      if (file != null)
+      {
+         // @ts-ignore
+         data.image = {
+            name: file.filename,
+            path: file.path
+         }
       }
       return this.service.create(data)
    }
@@ -30,7 +34,6 @@ export abstract class ImageController<T extends Document> {
    @Patch()
    @UseInterceptors(FileInterceptor('image'))
    patch(@UploadedFile('file') file, @Body() data: T): Promise<T> {
-      console.log(data)
       // @ts-ignore
       if (file != null){
          // @ts-ignore

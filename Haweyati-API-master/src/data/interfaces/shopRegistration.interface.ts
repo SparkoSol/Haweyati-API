@@ -1,16 +1,13 @@
-import {IUser} from "../../common/auth/users/user.interface";
 import {ILocation} from "./location.interface";
-import {IImage} from "./image.interface";
+import { IPerson } from "./person.interface";
+import {Document} from "mongoose";
 
-export interface IShopRegistrationInterface extends IUser{
-   name: string,
+export interface IShopRegistrationInterface extends Document{
+   person : IPerson | string
    location: ILocation
-   images: [IImage],
-   contact: string,
-   email: string,
-   address: string,
-   parent: string,
+   address: string
+   parent: string
    city: string,
-   services : [string],
+   services : [string]
    status: string
 }

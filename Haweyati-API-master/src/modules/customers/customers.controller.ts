@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Patch } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import {SimpleController} from "../../common/lib/simple.controller";
 import {ICustomerInterface} from "../../data/interfaces/customers.interface";
 import {CustomersService} from "./customers.service";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller('customers')
 export class CustomersController extends SimpleController<ICustomerInterface>{

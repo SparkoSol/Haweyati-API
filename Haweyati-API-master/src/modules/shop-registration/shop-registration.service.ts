@@ -6,12 +6,14 @@ import {Model} from "mongoose";
 // import {Client} from "@googlemaps/google-maps-services-js";
 // import { computeDistanceBetween, LatLng } from 'spherical-geometry-js';
 import {ReportUtils} from "../../common/lib/report-utils";
+import { PersonsService } from "../persons/persons.service";
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<IShopRegistrationInterface>{
    constructor(
       @InjectModel('shopregistration')
       protected readonly model:Model<IShopRegistrationInterface>,
+      protected readonly personService : PersonsService,
       private httpService: HttpService
    ) {
       super(model);
@@ -21,6 +23,24 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
       if (id) return await this.model.findById(id).where('status','Active').exec()
       else {
          return await this.model.find({parent: null, status: 'Active'}).exec()
+      }
+   }
+
+   async addProfile(data: any): Promise<any>{
+      const profile = await this.personService.fetchFromContact(data.contact);
+      if (profile){
+         if (profile.scope.includes('supplier'))
+            return null
+         else
+         {
+            profile.scope.push(data.scope)
+            await this.personService.change(profile)
+         }
+      }
+      else
+      {
+         data.scope.push(data.scope)
+         return await this.personService.create(data);
       }
    }
 

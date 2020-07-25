@@ -31,7 +31,7 @@ export class AuthService {
   }
 
   async profile(user: any) {
-    return { user: await this.usersService.fetch(user.userId) }
+    return await this.usersService.fetch(user.userId)
   }
 
 }

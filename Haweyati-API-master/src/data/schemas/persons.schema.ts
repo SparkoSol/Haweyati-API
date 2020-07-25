@@ -4,14 +4,12 @@ import { ImagesSchema } from './images.schema';
 
 export const PersonsSchema = new Schema({
    ...UsersSchema,
-
    name: {
       type: String,
       // required: true
    },
-   type:{
-      type : String,
-      // required: true
+   scope:{
+      type : [String]
    },
    email: {
       type: String,

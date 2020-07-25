@@ -4,10 +4,14 @@ import { ShopRegistrationService } from './shop-registration.service';
 import {MongooseModule} from "@nestjs/mongoose";
 import {ShopRegistrationSchema} from "../../data/schemas/shopRegistration.schema";
 import { MulterModule } from '@nestjs/platform-express';
+import { PersonsModule } from "../persons/persons.module";
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name:'shopregistration', schema:ShopRegistrationSchema}]),
+    MongooseModule.forFeature([
+      {name:'shopregistration', schema:ShopRegistrationSchema}
+    ]),
+    PersonsModule,
     MulterModule.register({
       dest : '../uploads'
     }),

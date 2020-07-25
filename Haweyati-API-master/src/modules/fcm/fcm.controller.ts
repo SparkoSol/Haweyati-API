@@ -11,12 +11,6 @@ export class FcmController extends SimpleController<IFcm>{
       super(service)
    }
 
-   @Post()
-   post(data: IFcm): Promise<IFcm> {
-      console.log(data)
-      return super.post(data);
-   }
-
    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
    @Post('notification')
    async notification(@Body() data: any){

@@ -1,11 +1,21 @@
-import { Body, Controller, Patch, Post, UploadedFiles, UseInterceptors, Get, Param, Query, Res } from "@nestjs/common";
-import {SimpleController} from "../../common/lib/simple.controller";
+import {
+   Body,
+   Controller,
+   Patch,
+   Post,
+   UseInterceptors,
+   Get,
+   Param,
+   Res,
+   UploadedFile
+} from "@nestjs/common";
 import {IShopRegistrationInterface} from "../../data/interfaces/shopRegistration.interface";
 import {ShopRegistrationService} from "./shop-registration.service";
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ImageController } from "../../common/lib/image.controller";
 
 @Controller('suppliers')
-export class ShopRegistrationController extends SimpleController<IShopRegistrationInterface>{
+export class ShopRegistrationController extends ImageController<IShopRegistrationInterface>{
    constructor(
       protected readonly service: ShopRegistrationService
    ) {
@@ -49,14 +59,29 @@ export class ShopRegistrationController extends SimpleController<IShopRegistrati
    }
 
    @Post()
-   @UseInterceptors(FilesInterceptor('images'))
-   Post(@UploadedFiles() images, @Body() data: any): Promise<IShopRegistrationInterface> {
-      data.images = images.map(file => ({
-         name: file.filename,
-         path: file.path
-      }))
-      data.username = data.contact
-      return super.post(data);
+   @UseInterceptors(FileInterceptor('image'))
+   async Post(@UploadedFile() image, @Body() data: any) {
+      data.image = {
+         name : image.filename,
+         path : image.path
+      }
+      const person = await this.service.addProfile(data);
+
+      if (person != null){
+         data.location = {
+            latitude: data.latitude,
+            longitude : data.longitude,
+            address: data.address
+         }
+         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+         // @ts-ignore
+         data.username = data.contact
+         data.person = person._id;
+         data.image = null
+         return super.post(image , data);
+      }
+      else
+         return "Contact already exists";
    }
 
    @Patch('getapproved/:id')
@@ -65,10 +90,9 @@ export class ShopRegistrationController extends SimpleController<IShopRegistrati
    }
 
    @Patch()
-   @UseInterceptors(FilesInterceptor('images'))
-   Patch(@UploadedFiles() images, @Body() data: any): Promise<IShopRegistrationInterface>{
-      data.images.push(images);
-      return super.patch(data);
+   @UseInterceptors(FileInterceptor('image'))
+   Patch(@UploadedFile() image, @Body() data: any): Promise<IShopRegistrationInterface>{
+      return super.patch(image, data);
    }
 
    @Get('report')
