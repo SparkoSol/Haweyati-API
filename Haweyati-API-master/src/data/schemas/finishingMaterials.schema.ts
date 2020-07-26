@@ -1,5 +1,5 @@
-import {Schema} from "mongoose";
-import { ImagesSchema } from './images.schema';
+import { Schema } from 'mongoose'
+import { ImagesSchema } from './images.schema'
 
 export const FinishingMaterialsSchema = new Schema({
   name: {
@@ -15,27 +15,31 @@ export const FinishingMaterialsSchema = new Schema({
     ref: 'finishingmaterialcategory',
     required: false
   },
-  suppliers: [{
-    type: Schema.Types.ObjectId,
-    ref: 'shopregistration',
-    required: false
-  }],
-  images: {
-    type: [ImagesSchema],
+  suppliers: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'shopregistration',
+      required: false
+    }
+  ],
+  image: {
+    type: ImagesSchema,
     required: false
   },
-  price : {
+  price: {
     type: Number,
     required: false
   },
-   options: [{
-     optionName: String,
-     optionValues: String,
-   }],
-   varient : [Object],
+  options: [
+    {
+      optionName: String,
+      optionValues: String
+    }
+  ],
+  varient: [Object],
   status: {
     type: String,
     required: false,
     default: 'Active'
   }
-});
+})

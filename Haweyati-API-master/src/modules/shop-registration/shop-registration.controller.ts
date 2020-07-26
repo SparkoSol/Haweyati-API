@@ -1,118 +1,122 @@
 import {
-   Body,
-   Controller,
-   Patch,
-   Post,
-   UseInterceptors,
-   Get,
-   Param,
-   Res,
-   UploadedFile, HttpException, HttpStatus,
-} from '@nestjs/common';
-import {IShopRegistrationInterface} from "../../data/interfaces/shopRegistration.interface";
-import {ShopRegistrationService} from "./shop-registration.service";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { ImageController } from "../../common/lib/image.controller";
+  Body,
+  Controller,
+  Patch,
+  Post,
+  UseInterceptors,
+  Get,
+  Param,
+  Res,
+  UploadedFile,
+  HttpException,
+  HttpStatus
+} from '@nestjs/common'
+import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { ShopRegistrationService } from './shop-registration.service'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ImageController } from '../../common/lib/image.controller'
 
 @Controller('suppliers')
-export class ShopRegistrationController extends ImageController<IShopRegistrationInterface>{
-   constructor(
-      protected readonly service: ShopRegistrationService
-   ) {
-      super(service);
-   }
+//SimpleController<IShopRegistrationInterface>{
+export class ShopRegistrationController extends ImageController<
+  IShopRegistrationInterface
+> {
+  constructor(protected readonly service: ShopRegistrationService) {
+    super(service)
+  }
 
-   @Get('pending')
-   getPending(): Promise<IShopRegistrationInterface[]>{
-      return this.service.getPendingSuppliers();
-   }
+  @Get('pending')
+  getPending(): Promise<IShopRegistrationInterface[]> {
+    return this.service.getSuppliersByStatus('Pending')
+  }
 
-   @Get('available/:city')
-   async Get(@Param('city') city: string): Promise<any>{
-      return this.service.getDataFromCity(city);
-   }
+  @Get('available/:city')
+  async Get(@Param('city') city: string): Promise<any> {
+    return this.service.getAvailableServices(city)
+  }
 
-   @Get('getbyservice/:name')
-   async getByService(@Param('name') name: string): Promise<any>
-   {
-      return await this.service.getByService(name);
-   }
+  @Get('getbyservice/:name')
+  async getByService(@Param('name') name: string): Promise<any> {
+    return await this.service.getByService(name)
+  }
 
-   @Get('all')
-   async all(): Promise<IShopRegistrationInterface[]>{
-      return await this.service.fetchAll();
-   }
+  @Get('all')
+  async all(): Promise<IShopRegistrationInterface[]> {
+    return await this.service.fetchAll()
+  }
 
-   @Get('getrejected')
-   async getAllRejected(): Promise<any>{
-      return await this.service.getRejected();
-   }
+  @Get('getrejected')
+  async getAllRejected(): Promise<any> {
+    return this.service.getSuppliersByStatus('Rejected')
+  }
 
-   @Patch('getrejected/:id')
-   async getRejected(@Param('id') id: string): Promise<any>{
-      return await this.service.getRejected(id);
-   }
+  @Patch('getrejected/:id')
+  async getRejected(@Param('id') id: string): Promise<any> {
+    return this.service.changeSupplierStatus(id, 'Rejected')
+  }
 
-   @Get('getsubsuppliers/:id')
-   async subSuppliers(@Param('id') id: string): Promise<any>{
-      return this.service.getSubsuppliers(id);
-   }
+  @Get('getsubsuppliers/:id')
+  async subSuppliers(@Param('id') id: string): Promise<any> {
+    return this.service.getSubSuppliers(id)
+  }
 
-   @Post()
-   @UseInterceptors(FileInterceptor('image'))
-   async Post(@UploadedFile() image, @Body() data: any) {
-      console.log(image)
-      data.image = {
-         name : image.filename,
-         path : image.path
-      }
-      console.log(data.image)
-      data.city = 'Multan'
-      data.username = data.contact
+  @Patch('approve/:id')
+  approve(@Param('id') id: string): Promise<any> {
+    return this.service.changeSupplierStatus(id, 'Active')
+  }
 
+  @Patch()
+  @UseInterceptors(FileInterceptor('image'))
+  async Patch(@UploadedFile() file, @Body() data: any) {
+    const pro = await this.service.fetchFromContact(data.contact)
+    let person
 
-      const person = await this.service.addProfile(data);
-
-      if (person) {
-         data.location = {
-            latitude: 30.1575,
-            longitude : 71.5249,
-            address: data.address
-         }
-         data.person = person._id;
-         data.image = null
-
-
-         //TODO: Uncomment after implementation of maps on admin panel
-         // data.location = {
-         //    latitude: data.latitude,
-         //    longitude : data.longitude,
-         //    address: data.address
-         // }
-         // data.city = data.city
-
-         data.username = undefined;
-         console.log(data)
-         return super.post(image , data);
+    if (pro) {
+      if (pro._id === data.personID) {
+        person = {
+          _id: data.personID,
+          name: data.name,
+          email: data.email,
+          contact: data.contact,
+          username: data.contact
+        }
+        if (file) {
+          // @ts-ignore
+          person.image = {
+            name: file.filename,
+            path: file.path
+          }
+        }
       } else {
-         throw new HttpException("Contact Already exists", HttpStatus.NOT_ACCEPTABLE)
+        throw new HttpException(
+          'Contact Already Exists',
+          HttpStatus.NOT_ACCEPTABLE
+        )
       }
-   }
+    } else {
+      person = {
+        _id: data.personID,
+        name: data.name,
+        email: data.email,
+        contact: data.contact,
+        username: data.contact,
+        isVerified: false
+      }
+      if (file) {
+        // @ts-ignore
+        person.image = {
+          name: file.filename,
+          path: file.path
+        }
+      }
+    }
 
-   @Patch('getapproved/:id')
-   getApproved(@Param('id') id: string): Promise<any>{
-      return this.service.getApproved(id);
-   }
+    await this.service.updateProfile(person)
+    return this.service.change(data)
+  }
 
-   @Patch()
-   @UseInterceptors(FileInterceptor('image'))
-   Patch(@UploadedFile() image, @Body() data: any): Promise<IShopRegistrationInterface>{
-      return super.patch(image, data);
-   }
-
-   @Get('report')
-   async report(@Res() res) {
-      (await this.service.generateReport()).pipe(res);
-   }
-
+  @Get('report')
+  async report(@Res() res) {
+    ;(await this.service.generateReport()).pipe(res)
+  }
 }

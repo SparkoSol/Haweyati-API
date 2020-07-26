@@ -1,6 +1,6 @@
-import { Schema } from "mongoose";
-import { LocationSchema } from "./location.schema";
-import { ImagesSchema } from "./images.schema";
+import { Schema } from 'mongoose'
+import { LocationSchema } from './location.schema'
+import { ImagesSchema } from './images.schema'
 
 export const OrdersSchema = new Schema({
   service: {
@@ -8,14 +8,14 @@ export const OrdersSchema = new Schema({
     required: true
   },
   itemId: {
-    type: String,
-    required:false
+    type: Schema.Types.ObjectId,
+    required: false
   },
   dropoffLocation: {
     type: LocationSchema,
     required: true
   },
-  dropoffAddress : {
+  dropoffAddress: {
     type: String,
     required: false
   },
@@ -27,8 +27,13 @@ export const OrdersSchema = new Schema({
     type: String,
     required: false
   },
-  image : {
-    type: ImagesSchema,
+  images: {
+    type: [
+      {
+        ...ImagesSchema,
+        type: String
+      }
+    ],
     required: false
   },
   details: {
@@ -45,4 +50,4 @@ export const OrdersSchema = new Schema({
     required: false,
     default: 'Pending'
   }
-});
+})

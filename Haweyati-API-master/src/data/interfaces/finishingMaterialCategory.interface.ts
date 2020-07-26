@@ -1,9 +1,9 @@
-import {Document} from 'mongoose';
-import { IImage } from './image.interface';
+import { Document } from 'mongoose'
+import { IImage } from './image.interface'
 
-export interface IFinishingMaterialCategory extends Document{
-  name: string,
-  description: string,
-  images: IImage,
-  status : string
+export interface IFinishingMaterialCategory extends Document {
+  name: string
+  description: string
+  image: IImage
+  status: string
 }

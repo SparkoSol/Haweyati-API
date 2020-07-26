@@ -1,5 +1,5 @@
-import {Schema} from "mongoose";
-import { ImagesSchema } from './images.schema';
+import { Schema } from 'mongoose'
+import { ImagesSchema } from './images.schema'
 
 export const BuildingMaterialCategorySchema = new Schema({
   name: {
@@ -10,7 +10,7 @@ export const BuildingMaterialCategorySchema = new Schema({
     type: String,
     required: true
   },
-  images: {
+  image: {
     type: ImagesSchema,
     required: true
   },
@@ -19,4 +19,4 @@ export const BuildingMaterialCategorySchema = new Schema({
     required: false,
     default: 'Active'
   }
-});
+})

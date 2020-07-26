@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 import {IPerson} from './person.interface';
 import { IVehicles } from './vehicles.interface';
-import { IShopRegistrationInterface } from './shopRegistration.interface';
+import { IShopRegistrationInterface } from './shop-registration.interface';
 import { ILocation } from './location.interface';
 
 export interface IDriversInterface extends Document{

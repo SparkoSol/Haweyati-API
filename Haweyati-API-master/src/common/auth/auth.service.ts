@@ -14,7 +14,6 @@ export class AuthService {
 
     if (user && user.password === pass) {
       user.password = undefined
-
       return user
     }
 
@@ -33,5 +32,4 @@ export class AuthService {
   async profile(user: any) {
     return await this.usersService.fetch(user.userId)
   }
-
 }

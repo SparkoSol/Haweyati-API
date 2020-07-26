@@ -1,5 +1,5 @@
 import { Document as d } from "mongoose";
-import { IShopRegistrationInterface as shop} from "./shopRegistration.interface";
+import { IShopRegistrationInterface as shop} from "./shop-registration.interface";
 
 export interface IServicesRequests extends d {
    suppliers : shop | string

@@ -1,59 +1,89 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFiles, UseInterceptors } from "@nestjs/common";
-import {SimpleController} from "../../common/lib/simple.controller";
-import {IBuildingMaterialsInterface} from "../../data/interfaces/buildingMaterials.interface";
-import {BuildingMaterialsService} from "./building-materials.service";
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors
+} from '@nestjs/common'
+import { IBuildingMaterialsInterface } from '../../data/interfaces/buildingMaterials.interface'
+import { BuildingMaterialsService } from './building-materials.service'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ImageController } from '../../common/lib/image.controller'
 
 @Controller('building-materials')
-export class BuildingMaterialsController extends SimpleController<IBuildingMaterialsInterface>{
-   constructor(protected readonly service: BuildingMaterialsService) {
-      super(service);
-   }
-   @Post()
-   @UseInterceptors(FilesInterceptor('images'))
-   postOverride(@UploadedFiles() files, @Body() buildingMaterial: any) {
-      if (Array.isArray(buildingMaterial.city)) {
-         const list = []
-         for (let i = 0; i < buildingMaterial.city.length; ++i) {
-            list.push({
-               city: buildingMaterial.city[i],
-               price: buildingMaterial.price[i]
-            })
-         }
-         buildingMaterial.pricing = list;
-      } else {
-         buildingMaterial.pricing = [{
-            city: buildingMaterial.city,
-            price: buildingMaterial.price
-         }];
+export class BuildingMaterialsController extends ImageController<
+  IBuildingMaterialsInterface
+> {
+  constructor(protected readonly service: BuildingMaterialsService) {
+    super(service)
+  }
+  private parseData(buildingMaterial: any) {
+    if (Array.isArray(buildingMaterial.city)) {
+      const list = []
+      for (let i = 0; i < buildingMaterial.city.length; ++i) {
+        list.push({
+          city: buildingMaterial.city[i],
+          price: buildingMaterial.price[i]
+        })
       }
-      buildingMaterial.images = files?.map(file => ({
-         name: file.filename,
-         path: file.path
-      }))
-      return this.service.create(buildingMaterial);
-   }
+      buildingMaterial.pricing = list
+    } else {
+      buildingMaterial.pricing = [
+        {
+          city: buildingMaterial.city,
+          price: buildingMaterial.price
+        }
+      ]
+    }
+    return buildingMaterial
+  }
 
-   @Get('getbyparent/:id')
-   getByParentId(@Param('id') id: string): Promise<IBuildingMaterialsInterface[] | IBuildingMaterialsInterface> {
-      return this.service.fetchByParentId(id);
-   }
+  @Post()
+  @UseInterceptors(FileInterceptor('image'))
+  post(@UploadedFile() file, @Body() buildingMaterial: any) {
+    buildingMaterial = this.parseData(buildingMaterial)
+    return super.post(file, buildingMaterial)
+  }
 
-   @Get('available')
-   async Get(@Query() data): Promise<any>{
-      return await this.service.getByCity(data.city, data.parent);
-   }
+  @Patch()
+  @UseInterceptors(FileInterceptor('image'))
+  patch(
+    @UploadedFile() file,
+    buildingMaterial: any
+  ): Promise<IBuildingMaterialsInterface> {
+    console.log(buildingMaterial)
+    console.log(file)
+    buildingMaterial = this.parseData(buildingMaterial)
+    console.log(buildingMaterial)
+    return super.patch(file, buildingMaterial)
+  }
 
-   //Admin Panel
-   @Get('fromsupplier/:id')
-   async fromSupplier(@Param('id') id: string): Promise<any> {
-      return await this.service.getSuppliers(id);
-   }
+  @Get('getbyparent/:id')
+  getByParentId(
+    @Param('id') id: string
+  ): Promise<IBuildingMaterialsInterface[] | IBuildingMaterialsInterface> {
+    return this.service.fetchByParentId(id)
+  }
 
-   //Deleting Building Material Category here because circular dependencies are not allowed
-   @Delete('deletecategory/:id')
-   async deleteCategory(@Param('id') id: string): Promise<any>{
-      return await this.service.deleteCategory(id);
-   }
+  @Get('available')
+  async Get(@Query() data): Promise<any> {
+    return await this.service.getByCity(data.city, data.parent)
+  }
 
+  //Admin Panel
+  @Get('fromsupplier/:id')
+  async fromSupplier(@Param('id') id: string): Promise<any> {
+    return await this.service.getSuppliers(id)
+  }
+
+  //Deleting Building Material Category here because circular dependencies are not allowed
+  @Delete('deletecategory/:id')
+  async deleteCategory(@Param('id') id: string): Promise<any> {
+    return await this.service.deleteCategory(id)
+  }
 }

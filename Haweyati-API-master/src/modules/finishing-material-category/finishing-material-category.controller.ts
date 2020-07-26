@@ -1,24 +1,14 @@
-import { Body, Controller, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
-import { SimpleController } from '../../common/lib/simple.controller';
-import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface';
-import { FinishingMaterialCategoryService } from './finishing-material-category.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller } from '@nestjs/common'
+import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
+import { FinishingMaterialCategoryService } from './finishing-material-category.service'
+import { ImageController } from '../../common/lib/image.controller'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('finishing-material-category')
-export class FinishingMaterialCategoryController extends SimpleController<IFinishingMaterialCategory>{
+export class FinishingMaterialCategoryController extends ImageController<
+  IFinishingMaterialCategory
+> {
   constructor(protected readonly service: FinishingMaterialCategoryService) {
-    super(service);
+    super(service)
   }
-
-  @Post()
-  @UseInterceptors(FileInterceptor('images'))
-  postOverride(@UploadedFile() file, @Body() finishingMaterialCategory: any) {
-    finishingMaterialCategory.images = [file].map(file1 => ({
-      name: file1.filename,
-      path: file1.path
-    }))
-
-    return this.service.create(finishingMaterialCategory);
-  }
-
 }

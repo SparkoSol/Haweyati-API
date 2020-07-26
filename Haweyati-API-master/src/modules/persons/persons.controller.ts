@@ -12,10 +12,9 @@ export class PersonsController extends ImageController<IPerson> {
 
    @Post()
    @UseInterceptors(FileInterceptor('image'))
-   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
    async post(@UploadedFile() file, @Body() person: any): Promise<any>{
       person.username = person.contact
-      return  super.post(file, person)
+      return super.post(file, person)
    }
 
 }
