@@ -1,13 +1,16 @@
-import { Schema } from "mongoose";
+import { Schema } from 'mongoose'
 
-export const FcmPendingSchema = new Schema({
-   person : {
+export const FcmPendingSchema = new Schema(
+  {
+    person: {
       type: Schema.Types.ObjectId,
-      ref : 'persons',
+      ref: 'persons',
       required: true
-   },
-   messages : {
+    },
+    messages: {
       type: [String],
-      required : true
-   }
-});
+      required: true
+    }
+  },
+  { timestamps: true }
+)

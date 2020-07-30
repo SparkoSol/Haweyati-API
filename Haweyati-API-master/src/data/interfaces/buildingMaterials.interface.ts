@@ -9,6 +9,14 @@ export interface IBuildingMaterialsInterface extends Document {
   parent: IBuildingMaterialCategory
   suppliers: IShopRegistrationInterface[]
   image: IImage
-  pricing: [{ city: string }, { price: number }]
+  price12yard: number
+  price20yard: number
+  pricing: [
+    {
+      city: string
+      price12yard: number
+      price20yard: number
+    }
+  ]
   status: string
 }

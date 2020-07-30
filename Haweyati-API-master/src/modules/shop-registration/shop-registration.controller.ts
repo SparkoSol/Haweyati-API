@@ -70,9 +70,8 @@ export class ShopRegistrationController extends ImageController<
   async Patch(@UploadedFile() file, @Body() data: any) {
     const pro = await this.service.fetchFromContact(data.contact)
     let person
-
     if (pro) {
-      if (pro._id === data.personID) {
+      if (pro._id == data.personID) {
         person = {
           _id: data.personID,
           name: data.name,

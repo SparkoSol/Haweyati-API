@@ -8,7 +8,6 @@ import {
   Post,
   Query,
   UploadedFile,
-  UploadedFiles,
   UseInterceptors
 } from '@nestjs/common'
 import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
@@ -24,7 +23,7 @@ export class FinishingMaterialsController extends ImageController<
     super(service)
   }
 
-  private parseData(finishingMaterial: any) {
+  protected parseData(finishingMaterial: any) {
     if (finishingMaterial.price == '0') {
       let option = []
       if (Array.isArray(finishingMaterial.optionName)) {
@@ -73,6 +72,9 @@ export class FinishingMaterialsController extends ImageController<
       }
 
       finishingMaterial.varient = pricing
+    } else {
+      finishingMaterial.varient = []
+      finishingMaterial.options = []
     }
     return finishingMaterial
   }
@@ -87,7 +89,6 @@ export class FinishingMaterialsController extends ImageController<
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
   patch(@UploadedFile() file, @Body() finishingMaterial: any) {
-    // console.log(finishingMaterial)
     finishingMaterial = this.parseData(finishingMaterial)
     return super.patch(file, finishingMaterial)
   }

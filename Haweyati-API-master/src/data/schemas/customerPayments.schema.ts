@@ -1,5 +1,3 @@
-import {Schema} from "mongoose";
+import { Schema } from 'mongoose'
 
-export const CustomerPaymentsSchema = new Schema({
-
-});
+export const CustomerPaymentsSchema = new Schema({}, { timestamps: true })

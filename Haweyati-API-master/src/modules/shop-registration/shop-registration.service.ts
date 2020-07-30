@@ -45,9 +45,7 @@ export class ShopRegistrationService extends SimpleService<
   async create(document: any): Promise<IShopRegistrationInterface> {
     document.city = 'Multan'
     document.username = document.contact
-
-    document.person = await this.addProfile(document)
-
+    document.person = await this.personService.create(document)
     if (document.person) {
       document.location = {
         latitude: 30.1575,
@@ -69,20 +67,6 @@ export class ShopRegistrationService extends SimpleService<
 
   async updateProfile(data: any) {
     return await this.personService.change(data)
-  }
-
-  async addProfile(data: any): Promise<any> {
-    const profile = await this.fetchFromContact(data.contact)
-    if (profile) {
-      if (profile.scope.includes('supplier')) return null
-      else {
-        profile.scope.push('supplier')
-        await this.personService.change(profile)
-      }
-    } else {
-      data.scope = ['supplier']
-      return await this.personService.create(data)
-    }
   }
 
   async fetchAll(): Promise<any> {

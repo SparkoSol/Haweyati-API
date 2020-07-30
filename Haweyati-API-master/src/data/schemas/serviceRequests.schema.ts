@@ -1,26 +1,29 @@
-import {Schema} from "mongoose";
+import { Schema } from 'mongoose'
 
-export const ServicesRequestsSchema = new Schema({
-   suppliers: {
+export const ServicesRequestsSchema = new Schema(
+  {
+    suppliers: {
       type: Schema.Types.ObjectId,
       ref: 'shopregistration',
       required: false
-   },
-   type : {
+    },
+    type: {
       type: String,
       required: true
-   },
-   data : {
-      type : Object,
+    },
+    data: {
+      type: Object,
       required: false
-   },
-   status: {
+    },
+    status: {
       type: String,
       required: false,
       default: 'Pending'
-   },
-   note : {
+    },
+    note: {
       type: String,
       required: false
-   }
-});
+    }
+  },
+  { timestamps: true }
+)

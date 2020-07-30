@@ -28,7 +28,8 @@ export class BuildingMaterialsController extends ImageController<
       for (let i = 0; i < buildingMaterial.city.length; ++i) {
         list.push({
           city: buildingMaterial.city[i],
-          price: buildingMaterial.price[i]
+          price12yard: buildingMaterial.price12yard[i],
+          price20yard: buildingMaterial.price20yard[i]
         })
       }
       buildingMaterial.pricing = list
@@ -36,7 +37,8 @@ export class BuildingMaterialsController extends ImageController<
       buildingMaterial.pricing = [
         {
           city: buildingMaterial.city,
-          price: buildingMaterial.price
+          price12yard: buildingMaterial.price12yard,
+          price20yard: buildingMaterial.price20yard
         }
       ]
     }
@@ -46,6 +48,7 @@ export class BuildingMaterialsController extends ImageController<
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   post(@UploadedFile() file, @Body() buildingMaterial: any) {
+    console.log(buildingMaterial)
     buildingMaterial = this.parseData(buildingMaterial)
     return super.post(file, buildingMaterial)
   }

@@ -11,4 +11,10 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
   ) {
     super(model)
   }
+
+  fetch(id?: string): Promise<IOrdersInterface[] | IOrdersInterface> {
+    if (id) {
+      return await this.model.findById(id).populate('persons')
+    }
+  }
 }

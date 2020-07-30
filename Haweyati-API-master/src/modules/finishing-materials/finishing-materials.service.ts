@@ -104,4 +104,5 @@ export class FinishingMaterialsService extends SimpleService<
     }
     return 'Category Deleted'
   }
+
 }
