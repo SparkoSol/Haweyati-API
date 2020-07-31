@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   UploadedFile,
   UseInterceptors
@@ -9,6 +10,8 @@ import { SimpleController } from '../../common/lib/simple.controller'
 import { IOrdersInterface } from '../../data/interfaces/orders.interface'
 import { OrdersService } from './orders.service'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { ExtractJwt } from 'passport-jwt'
+import fromAuthHeaderWithScheme = ExtractJwt.fromAuthHeaderWithScheme
 
 @Controller('orders')
 export class OrdersController extends SimpleController<IOrdersInterface> {
@@ -33,5 +36,14 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
       dropoffTime: data.dropoffTime
     }
     return super.post(data)
+  }
+
+  @Get('range')
+  async getByDateRange(@Body() data: any): Promise<IOrdersInterface[]> {
+    return await this.service.getByDateRange(data.min, data.max)
+  }
+  @Get('range/:date')
+  async getByDate(@Body() data: any): Promise<IOrdersInterface[]> {
+    return await this.service.getByDateRange(data.min, data.max)
   }
 }

@@ -1,5 +1,4 @@
 import { Schema } from 'mongoose'
-import { LocationSchema } from './location.schema'
 import { ImagesSchema } from './images.schema'
 import { DropoffDetailsSchema } from './dropoffDetails'
 
@@ -25,7 +24,7 @@ export const OrdersSchema = new Schema(
     },
     customer: {
       type: Schema.Types.ObjectId,
-      Ref: 'customers',
+      ref: 'customers',
       required: true
     },
     status: {

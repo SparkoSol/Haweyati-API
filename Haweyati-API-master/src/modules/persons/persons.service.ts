@@ -33,10 +33,12 @@ export class PersonsService extends SimpleService<any> {
   async fetch(id?: string): Promise<IPerson[] | IPerson> {
     if (id) {
       const data = await this.model.findById(id).exec()
+      console.log(data)
       data.password = ''
       return data
     } else {
       const all = await this.model.find().exec()
+
       for (let data of all) {
         data.password = ''
       }
