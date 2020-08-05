@@ -30,7 +30,7 @@ export const OrdersSchema = new Schema(
     status: {
       type: String,
       required: false,
-      default: 'Pending'
+      default: 'pending'
     },
     paymentType: {
       type: String,

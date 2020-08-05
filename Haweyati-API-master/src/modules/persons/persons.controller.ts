@@ -20,8 +20,6 @@ export class PersonsController extends ImageController<IPerson> {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async post(@UploadedFile() file, @Body() person: any): Promise<any> {
-    console.log('Person Controller')
-    console.log(person)
     person.username = person.contact
     return super.post(file, person)
   }
@@ -29,9 +27,8 @@ export class PersonsController extends ImageController<IPerson> {
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
   async patch(@UploadedFile() file, @Body() person: any): Promise<any> {
-    console.log('Person Controller')
-    console.log(person)
     person.username = person.contact
+    person.isVerified = undefined
     return super.patch(file, person)
   }
 }

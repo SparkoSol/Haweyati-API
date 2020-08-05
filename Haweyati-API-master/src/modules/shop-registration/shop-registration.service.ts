@@ -3,11 +3,10 @@ import { SimpleService } from '../../common/lib/simple.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-// import {Client} from "@googlemaps/google-maps-services-js";
-// import { computeDistanceBetween, LatLng } from 'spherical-geometry-js';
 import { ReportUtils } from '../../common/lib/report-utils'
 import { PersonsService } from '../persons/persons.service'
 import { IPerson } from '../../data/interfaces/person.interface'
+import { LocationUtils } from '../../common/lib/location-utils'
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<
@@ -43,26 +42,41 @@ export class ShopRegistrationService extends SimpleService<
   }
 
   async create(document: any): Promise<IShopRegistrationInterface> {
-    document.city = 'Multan'
     document.username = document.contact
     document.person = await this.personService.create(document)
-    if (document.person) {
-      document.location = {
-        latitude: 30.1575,
-        longitude: 71.5249,
-        address: document.address
-      }
+
+    document.location = {
+      latitude: document.latitude,
+      longitude: document.longitude,
+      address: await LocationUtils.getAddress(
+        document.latitude,
+        document.longitude
+      )
     }
 
-    //TODO: Uncomment after implementation of maps on admin panel
-    // document.location = {
-    //    latitude: document.latitude,
-    //    longitude : document.longitude,
-    //    address: document.address
-    // }
-    // document.city = document.city
+    document.city = await LocationUtils.getCity(
+      document.latitude,
+      document.longitude
+    )
 
     return super.create(document)
+  }
+
+  async change(document: any): Promise<IShopRegistrationInterface> {
+    document.location = {
+      latitude: document.latitude,
+      longitude: document.longitude,
+      address: await LocationUtils.getAddress(
+        document.latitude,
+        document.longitude
+      )
+    }
+    document.city = await LocationUtils.getCity(
+      document.latitude,
+      document.longitude
+    )
+
+    return super.change(document)
   }
 
   async updateProfile(data: any) {
@@ -141,37 +155,6 @@ export class ShopRegistrationService extends SimpleService<
 
     return Array.from(newSet)
   }
-
-  // getDistance(p1lat: any, p1lng: any, p2lat: any, p2lng: any){
-  //    try {
-  //       const p1latlng = new LatLng(p1lat, p1lng)
-  //       const p2latlng = new LatLng(p2lat, p2lng)
-  //       console.log(((computeDistanceBetween(p1latlng, p2latlng))/1000).toFixed(2) + 'KM')
-  //    }
-  //    catch (e) {
-  //       console.log("Can't find distance")
-  //    }
-  // }
-  // async getLocationData(lat: any, lng: any): Promise<any> {
-  //    const client = new Client({});
-  //
-  //    let location = null;
-  //    try {
-  //       location = await client.reverseGeocode({
-  //          params: {
-  //             latlng: [lat, lng],
-  //             // key: process.env.GOOGLE_MAPS_API_KEY,
-  //             key: 'AIzaSyDSz2Q7d49FVjGoAW2k8eWFXSdQbbipVc8',
-  //          },
-  //          timeout: 1000, // milliseconds
-  //       })
-  //    } catch (e) {
-  //       console.log(e.response)
-  //       console.log(e.response.data.error_message);
-  //    }
-  //    const n = location?.data?.results[0]?.address_components.length
-  //    return location?.data?.results[0]?.address_components[n-3]?.long_name
-  // }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async generateReport() {

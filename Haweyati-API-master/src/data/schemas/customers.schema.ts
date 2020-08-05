@@ -20,7 +20,7 @@ export const CustomersSchema = new Schema(
     message: {
       type: String,
       required: false,
-      default: 'Reason for customer rejection'
+      default: 'No Reason given by administrator'
     }
   },
   { timestamps: true }

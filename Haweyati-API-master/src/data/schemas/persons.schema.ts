@@ -9,10 +9,6 @@ export const PersonsSchema = new Schema(
       type: String
       // required: true
     },
-    isVerified: {
-      type: Boolean,
-      default: false
-    },
     scope: {
       type: [String]
     },

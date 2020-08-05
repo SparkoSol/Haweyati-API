@@ -20,10 +20,26 @@ export class PersonsService extends SimpleService<any> {
   async create(data: any): Promise<any> {
     const profile = await this.fetchFromContact(data.contact)
     if (profile) {
-      if (profile.scope.includes(data.scope[0])) return null
-      else {
-        profile.scope.push(data.scope[0])
-        return await this.change(profile)
+      if (Array.isArray(data.scope)) {
+        if (profile.scope.includes(data.scope[0])) {
+          throw new HttpException(
+            'Profile with this contact already exists!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+        } else {
+          profile.scope.push(data.scope[0])
+          return await this.change(profile)
+        }
+      } else {
+        if (profile.scope.includes(data.scope)) {
+          throw new HttpException(
+            'Profile with this contact already exists!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+        } else {
+          profile.scope.push(data.scope)
+          return await this.change(profile)
+        }
       }
     } else {
       return await super.create(data)
@@ -46,8 +62,8 @@ export class PersonsService extends SimpleService<any> {
     }
   }
 
-  fetchByUsername(name: string): Promise<IPerson> {
-    return this.model
+  async fetchByUsername(name: string): Promise<IPerson> {
+    return await this.model
       .findOne()
       .where('username', name)
       .exec()
@@ -65,6 +81,8 @@ export class PersonsService extends SimpleService<any> {
           HttpStatus.NOT_ACCEPTABLE
         )
       }
+    } else {
+      return await this.model.findByIdAndUpdate(document._id, document).exec()
     }
   }
 }

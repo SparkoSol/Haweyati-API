@@ -15,6 +15,7 @@ import { IShopRegistrationInterface } from '../../data/interfaces/shop-registrat
 import { ShopRegistrationService } from './shop-registration.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
+import { IPerson } from '../../data/interfaces/person.interface'
 
 @Controller('suppliers')
 //SimpleController<IShopRegistrationInterface>{

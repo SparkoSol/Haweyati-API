@@ -1,8 +1,16 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  UseInterceptors
+} from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { DriversService } from './drivers.service'
 import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('drivers')
 export class DriversController extends SimpleController<IDriversInterface> {
@@ -53,6 +61,12 @@ export class DriversController extends SimpleController<IDriversInterface> {
   async getCompanyDrivers(@Param('id') id: string): Promise<any> {
     return await this.service.getCompanyDrivers(id)
   }
+
+  @Get('getbyperson/:id')
+  async getByPersonId(@Param('id') id: string) {
+    return await this.service.getByPersonId(id)
+  }
+
   @Patch()
   async patch(@Body() data: any): Promise<IDriversInterface> {
     console.log(data)

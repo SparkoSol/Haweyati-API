@@ -4,14 +4,14 @@ import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
-// import { Client } from '@googlemaps/google-maps-services-js/dist';
 import { IRejectedDrivers } from '../../data/interfaces/rejectedDrivers.interface'
 import { PersonsService } from '../persons/persons.service'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriversInterface> {
   constructor(
-    @InjectModel('drivers') protected readonly model: Model<IDriversInterface>,
+    @InjectModel('drivers')
+    protected readonly model: Model<IDriversInterface>,
     @InjectModel('driverRequest')
     protected readonly requestModel: Model<IDriverRequest>,
     @InjectModel('driverRejection')
@@ -43,9 +43,8 @@ export class DriversService extends SimpleService<IDriversInterface> {
     }
   }
 
-  //2 requests from app, to persons and driver
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async create(document: any): Promise<IDriversInterface> {
+    console.log(document)
     document._id = undefined
     const data = await this.model.create(document)
     await this.requestModel.create({
@@ -54,29 +53,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
     })
     return data
   }
-
-  async change(document: IDriversInterface): Promise<IDriversInterface> {
-    return super.change(document)
-  }
-
-  // async getLocationData(lat: any, lng: any): Promise<any> {
-  //    const client = new Client({});
-  //
-  //    let location = null;
-  //    try {
-  //       location = await client.reverseGeocode({
-  //          params: {
-  //             latlng: [lat, lng],
-  //             key: process.env.GOOGLE_MAPS_API_KEY,
-  //          },
-  //          timeout: 1000, // milliseconds
-  //       })
-  //    } catch (e) {
-  //       console.log(e.response)
-  //    }
-  //    const n = location?.data?.results[0]?.address_components.length
-  //    return location?.data?.results[0]?.address_components[n-3]?.long_name
-  // }
 
   async getRequests(): Promise<IDriverRequest[]> {
     // eslint-disable-next-line prefer-const
@@ -170,6 +146,13 @@ export class DriversService extends SimpleService<IDriversInterface> {
       .find()
       .where('supplier', id)
       .populate('profile')
+      .exec()
+  }
+
+  async getByPersonId(id: string) {
+    return await this.model
+      .findOne({ profile: id })
+      .populate('persons')
       .exec()
   }
 }

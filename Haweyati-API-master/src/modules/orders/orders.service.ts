@@ -54,4 +54,22 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
     }
     return all
   }
+
+  async updateStatus(id: string, status: string) {
+    return await this.model
+      .findByIdAndUpdate(id, { status })
+      .populate('customer')
+      .exec()
+  }
+
+  async getByStatus(status: string) {
+    const all = await this.model
+      .find({ status })
+      .populate('customer')
+      .exec()
+    for (let data of all) {
+      data = await this.getPerson(data)
+    }
+    return all
+  }
 }

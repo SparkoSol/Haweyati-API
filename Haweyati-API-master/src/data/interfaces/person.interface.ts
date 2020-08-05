@@ -5,7 +5,6 @@ export interface IPerson extends IUser {
   name: string
   contact: string
   email: string
-  isVerified: boolean
   image: IImage
   scope: [string]
 }

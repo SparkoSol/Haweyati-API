@@ -1,5 +1,6 @@
 import { Schema } from 'mongoose'
 import { VehiclesSchema } from './vehicles.schema'
+import { LocationSchema } from './location.schema'
 
 export const DriversSchema = new Schema(
   {
@@ -16,6 +17,10 @@ export const DriversSchema = new Schema(
     license: {
       type: String,
       required: true
+    },
+    location: {
+      type: LocationSchema,
+      required: false
     },
     city: String,
     vehicle: VehiclesSchema,
