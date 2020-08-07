@@ -1,7 +1,7 @@
 import { IPerson } from 'src/data/interfaces/person.interface'
 import {
   Body,
-  Controller,
+  Controller, Get,
   Patch,
   Post,
   UploadedFile,
@@ -20,7 +20,6 @@ export class PersonsController extends ImageController<IPerson> {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async post(@UploadedFile() file, @Body() person: any): Promise<any> {
-    person.username = person.contact
     return super.post(file, person)
   }
 
@@ -31,4 +30,21 @@ export class PersonsController extends ImageController<IPerson> {
     person.isVerified = undefined
     return super.patch(file, person)
   }
+
+  @Post('forgotpassword')
+  async forgotPassword(@Body() data: any) {
+    return await this.service.forgotPassword(data.email)
+  }
+
+  @Post('resetpassword')
+  async changePassword(@Body() data: any): Promise<any> {
+    console.log(data)
+    return await this.service.changePassword(data)
+  }
+
+  @Get('persons-notification')
+  async getExceptAdmin(): Promise<IPerson[]>{
+    return await this.service.exceptAdmin();
+  }
+
 }

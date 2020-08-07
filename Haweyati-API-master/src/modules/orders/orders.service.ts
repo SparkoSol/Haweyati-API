@@ -24,6 +24,15 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
     return data
   }
 
+  create(document: IOrdersInterface): Promise<IOrdersInterface> {
+
+    return super.create(document)
+  }
+
+  async getByCustomerId(id: string): Promise<IOrdersInterface[]>{
+    return await this.model.find({customer: id}).exec()
+  }
+
   async fetch(id?: string): Promise<IOrdersInterface[] | IOrdersInterface> {
     if (id) {
       let data = await this.model

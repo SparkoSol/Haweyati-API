@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
-import { PersonsController } from './persons.controller';
-import { PersonsService } from './persons.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { PersonsSchema } from 'src/data/schemas/persons.schema';
-import { MulterModule } from '@nestjs/platform-express';
+import { Module } from '@nestjs/common'
+import { PersonsController } from './persons.controller'
+import { PersonsService } from './persons.service'
+import { MongooseModule } from '@nestjs/mongoose'
+import { PersonsSchema } from 'src/data/schemas/persons.schema'
+import { MulterModule } from '@nestjs/platform-express'
+import { AdminForgotPasswordSchema } from '../../data/schemas/adminForgotPassword.schema'
 
 @Module({
   imports: [
@@ -11,10 +12,14 @@ import { MulterModule } from '@nestjs/platform-express';
       {
         name: 'persons',
         schema: PersonsSchema
+      },
+      {
+        name: 'forgotpassword',
+        schema: AdminForgotPasswordSchema
       }
     ]),
     MulterModule.register({
-      dest: '../uploads',
+      dest: '../uploads'
     })
   ],
   controllers: [PersonsController],

@@ -1,7 +1,10 @@
 import {Document} from "mongoose";
-import { IFcm } from "./fcm.interface";
+import { IPerson } from './person.interface'
 
 export interface IFcmMessages extends Document{
-   token : IFcm
-   message : string
+   person : IPerson[]
+   message : {
+      title: string,
+      body : string
+   }
 }

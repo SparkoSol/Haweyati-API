@@ -34,6 +34,9 @@ export abstract class ImageController<T extends Document> {
         name: file.filename,
         path: file.path
       }
+    } else {
+      // @ts-ignore
+      data.image = undefined
     }
 
     return this.service.create(data)

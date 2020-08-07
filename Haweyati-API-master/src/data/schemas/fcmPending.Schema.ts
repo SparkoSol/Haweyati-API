@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose'
+import { strict } from 'assert'
 
 export const FcmPendingSchema = new Schema(
   {
@@ -7,10 +8,10 @@ export const FcmPendingSchema = new Schema(
       ref: 'persons',
       required: true
     },
-    messages: {
-      type: [String],
-      required: true
-    }
+    messages: [{
+      title: String,
+      body : String
+    }]
   },
   { timestamps: true }
 )

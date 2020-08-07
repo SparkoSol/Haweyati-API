@@ -19,6 +19,11 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
     super(service)
   }
 
+  @Get('getbycustomer/:id')
+  async getByCustomerId(@Param('id') id: string): Promise<IOrdersInterface[]>{
+    return await this.service.getByCustomerId(id);
+  }
+
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   postOverride(

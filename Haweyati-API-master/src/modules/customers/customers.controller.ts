@@ -4,9 +4,6 @@ import {
   Get,
   Param,
   Patch,
-  Post,
-  UploadedFile,
-  UseInterceptors
 } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
@@ -14,13 +11,36 @@ import { CustomersService } from './customers.service'
 
 @Controller('customers')
 export class CustomersController extends SimpleController<ICustomerInterface> {
-  constructor(protected readonly service: CustomersService) {
+  constructor(
+    protected readonly service: CustomersService
+  )
+  {
     super(service)
+  }
+
+  @Get('getactive')
+  async getActive(): Promise<any> {
+    return await this.service.fetch()
+  }
+
+  @Get('getactive/:id')
+  async getActiveById(@Param('id') id: string): Promise<any> {
+    return await this.service.fetch(id)
   }
 
   @Get('getblocked')
   async getAllBlocked(): Promise<any> {
     return await this.service.getBlocked()
+  }
+
+  @Get('getall')
+  async getAll(): Promise<ICustomerInterface[] | ICustomerInterface>{
+    return await this.service.getAll();
+  }
+
+  @Get('getall/:id')
+  async getById(@Param('id') id: string): Promise<ICustomerInterface[] | ICustomerInterface>{
+    return await this.service.getAll(id);
   }
 
   @Get('getprofile/:contact')

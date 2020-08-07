@@ -2,10 +2,10 @@
 
 export const LocationSchema = {
   latitude: {
-    type: String,
+    type: Number,
   },
   longitude: {
-    type: String,
+    type: Number,
   },
   address : {
     type: String,

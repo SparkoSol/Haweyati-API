@@ -57,28 +57,14 @@ export class DriversService extends SimpleService<IDriversInterface> {
   async getRequests(): Promise<IDriverRequest[]> {
     // eslint-disable-next-line prefer-const
     let requests = await this.requestModel.find({ status: 'Pending' }).exec()
-    // eslint-disable-next-line prefer-const
-    let result = []
+
     for (let i = 0; i < requests.length; i++) {
-      const data = (await this.fetch(
+      requests[i].driver = (await this.fetch(
         requests[i].driver.toString()
       )) as IDriversInterface
-
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (data && data.length > 0) {
-        const { driver, ...others } = requests[i]
-
-        result.push({
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          ...others._doc,
-          driver: data[0]
-        })
-      }
     }
 
-    return result
+    return requests
   }
 
   async getVerified(id?: string): Promise<any> {
@@ -152,7 +138,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
   async getByPersonId(id: string) {
     return await this.model
       .findOne({ profile: id })
-      .populate('persons')
+      .populate('profile')
       .exec()
   }
 }

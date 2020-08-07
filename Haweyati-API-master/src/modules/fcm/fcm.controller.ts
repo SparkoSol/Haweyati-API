@@ -1,7 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { IFcm } from '../../data/interfaces/fcm.interface'
 import { FcmService } from './fcm.service'
+import { IFcmMessages } from '../../data/interfaces/fcmMessages.interface'
 
 @Controller('fcm')
 export class FcmController extends SimpleController<IFcm> {
@@ -14,4 +15,10 @@ export class FcmController extends SimpleController<IFcm> {
   async notification(@Body() data: any) {
     return await this.service.notification(data)
   }
+
+  @Get('get-history')
+  async getFcmHistory(): Promise<IFcmMessages[]>{
+    return await this.service.getFcmHistory();
+  }
+
 }

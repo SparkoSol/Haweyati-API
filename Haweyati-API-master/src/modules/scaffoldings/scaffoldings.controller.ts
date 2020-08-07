@@ -10,4 +10,10 @@ export class ScaffoldingsController extends SimpleController<
   constructor(protected readonly service: ScaffoldingsService) {
     super(service)
   }
+
+  @Get('getbysupplier/:id')
+  async getBySupplier(@Param('id') id: string): Promise<IScaffoldingsInterface>{
+    return await this.service.getSuppliers(id)
+  }
+
 }

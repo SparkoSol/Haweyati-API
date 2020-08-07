@@ -1,14 +1,14 @@
 import { Schema } from "mongoose";
 
 export const FcmMessagesSchema = new Schema({
-   token : {
+   person : [{
       type : Schema.Types.ObjectId,
-      ref : 'fcm',
+      ref : 'persons',
       required: true
-   },
+   }],
    message : {
-      type: String,
-      required: true
+      title: String,
+      body : String
    },
 
 }, {

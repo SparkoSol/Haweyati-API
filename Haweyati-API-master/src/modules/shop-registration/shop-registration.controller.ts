@@ -36,6 +36,11 @@ export class ShopRegistrationController extends ImageController<
     return this.service.getAvailableServices(city)
   }
 
+  @Get('getbyprofile/:id')
+  async getByProfile(@Param('id') id: string): Promise<IShopRegistrationInterface>{
+    return await this.service.getByProfile(id);
+  }
+
   @Get('getbyservice/:name')
   async getByService(@Param('name') name: string): Promise<any> {
     return await this.service.getByService(name)

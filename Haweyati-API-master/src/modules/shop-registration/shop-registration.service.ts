@@ -156,6 +156,10 @@ export class ShopRegistrationService extends SimpleService<
     return Array.from(newSet)
   }
 
+  async getByProfile(id: string): Promise<IShopRegistrationInterface>{
+    return await this.model.findOne({person: id}).populate('person').exec()
+  }
+
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async generateReport() {
     return ReportUtils.renderReport('SupplierReport.odt', await this.fetch())

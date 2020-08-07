@@ -5,6 +5,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { FcmSchema } from "../../data/schemas/fcm.Schema";
 import { FcmMessagesSchema } from "../../data/schemas/fcmMessages.Schema";
 import { FcmPendingSchema } from "../../data/schemas/fcmPending.Schema";
+import { PersonsModule } from '../persons/persons.module'
 
 @Module({
   imports : [
@@ -13,7 +14,8 @@ import { FcmPendingSchema } from "../../data/schemas/fcmPending.Schema";
         {name : 'fcm-messages', schema: FcmMessagesSchema},
         {name : 'fcm-pending', schema: FcmPendingSchema}
      ]),
-     HttpModule
+     HttpModule,
+    PersonsModule
     ],
   providers: [FcmService],
   controllers: [FcmController]
