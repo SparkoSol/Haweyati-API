@@ -7,4 +7,5 @@ export interface IServicesRequests extends d {
    type : string
    status : string
    note : string
+   requestNo : string
 }

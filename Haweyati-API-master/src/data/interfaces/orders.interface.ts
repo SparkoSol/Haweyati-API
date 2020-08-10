@@ -7,10 +7,17 @@ import { IDropoffDetails } from './dropoffDetails.interface'
 export interface IOrdersInterface extends Document {
   service: string
   dropoff: IDropoffDetails
-  image: IImage
+  image: [{
+    name: string,
+    path: string,
+    sort: string
+  }]
   details: any
   customer: ICustomerInterface | string
   status: string
   paymentType: string
   paymentIntentId: string
+  note: string
+  orderNo : string
+  city: string
 }

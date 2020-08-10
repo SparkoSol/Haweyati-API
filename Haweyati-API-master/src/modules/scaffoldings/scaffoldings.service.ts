@@ -5,7 +5,6 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
-import { IBuildingMaterialCategory } from '../../data/interfaces/buildingMaterialCategory.interface'
 
 @Injectable()
 export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
@@ -44,13 +43,10 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
   async getSuppliers(id: string): Promise<any> {
     const dump = await this.model.find().exec()
     const result = []
-    console.log(id)
-    console.log(dump)
     for (const item of dump) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (item.suppliers.includes(id)) {
-        console.log(item)
         result.push(item)
       }
     }

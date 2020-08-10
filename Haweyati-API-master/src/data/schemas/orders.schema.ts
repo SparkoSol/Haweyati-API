@@ -6,26 +6,23 @@ export const OrdersSchema = new Schema(
   {
     service: {
       type: String,
-      required: true
-    },
-    image: {
-      type: {
-        ...ImagesSchema,
-        type: String
-      },
       required: false
     },
+    image: [{
+        ...ImagesSchema,
+        sort: String
+    }],
     dropoff: {
       type: DropoffDetailsSchema
     },
     details: {
       type: Object,
-      required: true
+      required: false
     },
     customer: {
       type: Schema.Types.ObjectId,
       ref: 'customers',
-      required: true
+      required: false
     },
     status: {
       type: String,
@@ -34,11 +31,23 @@ export const OrdersSchema = new Schema(
     },
     paymentType: {
       type: String,
-      required: true
+      required: false
     },
     paymentIntentId: {
       type: String,
       required: false
+    },
+    note: {
+      type: String,
+      required: false
+    },
+    orderNo: {
+      type: String,
+      required: true
+    },
+    city: {
+      type: String,
+      required: true
     }
   },
   { timestamps: true }

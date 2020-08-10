@@ -88,4 +88,44 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
       return await this.model.findByIdAndUpdate(id, {status: 'Active'}).exec();
    }
 
+   async searchActive(query: any){
+
+      let results = []
+
+      const persons = await this.personService.search(query);
+      const activeCustomers = await this.model.find({status: 'Active'}).populate('profile').exec()
+      console.log(activeCustomers)
+      if (activeCustomers){
+         for (const item of persons){
+            for (const index of activeCustomers){
+
+               // @ts-ignore
+               if (item._id == index.profile.id){
+                  results.push(index)
+               }
+            }
+         }
+      }
+      console.log(results)
+      return results
+   }
+
+   async searchBlocked(query: any){
+      const persons = await this.personService.search(query);
+      const activeCustomers = await this.model.find({status: 'Blocked'}).populate('profile').exec()
+      let results = []
+
+      if (activeCustomers){
+         for (const item of persons){
+            for (const index of activeCustomers){
+               // @ts-ignore
+               if (item._id == index.profile.id){
+                  results.push(index)
+               }
+            }
+         }
+      }
+      return results
+   }
+
 }

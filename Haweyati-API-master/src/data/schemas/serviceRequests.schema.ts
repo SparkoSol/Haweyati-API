@@ -23,6 +23,10 @@ export const ServicesRequestsSchema = new Schema(
     note: {
       type: String,
       required: false
+    },
+    requestNo : {
+      type: String,
+      required: true
     }
   },
   { timestamps: true }

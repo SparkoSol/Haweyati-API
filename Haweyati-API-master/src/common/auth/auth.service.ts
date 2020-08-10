@@ -30,6 +30,8 @@ export class AuthService {
   }
 
   async profile(user: any) {
-    return await this.usersService.fetch(user.userId)
+    return {
+      profile : await this.usersService.fetch(user.userId)
+    }
   }
 }

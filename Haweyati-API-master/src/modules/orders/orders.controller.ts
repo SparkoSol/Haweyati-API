@@ -4,7 +4,7 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Post, Query,
   UploadedFile,
   UseInterceptors
 } from '@nestjs/common'
@@ -15,7 +15,10 @@ import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('orders')
 export class OrdersController extends SimpleController<IOrdersInterface> {
-  constructor(protected readonly service: OrdersService) {
+  constructor(
+    protected readonly service: OrdersService
+  )
+  {
     super(service)
   }
 
@@ -30,7 +33,6 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
     @UploadedFile() file,
     @Body() data: any
   ): Promise<IOrdersInterface> {
-    console.log(data)
     data.dropoff = {
       dropoffLocation: {
         longitude: data.longitude,
@@ -40,6 +42,15 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
       dropoffDate: data.dropoffDate,
       dropoffTime: data.dropoffTime
     }
+    if (file){
+      data.image = []
+      data.image.push({
+        name : file.filename,
+        path: file.path,
+        sort: 'delivery location'
+      })
+    }
+    console.log(data)
     return super.post(data)
   }
 
@@ -86,5 +97,16 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
   @Patch('getclosed/:id')
   async getClosed(@Param('id') id: string): Promise<any> {
     return this.service.updateStatus(id, 'closed')
+  }
+
+  @Get('search')
+  async search(@Query() query:string){
+    return await this.service.search(query)
+  }
+
+  @Post('view')
+  async viewOrders(@Body() data: any): Promise<any>{
+    console.log(data)
+    return await this.service.viewOrders(data);
   }
 }

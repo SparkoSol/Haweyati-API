@@ -19,10 +19,10 @@ import { IPerson } from '../../data/interfaces/person.interface'
 
 @Controller('suppliers')
 //SimpleController<IShopRegistrationInterface>{
-export class ShopRegistrationController extends ImageController<
-  IShopRegistrationInterface
-> {
-  constructor(protected readonly service: ShopRegistrationService) {
+export class ShopRegistrationController extends ImageController<IShopRegistrationInterface> {
+  constructor(protected readonly service: ShopRegistrationService
+  )
+  {
     super(service)
   }
 

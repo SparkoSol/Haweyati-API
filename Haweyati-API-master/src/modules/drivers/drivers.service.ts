@@ -44,7 +44,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async create(document: any): Promise<IDriversInterface> {
-    console.log(document)
     document._id = undefined
     const data = await this.model.create(document)
     await this.requestModel.create({

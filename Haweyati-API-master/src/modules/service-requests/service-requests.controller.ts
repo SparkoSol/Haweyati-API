@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common'
 import {SimpleController} from "../../common/lib/simple.controller";
 import {IServicesRequests} from "../../data/interfaces/serviceRequests.interface";
 import {ServiceRequestsService} from "./service-requests.service";
@@ -50,4 +50,8 @@ export class ServiceRequestsController extends SimpleController<IServicesRequest
       return await this.service.getBySupplier(id);
    }
 
+   @Get('search')
+   async search(@Query() query:string){
+      return await this.service.search(query)
+   }
 }

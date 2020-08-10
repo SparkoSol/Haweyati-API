@@ -57,7 +57,6 @@ export class PersonsService extends SimpleService<any> {
   async fetch(id?: string): Promise<IPerson[] | IPerson> {
     if (id) {
       const data = await this.model.findById(id).exec()
-      console.log(data)
       data.password = ''
       return data
     } else {
@@ -109,7 +108,6 @@ export class PersonsService extends SimpleService<any> {
     return data
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected getRandomArbitrary() {
     return (Math.random() * (999999 - 100000) + 100000).toFixed(0)
   }
@@ -192,15 +190,20 @@ export class PersonsService extends SimpleService<any> {
     } else {
       throw new HttpException('No Hash!', HttpStatus.NOT_ACCEPTABLE)
     }
-
-    console.log(person)
-    console.log(verify)
-    console.log(data)
     if (person) {
       await this.model.findByIdAndDelete(verify._id).exec()
       return await this.model
         .findByIdAndUpdate(person._id, { password: data.password})
         .exec()
     }
+  }
+
+  async search(query : any){
+    return await this.model
+      .find({
+        $or: [{ 'name': { $regex: query.name, $options: "i" } },
+          { 'contact': { $regex: query.name, $options: "i" } }
+        ]
+      }).exec()
   }
 }

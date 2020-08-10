@@ -15,6 +15,8 @@ import { ScaffoldingsModule } from './modules/scaffoldings/scaffoldings.module'
 import { FcmModule } from './modules/fcm/fcm.module'
 import { OrdersModule } from './modules/orders/orders.module'
 import { TimeSlotsModule } from './modules/time-slots/time-slots.module'
+import { AppGateway } from './app.gateway';
+import { DashboardModule } from './modules/dashboard/dashboard.module'
 
 @Module({
   imports: [
@@ -32,8 +34,10 @@ import { TimeSlotsModule } from './modules/time-slots/time-slots.module'
     ScaffoldingsModule,
     FcmModule,
     OrdersModule,
-    TimeSlotsModule
+    TimeSlotsModule,
+    DashboardModule
   ],
-  controllers: [AppController]
+  controllers: [AppController],
+  providers: [AppGateway]
 })
 export class AppModule {}

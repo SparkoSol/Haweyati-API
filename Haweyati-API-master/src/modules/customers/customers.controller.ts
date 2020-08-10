@@ -3,7 +3,7 @@ import {
   Controller,
   Get,
   Param,
-  Patch,
+  Patch, Query
 } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
@@ -63,4 +63,15 @@ export class CustomersController extends SimpleController<ICustomerInterface> {
   async getUnblocked(@Param('id') id: string): Promise<any> {
     return await this.service.getUnblocked(id)
   }
+
+  @Get('active-search')
+  async search(@Query() query: any){
+    return await this.service.searchActive(query)
+  }
+
+  @Get('blocked-search')
+  async searchBlocked(@Query() query: any){
+    return await this.service.searchBlocked(query)
+  }
+
 }

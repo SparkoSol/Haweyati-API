@@ -4,29 +4,60 @@ import { IOrdersInterface } from '../../data/interfaces/orders.interface'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { PersonsService } from '../persons/persons.service'
+import * as blake2 from 'blake2'
+import { AppGateway } from '../../app.gateway'
 
 @Injectable()
 export class OrdersService extends SimpleService<IOrdersInterface> {
   constructor(
     @InjectModel('orders')
     protected readonly model: Model<IOrdersInterface>,
-    protected readonly personsService: PersonsService
+    protected readonly personsService: PersonsService,
+    private readonly appGateway: AppGateway
   ) {
     super(model)
   }
 
-  async getPerson(data: any): Promise<any> {
-    // @ts-ignore
-    data.customer.profile = await this.personsService.fetch(
-      // @ts-ignore
-      data.customer.profile
-    )
-    return data
+  protected getRandomArbitrary() {
+    return (Math.random() * (999999 - 100000) + 100000).toFixed(0);
   }
 
-  create(document: IOrdersInterface): Promise<IOrdersInterface> {
+  async create(document: IOrdersInterface): Promise<IOrdersInterface> {
+    let code = this.getRandomArbitrary();
+    code = code+Date.now().toString()
+    const h = blake2.createHash('blake2b', {digestLength: 3});
+    h.update(Buffer.from(code));
+    document.orderNo = h.digest("hex")
 
-    return super.create(document)
+
+    console.log(AppGateway.socket)
+    const orderCreated = super.create(document)
+    if (orderCreated){
+      if (AppGateway.socket)
+      {
+        this.appGateway.handleMessage(AppGateway.socket, {
+          type: "Order Generated"
+        });
+      }
+    }
+    return orderCreated;
+  }
+
+  async getPerson(all: any): Promise<any> {
+    if (Array.isArray(all))
+    {
+      for (let data of all){
+        data.customer.profile = await this.personsService.fetch(
+          data.customer.profile
+        )
+      }
+    }
+    else {
+      all.customer.profile = await this.personsService.fetch(
+        all.customer.profile
+      )
+    }
+    return all
   }
 
   async getByCustomerId(id: string): Promise<IOrdersInterface[]>{
@@ -39,8 +70,7 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
         .findById(id)
         .populate('customer')
         .exec()
-      data = await this.getPerson(data)
-      return data
+      return await this.getPerson(data)
     } else {
       const all = await this.model
         .find()
@@ -80,5 +110,29 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
       data = await this.getPerson(data)
     }
     return all
+  }
+
+  async search(query : any){
+    let data =  await this.model
+      .find({$or: [{'service': { $regex: query.name, $options: "i" }},
+          {'status': { $regex: query.name, $options: "i" }},
+          {'orderNo': { $regex: query.name, $options: "i" }}
+        ], status : 'pending'})
+      .populate('customer').exec();
+
+    return await this.getPerson(data)
+  }
+
+  async viewOrders(data: any): Promise<any>{
+    let results = new Set()
+    const orders = await this.model.find({city: data.city}).exec()
+    for (const index of orders){
+      for (const item of data.services){
+        if (index.service == item){
+          results.add(index)
+        }
+      }
+    }
+    return Array.from(results);
   }
 }

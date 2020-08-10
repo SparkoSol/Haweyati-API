@@ -38,7 +38,6 @@ export class PersonsController extends ImageController<IPerson> {
 
   @Post('resetpassword')
   async changePassword(@Body() data: any): Promise<any> {
-    console.log(data)
     return await this.service.changePassword(data)
   }
 
