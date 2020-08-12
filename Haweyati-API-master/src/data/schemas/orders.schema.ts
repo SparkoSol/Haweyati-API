@@ -43,7 +43,8 @@ export const OrdersSchema = new Schema(
     },
     orderNo: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     },
     city: {
       type: String,

@@ -3,20 +3,22 @@ import {
   Controller,
   Get,
   Param,
-  Patch,
-  UseInterceptors
+  Patch
 } from '@nestjs/common'
-import { SimpleController } from '../../common/lib/simple.controller'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { DriversService } from './drivers.service'
 import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { ImageController } from '../../common/lib/image.controller'
 
 @Controller('drivers')
-export class DriversController extends SimpleController<IDriversInterface> {
-  constructor(protected readonly service: DriversService) {
+export class DriversController extends ImageController<IDriversInterface> {
+  constructor(
+    protected readonly service: DriversService
+  )
+  {
     super(service)
   }
+
   @Get('getrequests')
   async getRequests(): Promise<IDriverRequest[]> {
     return this.service.getRequests()
@@ -24,17 +26,17 @@ export class DriversController extends SimpleController<IDriversInterface> {
 
   @Get('getverified')
   async getVerifiedDrivers(): Promise<IDriversInterface[]> {
-    return await this.service.getVerified()
+    return await this.service.getByStatus('Approved')
   }
 
   @Patch('getverified/:id')
   async getVerified(@Param('id') id: string): Promise<any> {
-    return await this.service.getVerified(id)
+    return await this.service.updateByStatus(id, 'Approved')
   }
 
   @Get('getrejected')
   async getRejectedDrivers(): Promise<IDriversInterface[]> {
-    return await this.service.getRejected()
+    return await this.service.getByStatus('Rejected')
   }
 
   @Patch('getrejected/:id')
@@ -44,17 +46,17 @@ export class DriversController extends SimpleController<IDriversInterface> {
 
   @Get('getblocked')
   async getBlockedDrivers(): Promise<IDriversInterface[]> {
-    return await this.service.getBlocked()
+    return await this.service.getByStatus('Blocked')
   }
 
   @Patch('getblocked/:id')
   async getBlocked(@Param('id') id: string): Promise<any> {
-    return this.service.getBlocked(id)
+    return this.service.updateByStatus(id, 'Blocked')
   }
 
   @Patch('getunblocked/:id')
   async getUnblocked(@Param('id') id: string): Promise<any> {
-    return await this.service.getUnblocked(id)
+    return await this.service.updateByStatus(id, 'Approved')
   }
 
   @Get('getcompanydrivers/:id')
@@ -65,11 +67,5 @@ export class DriversController extends SimpleController<IDriversInterface> {
   @Get('getbyperson/:id')
   async getByPersonId(@Param('id') id: string) {
     return await this.service.getByPersonId(id)
-  }
-
-  @Patch()
-  async patch(@Body() data: any): Promise<IDriversInterface> {
-    console.log(data)
-    return super.patch(data)
   }
 }

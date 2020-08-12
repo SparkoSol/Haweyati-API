@@ -23,12 +23,13 @@ export class DashboardService {
     const orders = ((await this.ordersService.fetch()) as IOrdersInterface[]).length
     const customers = ((await this.customersService.getAll()) as ICustomerInterface[]).length
 
-    let count: Number = 0
+    let count: number = 0
     const sold = await this.ordersService.fetch() as IOrdersInterface[]
     for (const item of sold){
       if (item.service == 'Finishing Material' || item.service == 'Building Material'){
         for (const index of item.details.items){
-          count += index.qty
+          console.log(index)
+          count += parseInt(index.qty)
         }
       }
     }

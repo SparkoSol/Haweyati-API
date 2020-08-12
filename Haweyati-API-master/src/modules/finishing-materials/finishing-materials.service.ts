@@ -9,15 +9,14 @@ import { FinishingMaterialCategoryService } from '../finishing-material-category
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 
 @Injectable()
-export class FinishingMaterialsService extends SimpleService<
-  IFinishingMaterialsInterface
-> {
+export class FinishingMaterialsService extends SimpleService<IFinishingMaterialsInterface> {
   constructor(
     @InjectModel('finishingmaterials')
     protected readonly model: Model<IFinishingMaterialsInterface>,
     private readonly service: ShopRegistrationService,
     private readonly categoryService: FinishingMaterialCategoryService
-  ) {
+  )
+  {
     super(model)
   }
 
@@ -105,4 +104,15 @@ export class FinishingMaterialsService extends SimpleService<
     return 'Category Deleted'
   }
 
+  async search(name: string): Promise<IFinishingMaterialsInterface[]>{
+    let big = await this.model.find({ status: 'Active', 'name': { $regex: name, $options: "i" }}).exec()
+    for (let data of big) {
+      for (let i = 0; i < data.suppliers.length; ++i) {
+        data.suppliers[i] = (await this.service.fetch(
+          data.suppliers[i].toString()
+        )) as IShopRegistrationInterface
+      }
+    }
+    return big
+  }
 }

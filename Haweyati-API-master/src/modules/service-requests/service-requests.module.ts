@@ -4,13 +4,15 @@ import { ServiceRequestsController } from './service-requests.controller';
 import { MongooseModule } from "@nestjs/mongoose";
 import { ServicesRequestsSchema } from "../../data/schemas/serviceRequests.schema";
 import { PersonsModule } from '../persons/persons.module'
+import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {name: 'servicerequests', schema : ServicesRequestsSchema}
       ]),
-    PersonsModule
+    PersonsModule,
+    AdminNotificationsModule
   ],
   providers: [ServiceRequestsService],
   controllers: [ServiceRequestsController],

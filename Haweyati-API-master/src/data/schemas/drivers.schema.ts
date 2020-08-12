@@ -16,7 +16,8 @@ export const DriversSchema = new Schema(
     },
     license: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     },
     location: {
       type: LocationSchema,

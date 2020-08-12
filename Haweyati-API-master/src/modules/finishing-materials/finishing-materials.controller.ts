@@ -33,14 +33,13 @@ export class FinishingMaterialsController extends ImageController<
             optionValues: finishingMaterial.optionValues[i]
           }
         }
-        finishingMaterial.options = option
       } else {
         option[0] = {
           optionName: finishingMaterial.optionName,
           optionValues: finishingMaterial.optionValues
         }
-        finishingMaterial.options = option
       }
+      finishingMaterial.options = option
 
       const pricing = []
       if (Array.isArray(finishingMaterial.varientName)) {
@@ -115,5 +114,10 @@ export class FinishingMaterialsController extends ImageController<
   @Delete('deletecategory/:id')
   async deleteCategory(@Param('id') id: string): Promise<any> {
     return await this.service.deleteCategory(id)
+  }
+
+  @Get('search')
+  async search(@Query() query: any): Promise<IFinishingMaterialsInterface[]>{
+    return await this.service.search(query.name)
   }
 }

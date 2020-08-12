@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { OrdersSchema } from '../../data/schemas/orders.schema'
 import { PersonsModule } from '../persons/persons.module'
 import { MulterModule } from '@nestjs/platform-express'
-import { AppGateway } from '../../app.gateway'
+import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
 
 @Module({
   imports: [
@@ -13,9 +13,10 @@ import { AppGateway } from '../../app.gateway'
     MulterModule.register({
       dest: '../uploads',
     }),
-    PersonsModule
+    PersonsModule,
+    AdminNotificationsModule
   ],
-  providers: [OrdersService, AppGateway],
+  providers: [OrdersService],
   controllers: [OrdersController],
   exports: [OrdersService]
 })

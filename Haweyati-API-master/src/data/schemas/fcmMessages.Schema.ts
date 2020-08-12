@@ -10,7 +10,6 @@ export const FcmMessagesSchema = new Schema({
       title: String,
       body : String
    },
-
 }, {
    timestamps : true
 })

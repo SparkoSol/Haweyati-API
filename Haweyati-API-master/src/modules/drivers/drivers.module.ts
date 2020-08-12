@@ -6,6 +6,7 @@ import {DriversSchema} from "../../data/schemas/drivers.schema";
 import { DriverRequestSchema } from '../../data/schemas/driverRequest.schema';
 import { PersonsModule } from '../persons/persons.module';
 import { RejectedDriversSchema } from "../../data/schemas/rejectedDrivers.schema";
+import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { RejectedDriversSchema } from "../../data/schemas/rejectedDrivers.schema
         {name: 'driverRejection', schema: RejectedDriversSchema}
      ]
     ),
-     PersonsModule
+     PersonsModule,
+    AdminNotificationsModule
   ],
   providers: [DriversService],
   controllers: [DriversController],

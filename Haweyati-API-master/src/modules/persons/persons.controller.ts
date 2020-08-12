@@ -1,7 +1,8 @@
 import { IPerson } from 'src/data/interfaces/person.interface'
 import {
   Body,
-  Controller, Get,
+  Controller,
+  Get,
   Patch,
   Post,
   UploadedFile,
@@ -45,5 +46,4 @@ export class PersonsController extends ImageController<IPerson> {
   async getExceptAdmin(): Promise<IPerson[]>{
     return await this.service.exceptAdmin();
   }
-
 }

@@ -60,15 +60,13 @@ export class FcmService extends SimpleService<IFcm> {
       }
     }
     for (const a of all) {
-      console.log({
-        ...data,
-        to: a.token
-      })
       await this.http
         .post(
           'https://fcm.googleapis.com/fcm/send',
           {
-            ...data,
+            notification : {
+              ...data
+            },
             to: a.token
           },
           {

@@ -7,6 +7,7 @@ import { ReportUtils } from '../../common/lib/report-utils'
 import { PersonsService } from '../persons/persons.service'
 import { IPerson } from '../../data/interfaces/person.interface'
 import { LocationUtils } from '../../common/lib/location-utils'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<
@@ -16,7 +17,8 @@ export class ShopRegistrationService extends SimpleService<
     @InjectModel('shopregistration')
     protected readonly model: Model<IShopRegistrationInterface>,
     protected readonly personService: PersonsService,
-    private httpService: HttpService
+    private httpService: HttpService,
+    protected readonly adminNotificationsService: AdminNotificationsService
   ) {
     super(model)
   }
@@ -59,7 +61,22 @@ export class ShopRegistrationService extends SimpleService<
       document.longitude
     )
 
-    return super.create(document)
+    const supplier = super.create(document)
+
+    if (!document.status || document.status == 'Active'){
+      //notification for admin
+      if (supplier){
+        const notification = {
+          type: 'Supplier',
+          title: 'New Supplier',
+          // @ts-ignore
+          message: 'New Supplier SignUp with name : ' + document.name +'.'
+        }
+        this.adminNotificationsService.create(notification);
+      }
+    }
+
+    return supplier
   }
 
   async change(document: any): Promise<IShopRegistrationInterface> {
@@ -160,7 +177,6 @@ export class ShopRegistrationService extends SimpleService<
     return await this.model.findOne({person: id}).populate('person').exec()
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async generateReport() {
     return ReportUtils.renderReport('SupplierReport.odt', await this.fetch())
   }

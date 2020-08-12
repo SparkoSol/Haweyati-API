@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { PersonsService } from '../persons/persons.service'
 import * as blake2 from 'blake2'
-import { AppGateway } from '../../app.gateway'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class OrdersService extends SimpleService<IOrdersInterface> {
@@ -13,7 +13,7 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
     @InjectModel('orders')
     protected readonly model: Model<IOrdersInterface>,
     protected readonly personsService: PersonsService,
-    private readonly appGateway: AppGateway
+    protected readonly adminNotificationsService : AdminNotificationsService
   ) {
     super(model)
   }
@@ -23,23 +23,26 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
   }
 
   async create(document: IOrdersInterface): Promise<IOrdersInterface> {
+    //Order no generation
     let code = this.getRandomArbitrary();
     code = code+Date.now().toString()
     const h = blake2.createHash('blake2b', {digestLength: 3});
     h.update(Buffer.from(code));
     document.orderNo = h.digest("hex")
 
-
-    console.log(AppGateway.socket)
+    //order generation
     const orderCreated = super.create(document)
+
+    //notification for admin
     if (orderCreated){
-      if (AppGateway.socket)
-      {
-        this.appGateway.handleMessage(AppGateway.socket, {
-          type: "Order Generated"
-        });
+      const notification = {
+        type: 'Order',
+        title: 'New Order',
+        message: 'New Order generated with id : '+ document.orderNo +'.'
       }
+      this.adminNotificationsService.create(notification);
     }
+
     return orderCreated;
   }
 

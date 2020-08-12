@@ -15,29 +15,29 @@ import { ScaffoldingsModule } from './modules/scaffoldings/scaffoldings.module'
 import { FcmModule } from './modules/fcm/fcm.module'
 import { OrdersModule } from './modules/orders/orders.module'
 import { TimeSlotsModule } from './modules/time-slots/time-slots.module'
-import { AppGateway } from './app.gateway';
 import { DashboardModule } from './modules/dashboard/dashboard.module'
+import { AdminNotificationsModule } from './modules/admin-notifications/admin-notifications.module'
 
 @Module({
   imports: [
     DbModule,
+    FcmModule,
     AuthModule,
+    OrdersModule,
     PersonsModule,
+    DriversModule,
     DumpstersModule,
+    TimeSlotsModule,
+    DashboardModule,
+    CustomersModule,
+    ScaffoldingsModule,
+    ServiceRequestsModule,
     BuildingMaterialsModule,
+    AdminNotificationsModule,
+    FinishingMaterialsModule,
     BuildingMaterialCategoryModule,
     FinishingMaterialCategoryModule,
-    FinishingMaterialsModule,
-    DriversModule,
-    CustomersModule,
-    ServiceRequestsModule,
-    ScaffoldingsModule,
-    FcmModule,
-    OrdersModule,
-    TimeSlotsModule,
-    DashboardModule
   ],
-  controllers: [AppController],
-  providers: [AppGateway]
+  controllers: [AppController]
 })
 export class AppModule {}

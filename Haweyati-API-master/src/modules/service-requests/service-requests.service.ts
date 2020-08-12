@@ -5,13 +5,15 @@ import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import { PersonsService } from '../persons/persons.service'
 import * as blake2 from 'blake2'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class ServiceRequestsService extends SimpleService<IServicesRequests>{
    constructor(
      @InjectModel('servicerequests')
      protected readonly model : Model<IServicesRequests>,
-     protected readonly personsService: PersonsService
+     protected readonly personsService: PersonsService,
+     protected readonly adminNotificationsService: AdminNotificationsService
    )
    {
       super(model);
@@ -39,7 +41,18 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests>{
       const h = blake2.createHash('blake2b', {digestLength: 3});
       h.update(Buffer.from(code));
       document.requestNo = h.digest("hex")
-      return super.create(document)
+      const serviceRequest = super.create(document)
+
+      //notification for admin
+      if (serviceRequest){
+         const notification = {
+            type: 'Service',
+            title: 'New Service Request',
+            message: 'New Service Request with id : '+ document.requestNo +'.'
+         }
+         this.adminNotificationsService.create(notification);
+      }
+      return serviceRequest
    }
 
    async getByStatus(status?: string): Promise<IServicesRequests[]>{

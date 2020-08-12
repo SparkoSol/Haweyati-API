@@ -26,7 +26,6 @@ export class PersonsService extends SimpleService<any> {
   async create(data: any): Promise<any> {
     const profile = await this.fetchFromContact(data.contact)
     data.username = data.contact
-    console.log(profile)
     if (profile) {
       if (Array.isArray(data.scope)) {
         if (profile.scope.includes(data.scope[0])) {
@@ -81,8 +80,9 @@ export class PersonsService extends SimpleService<any> {
   }
 
   async change(document: any): Promise<any> {
-    if (document.password) {
+    if (document.old) {
       const person = (await this.model.findById(document._id).exec()) as IPerson
+      // @ts-ignore
       if (person.password == document.old) {
         person.password = document.password
         return super.change(document)
@@ -92,20 +92,15 @@ export class PersonsService extends SimpleService<any> {
           HttpStatus.NOT_ACCEPTABLE
         )
       }
-    } else {
+    }
+    else{
       return await this.model.findByIdAndUpdate(document._id, document).exec()
     }
   }
 
   async exceptAdmin(): Promise<IPerson[]> {
     // @ts-ignore
-    const data = await this.model.find({ scope: { $nin: 'Admin' } }).exec()
-    // for (let i=0; i<data.length; ++i){
-    //   if (data[i].scope.includes('supplier') || data[i].scope.includes('customer') || data[i].scope.includes('driver')) {}
-    //   else
-    //     data.splice(i, 1)
-    // }
-    return data
+    return await this.model.find({ scope: { $nin: 'Admin' } }).exec()
   }
 
   protected getRandomArbitrary() {

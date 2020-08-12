@@ -5,6 +5,7 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {ShopRegistrationSchema} from "../../data/schemas/shop-registration.schema";
 import { MulterModule } from '@nestjs/platform-express';
 import { PersonsModule } from "../persons/persons.module";
+import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { PersonsModule } from "../persons/persons.module";
     MulterModule.register({
       dest : '../uploads'
     }),
-    HttpModule
+    HttpModule,
+    AdminNotificationsModule
   ],
   controllers: [ShopRegistrationController],
   providers: [ShopRegistrationService],

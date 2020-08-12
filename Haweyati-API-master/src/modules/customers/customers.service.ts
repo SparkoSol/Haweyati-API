@@ -1,17 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import {SimpleService} from "../../common/lib/simple.service";
 import {ICustomerInterface} from "../../data/interfaces/customers.interface";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import { PersonsService } from '../persons/persons.service';
 import { IPerson } from '../../data/interfaces/person.interface';
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class CustomersService extends SimpleService<ICustomerInterface>{
    constructor(
       @InjectModel('customers')
       protected readonly model: Model<ICustomerInterface>,
-      protected readonly personService: PersonsService
+      protected readonly personService: PersonsService,
+      protected readonly adminNotificationsService: AdminNotificationsService
    ) {
       super(model);
    }
@@ -41,6 +43,47 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
          }
          return data;
       }
+   }
+
+   async create(document: any): Promise<any> {
+
+      let customer:any = undefined;
+      const person = await this.personService.create(document)
+      if (person){
+         try {
+            document.location = {
+               longitude: document.longitude,
+               latitude: document.latitude,
+               address: document.address
+            }
+            document.profile = await this.personService.fetchFromContact(document.contact);
+            customer = await super.create(document)
+         }catch (e) {
+            await this.personService.delete(document.profile._id)
+            throw new HttpException(
+              'Profile unable to SignUp, Please contact Admin Support',
+              HttpStatus.NOT_ACCEPTABLE
+            )
+         }
+      }
+      else
+         throw new HttpException(
+           'Profile unable to SignUp, Please contact Admin Support',
+           HttpStatus.NOT_ACCEPTABLE
+         )
+
+      //notification for admin
+      if (customer){
+         const notification = {
+            type: 'Customer',
+            title: 'New Customer',
+            // @ts-ignore
+            message: 'New Customer SignUp with name : ' + (await this.model.findOne({profile: customer.profile}).populate('profile').exec()).profile.name +'.'
+         }
+         this.adminNotificationsService.create(notification);
+      }
+
+      return customer
    }
 
    async getProfile(contact: string): Promise<ICustomerInterface | string>{

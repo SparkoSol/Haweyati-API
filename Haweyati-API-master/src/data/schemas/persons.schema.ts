@@ -6,15 +6,16 @@ export const PersonsSchema = new Schema(
   {
     ...UsersSchema,
     name: {
-      type: String
-      // required: true
+      type: String,
+      required: true
     },
     scope: {
       type: [String]
     },
     email: {
       type: String,
-      required: false
+      required: false,
+      unique: true
     },
     image: {
       type: ImagesSchema,

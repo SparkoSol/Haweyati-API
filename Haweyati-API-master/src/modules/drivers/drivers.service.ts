@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { InjectModel } from '@nestjs/mongoose'
@@ -6,6 +6,7 @@ import { Model } from 'mongoose'
 import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 import { IRejectedDrivers } from '../../data/interfaces/rejectedDrivers.interface'
 import { PersonsService } from '../persons/persons.service'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriversInterface> {
@@ -16,8 +17,11 @@ export class DriversService extends SimpleService<IDriversInterface> {
     protected readonly requestModel: Model<IDriverRequest>,
     @InjectModel('driverRejection')
     protected readonly rejectedModel: Model<IRejectedDrivers>,
-    protected readonly personsService: PersonsService
-  ) {
+
+    protected readonly personsService: PersonsService,
+    protected readonly adminNotificationsService:AdminNotificationsService
+  )
+  {
     super(model)
   }
 
@@ -44,13 +48,60 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async create(document: any): Promise<IDriversInterface> {
-    document._id = undefined
-    const data = await this.model.create(document)
-    await this.requestModel.create({
-      driver: data._id,
-      status: data.status
-    })
-    return data
+    let driver: any = undefined;
+
+    console.log(document)
+    // document._id = undefined
+    const person = await this.personsService.create(document)
+
+    if (person){
+      try {
+        document.profile = await this.personsService.fetchFromContact(document.contact);
+        document.location = {
+          latitude: document.latitude,
+          longitude: document.longitude,
+          address: document.address
+        }
+        document.vehicle = {
+          name: document.vehicleName,
+          model: document.model,
+          identificationNo: document.identificationNo,
+
+        }
+
+        driver = await super.create(document)
+        await this.requestModel.create({
+          driver: driver._id,
+          status: driver.status
+        })
+
+      }catch (e) {
+        await this.personsService.delete(document.profile._id)
+        throw new HttpException(
+          'Driver unable to SignUp, Please contact Admin Support',
+          HttpStatus.NOT_ACCEPTABLE
+        )
+      }
+    }
+    else{
+      throw new HttpException(
+        'Driver unable to SignUp, Please contact Admin Support',
+        HttpStatus.NOT_ACCEPTABLE
+      )
+    }
+
+    //notification for admin
+    if (driver){
+      const notification = {
+        type: 'Driver',
+        title: 'New Driver',
+        // @ts-ignore
+        message: 'New Driver SignUp with name : ' + (await this.model.findOne({profile: data.profile}).populate('profile').exec()).profile.name +'.'
+      }
+      this.adminNotificationsService.create(notification);
+    }
+
+    return driver
   }
 
   async getRequests(): Promise<IDriverRequest[]> {
@@ -66,64 +117,40 @@ export class DriversService extends SimpleService<IDriversInterface> {
     return requests
   }
 
-  async getVerified(id?: string): Promise<any> {
-    if (id) {
-      const request = await this.requestModel.findById(id).exec()
-      await this.model
-        .findByIdAndUpdate(request.driver._id, { status: 'Approved' })
-        .exec()
-      await this.requestModel.findByIdAndDelete(id)
-      return {
-        message: 'Request Approved'
-      }
-    } else {
-      return await this.model
-        .find({ status: 'Approved', supplier: null })
-        .populate('profile')
-        .exec()
+  async getByStatus(status: string): Promise<IDriversInterface[]>{
+    return await this.model
+      .find({ status, supplier: null })
+      .populate('profile')
+      .exec()
+  }
+
+  async updateByStatus(id: string, status: string): Promise<any>{
+    const request = await this.requestModel.findById(id).exec()
+    await this.model
+      .findByIdAndUpdate(request.driver._id, { status })
+      .exec()
+    await this.requestModel.findByIdAndDelete(id)
+    return {
+      message: 'Request Approved'
     }
   }
 
-  async getRejected(id?: string, data?: any): Promise<any> {
-    if (id) {
-      const request = await this.requestModel.findById(id).exec()
-      if (data != null) {
-        this.rejectedModel.create({
-          request: id,
-          message: data.message,
-          createdAt: Date.now()
-        })
-      }
-      await this.model
-        .findByIdAndUpdate(request.driver._id, { status: 'Rejected' })
-        .exec()
-      await this.requestModel.findByIdAndUpdate(id, { status: 'Rejected' })
-      return {
-        message: 'Request Rejected'
-      }
-    } else {
-      return await this.model
-        .find({ status: 'Rejected', supplier: null })
-        .populate('profile')
-        .exec()
+  async getRejected(id: string, data?: any): Promise<any> {
+    const request = await this.requestModel.findById(id).exec()
+    if (data != null) {
+      this.rejectedModel.create({
+        request: id,
+        message: data.message,
+        createdAt: Date.now()
+      })
     }
-  }
-
-  async getBlocked(id?: string): Promise<any> {
-    if (id) {
-      return await this.model
-        .findByIdAndUpdate(id, { status: 'Blocked' })
-        .exec()
-    } else {
-      return await this.model
-        .find({ status: 'Blocked', supplier: null })
-        .populate('profile')
-        .exec()
+    await this.model
+      .findByIdAndUpdate(request.driver._id, { status: 'Rejected' })
+      .exec()
+    await this.requestModel.findByIdAndUpdate(id, { status: 'Rejected' })
+    return {
+      message: 'Request Rejected'
     }
-  }
-
-  async getUnblocked(id: string): Promise<any> {
-    return await this.model.findByIdAndUpdate(id, { status: 'Approved' }).exec()
   }
 
   async getCompanyDrivers(id: string): Promise<IDriversInterface[]> {

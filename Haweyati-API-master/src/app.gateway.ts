@@ -1,6 +1,7 @@
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import { Global, Logger } from '@nestjs/common'
+import { AdminNotificationsService } from './modules/admin-notifications/admin-notifications.service'
 
 @Global()
 @WebSocketGateway()
@@ -12,7 +13,7 @@ export class AppGateway implements OnGatewayInit{
 
   @SubscribeMessage('msgToServer')
   handleMessage(client: Socket, payload: any): void {
-    this.server.emit('msgToClient', payload);
+    this.server.emit('msgToClient', payload, true);
   }
 
   afterInit(server: Server) {
@@ -24,9 +25,16 @@ export class AppGateway implements OnGatewayInit{
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket, ...args: any[]) {
     AppGateway.socket = client
     this.logger.log(`Client connected: ${client.id}`);
-    this.server.emit('msgToClient', 'Connection Established with Client');
+    if (await AdminNotificationsService.findSeen())
+    {
+      this.server.emit('msgToClient', 'Connection Established with Client', true);
+    }
+    else
+    {
+      this.server.emit('msgToClient', 'Connection Established with Client', false);
+    }
   }
 }

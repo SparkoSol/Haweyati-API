@@ -15,12 +15,11 @@ import { IShopRegistrationInterface } from '../../data/interfaces/shop-registrat
 import { ShopRegistrationService } from './shop-registration.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
-import { IPerson } from '../../data/interfaces/person.interface'
 
 @Controller('suppliers')
-//SimpleController<IShopRegistrationInterface>{
 export class ShopRegistrationController extends ImageController<IShopRegistrationInterface> {
-  constructor(protected readonly service: ShopRegistrationService
+  constructor(
+    protected readonly service: ShopRegistrationService
   )
   {
     super(service)
@@ -86,7 +85,6 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
           username: data.contact
         }
         if (file) {
-          // @ts-ignore
           person.image = {
             name: file.filename,
             path: file.path
@@ -108,7 +106,6 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
         isVerified: false
       }
       if (file) {
-        // @ts-ignore
         person.image = {
           name: file.filename,
           path: file.path
