@@ -12,7 +12,7 @@ export const DropoffDetailsSchema = new Schema({
   },
   dropoffDate: {
     type: Date,
-    required: true
+    required: false
   },
   dropoffTime: {
     type: String,

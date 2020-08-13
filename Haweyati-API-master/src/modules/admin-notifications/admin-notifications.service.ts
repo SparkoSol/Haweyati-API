@@ -30,7 +30,6 @@ export class AdminNotificationsService extends SimpleService<IAdminNotification>
     if (note){
       if (AppGateway.socket)
       {
-        console.log('in gateway')
         this.appGateway.handleMessage(AppGateway.socket, note);
       }
     }

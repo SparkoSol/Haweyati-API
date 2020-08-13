@@ -45,25 +45,33 @@ export class ShopRegistrationService extends SimpleService<
 
   async create(document: any): Promise<IShopRegistrationInterface> {
     document.username = document.contact
-    document.person = await this.personService.create(document)
+    const person = await this.personService.create(document)
+    let supplier = undefined
 
-    document.location = {
-      latitude: document.latitude,
-      longitude: document.longitude,
-      address: await LocationUtils.getAddress(
+    if (person){
+      document.person = person
+
+      document.location = {
+        latitude: document.latitude,
+        longitude: document.longitude,
+        address: await LocationUtils.getAddress(
+          document.latitude,
+          document.longitude
+        )
+      }
+
+      document.city = await LocationUtils.getCity(
         document.latitude,
         document.longitude
       )
+
+      supplier = super.create(document)
     }
 
-    document.city = await LocationUtils.getCity(
-      document.latitude,
-      document.longitude
-    )
-
-    const supplier = super.create(document)
-
-    if (!document.status || document.status == 'Active'){
+    if (supplier){
+      if (typeof(person) != 'string'){
+        await this.personService.change(person)
+      }
       //notification for admin
       if (supplier){
         const notification = {
@@ -73,6 +81,10 @@ export class ShopRegistrationService extends SimpleService<
           message: 'New Supplier SignUp with name : ' + document.name +'.'
         }
         this.adminNotificationsService.create(notification);
+      }
+    }else {
+      if (typeof(person) == 'string'){
+        await this.personService.delete(document.profile._id)
       }
     }
 

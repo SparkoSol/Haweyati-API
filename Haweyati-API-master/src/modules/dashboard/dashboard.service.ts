@@ -28,7 +28,6 @@ export class DashboardService {
     for (const item of sold){
       if (item.service == 'Finishing Material' || item.service == 'Building Material'){
         for (const index of item.details.items){
-          console.log(index)
           count += parseInt(index.qty)
         }
       }

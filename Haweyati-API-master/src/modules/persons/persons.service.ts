@@ -35,7 +35,7 @@ export class PersonsService extends SimpleService<any> {
           )
         } else {
           profile.scope.push(data.scope[0])
-          return await this.change(profile)
+          return profile
         }
       } else {
         if (profile.scope.includes(data.scope)) {
@@ -45,26 +45,19 @@ export class PersonsService extends SimpleService<any> {
           )
         } else {
           profile.scope.push(data.scope)
-          return await this.change(profile)
+          return profile
         }
       }
     } else {
-      return await super.create(data)
+      return (await super.create(data))._id
     }
   }
 
   async fetch(id?: string): Promise<IPerson[] | IPerson> {
     if (id) {
-      const data = await this.model.findById(id).exec()
-      data.password = ''
-      return data
+      return await this.model.findById(id).exec()
     } else {
-      const all = await this.model.find().exec()
-
-      for (let data of all) {
-        data.password = ''
-      }
-      return all
+      return await this.model.find().exec()
     }
   }
 
@@ -80,22 +73,7 @@ export class PersonsService extends SimpleService<any> {
   }
 
   async change(document: any): Promise<any> {
-    if (document.old) {
-      const person = (await this.model.findById(document._id).exec()) as IPerson
-      // @ts-ignore
-      if (person.password == document.old) {
-        person.password = document.password
-        return super.change(document)
-      } else {
-        throw new HttpException(
-          'Old Password Not Matched!',
-          HttpStatus.NOT_ACCEPTABLE
-        )
-      }
-    }
-    else{
-      return await this.model.findByIdAndUpdate(document._id, document).exec()
-    }
+    return await this.model.findByIdAndUpdate(document._id, document).exec()
   }
 
   async exceptAdmin(): Promise<IPerson[]> {
@@ -125,7 +103,6 @@ export class PersonsService extends SimpleService<any> {
     if (person) {
       //Random Code Generation
       const code = this.getRandomArbitrary()
-      console.log(code)
 
       //Hashing
       const h = blake2.createHash('blake2b')
@@ -200,5 +177,19 @@ export class PersonsService extends SimpleService<any> {
           { 'contact': { $regex: query.name, $options: "i" } }
         ]
       }).exec()
+  }
+
+  async updatePassword(document: any): Promise<IPerson>{
+    const person = (await this.model.findById(document._id).exec()) as IPerson
+    // @ts-ignore
+    if (person.password == document.old) {
+      person.password = document.password
+      return await super.change(person)
+    } else {
+      throw new HttpException(
+        'Old Password Not Matched!',
+        HttpStatus.NOT_ACCEPTABLE
+      )
+    }
   }
 }

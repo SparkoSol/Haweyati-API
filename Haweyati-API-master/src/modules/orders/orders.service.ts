@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IOrdersInterface } from '../../data/interfaces/orders.interface'
 import { InjectModel } from '@nestjs/mongoose'
@@ -6,6 +6,7 @@ import { Model } from 'mongoose'
 import { PersonsService } from '../persons/persons.service'
 import * as blake2 from 'blake2'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { CustomersService } from '../customers/customers.service'
 
 @Injectable()
 export class OrdersService extends SimpleService<IOrdersInterface> {
@@ -13,6 +14,7 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
     @InjectModel('orders')
     protected readonly model: Model<IOrdersInterface>,
     protected readonly personsService: PersonsService,
+    protected readonly customersService: CustomersService,
     protected readonly adminNotificationsService : AdminNotificationsService
   ) {
     super(model)
@@ -23,27 +25,36 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
   }
 
   async create(document: IOrdersInterface): Promise<IOrdersInterface> {
-    //Order no generation
-    let code = this.getRandomArbitrary();
-    code = code+Date.now().toString()
-    const h = blake2.createHash('blake2b', {digestLength: 3});
-    h.update(Buffer.from(code));
-    document.orderNo = h.digest("hex")
 
-    //order generation
-    const orderCreated = super.create(document)
+    const customer = await this.customersService.fetch(document.customer.toString())
+    if (customer.status != 'Blocked'){
 
-    //notification for admin
-    if (orderCreated){
-      const notification = {
-        type: 'Order',
-        title: 'New Order',
-        message: 'New Order generated with id : '+ document.orderNo +'.'
+      //Order no generation
+      let code = this.getRandomArbitrary();
+      code = code+Date.now().toString()
+      const h = blake2.createHash('blake2b', {digestLength: 3});
+      h.update(Buffer.from(code));
+      document.orderNo = h.digest("hex")
+
+      //order generation
+      const orderCreated = super.create(document)
+
+      //notification for admin
+      if (orderCreated){
+        const notification = {
+          type: 'Order',
+          title: 'New Order',
+          message: 'New Order generated with id : '+ document.orderNo +'.'
+        }
+        this.adminNotificationsService.create(notification);
       }
-      this.adminNotificationsService.create(notification);
+      return orderCreated;
+    } else {
+      throw new HttpException(
+        "You are blocked by Admin! You can't place order, contact Haweyati Support for help.",
+        HttpStatus.NOT_ACCEPTABLE
+      )
     }
-
-    return orderCreated;
   }
 
   async getPerson(all: any): Promise<any> {
@@ -75,25 +86,21 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
         .exec()
       return await this.getPerson(data)
     } else {
-      const all = await this.model
+      let all = await this.model
         .find()
         .populate('customer')
         .exec()
-      for (let data of all) {
-        data = await this.getPerson(data)
-      }
+      all = await this.getPerson(all)
       return all
     }
   }
 
   async getByDateRange(min: string, max: string): Promise<IOrdersInterface[]> {
-    const all = await this.model
+    let all = await this.model
       .find({ createdAt: { $gte: min, $lt: max } })
       .populate('customer')
       .exec()
-    for (let data of all) {
-      data = await this.getPerson(data)
-    }
+    all = await this.getPerson(all)
     return all
   }
 
@@ -105,13 +112,11 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
   }
 
   async getByStatus(status: string) {
-    const all = await this.model
+    let all = await this.model
       .find({ status })
       .populate('customer')
       .exec()
-    for (let data of all) {
-      data = await this.getPerson(data)
-    }
+    all = await this.getPerson(all)
     return all
   }
 

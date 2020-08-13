@@ -48,15 +48,12 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async create(document: any): Promise<IDriversInterface> {
-    let driver: any = undefined;
-
-    console.log(document)
-    // document._id = undefined
+    let driver = undefined;
     const person = await this.personsService.create(document)
 
     if (person){
-      try {
-        document.profile = await this.personsService.fetchFromContact(document.contact);
+        document.profile = person
+
         document.location = {
           latitude: document.latitude,
           longitude: document.longitude,
@@ -66,23 +63,17 @@ export class DriversService extends SimpleService<IDriversInterface> {
           name: document.vehicleName,
           model: document.model,
           identificationNo: document.identificationNo,
-
+          type: document.type
         }
 
         driver = await super.create(document)
-        await this.requestModel.create({
-          driver: driver._id,
-          status: driver.status
-        })
-
-      }catch (e) {
-        await this.personsService.delete(document.profile._id)
-        throw new HttpException(
-          'Driver unable to SignUp, Please contact Admin Support',
-          HttpStatus.NOT_ACCEPTABLE
-        )
+        if (driver){
+          await this.requestModel.create({
+            driver: driver._id,
+            status: driver.status
+          })
+        }
       }
-    }
     else{
       throw new HttpException(
         'Driver unable to SignUp, Please contact Admin Support',
@@ -92,13 +83,21 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
     //notification for admin
     if (driver){
+      if (typeof(person) != 'string'){
+        await this.personsService.change(person)
+      }
       const notification = {
         type: 'Driver',
         title: 'New Driver',
         // @ts-ignore
-        message: 'New Driver SignUp with name : ' + (await this.model.findOne({profile: data.profile}).populate('profile').exec()).profile.name +'.'
+        message: 'New Driver SignUp with name : ' + (await this.model.findOne({profile: driver.profile}).populate('profile').exec()).profile.name +'.'
       }
       this.adminNotificationsService.create(notification);
+    }
+    else {
+      if (typeof(person) == 'string'){
+        await this.personsService.delete(person)
+      }
     }
 
     return driver

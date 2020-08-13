@@ -20,9 +20,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
 
   async fetch(id?: string): Promise<IDumpster[] | IDumpster> {
     if (id) {
-      console.log(id)
       let data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
-      console.log(data.suppliers)
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()

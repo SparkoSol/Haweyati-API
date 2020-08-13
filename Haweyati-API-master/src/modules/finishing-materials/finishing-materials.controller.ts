@@ -19,7 +19,10 @@ import { ImageController } from '../../common/lib/image.controller'
 export class FinishingMaterialsController extends ImageController<
   IFinishingMaterialsInterface
 > {
-  constructor(protected readonly service: FinishingMaterialsService) {
+  constructor(
+    protected readonly service: FinishingMaterialsService
+  )
+  {
     super(service)
   }
 
@@ -33,7 +36,8 @@ export class FinishingMaterialsController extends ImageController<
             optionValues: finishingMaterial.optionValues[i]
           }
         }
-      } else {
+      }
+      else {
         option[0] = {
           optionName: finishingMaterial.optionName,
           optionValues: finishingMaterial.optionValues
@@ -44,30 +48,56 @@ export class FinishingMaterialsController extends ImageController<
       const pricing = []
       if (Array.isArray(finishingMaterial.varientName)) {
         for (let i = 0; i < finishingMaterial.varientName.length; ++i) {
-          const data = finishingMaterial.varientName[i].split('/')
+          const data = finishingMaterial.varientName[i].includes('/')
+            ? finishingMaterial.varientName[i].split('/')
+            : finishingMaterial.varientName[i]
 
           const pricingObj = {}
-          for (let j = 0; j < data.length; ++j)
-            pricingObj[finishingMaterial.optionName[j]] = data[j]
+          if (Array.isArray(finishingMaterial.optionName)){
+            if (Array.isArray(data)){
+              for (let j = 0; j < data.length; ++j)
+                pricingObj[finishingMaterial.optionName[j]] = data[j]
+            }
+            else
+              pricingObj[finishingMaterial.optionName] = data
+          }
+          else {
+            if (Array.isArray(data)){
+              for (let j = 0; j < data.length; ++j)
+                pricingObj[finishingMaterial.optionName] = data[j]
+            }
+            else
+              pricingObj[finishingMaterial.optionName] = data
+          }
 
           pricingObj['price'] = finishingMaterial.varientPrice[i]
           pricing.push(pricingObj)
         }
-      } else {
+      }
+      else {
         const priceObj = {}
         const data = finishingMaterial.varientName.includes('/')
           ? finishingMaterial.varientName.split('/')
           : finishingMaterial.varientName
-        if (Array.isArray(data)) {
-          for (let i = 0; i < data.length; i++)
-            priceObj[finishingMaterial.optionName[i]] = data[i]
-          priceObj['price'] = finishingMaterial.varientPrice
-          pricing.push(priceObj)
-        } else {
-          priceObj[finishingMaterial.optionName] = data
-          priceObj['price'] = finishingMaterial.varientPrice
-          pricing.push(priceObj)
+
+        if (Array.isArray(finishingMaterial.optionName)){
+          if (Array.isArray(data)) {
+            for (let j = 0; j < data.length; j++)
+              priceObj[finishingMaterial.optionName[j]] = data[j]
+          } else {
+            priceObj[finishingMaterial.optionName] = data
+          }
+        }else {
+          if (Array.isArray(data)) {
+            for (let j = 0; j < data.length; j++)
+              priceObj[finishingMaterial.optionName] = data[j]
+          } else {
+            priceObj[finishingMaterial.optionName] = data
+          }
         }
+
+        priceObj['price'] = finishingMaterial.varientPrice
+        pricing.push(priceObj)
       }
 
       finishingMaterial.varient = pricing

@@ -32,7 +32,6 @@ export class FcmService extends SimpleService<IFcm> {
   }
 
   async notification(data: any) {
-    console.log(data)
     let all = []
     if (Array.isArray(data.to)) {
       for (const item of data.to) {

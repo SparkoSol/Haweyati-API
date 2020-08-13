@@ -16,13 +16,15 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 
 @Controller('building-materials')
-export class BuildingMaterialsController extends ImageController<
-  IBuildingMaterialsInterface
-> {
-  constructor(protected readonly service: BuildingMaterialsService) {
+export class BuildingMaterialsController extends ImageController<IBuildingMaterialsInterface> {
+  constructor(
+    protected readonly service: BuildingMaterialsService
+  )
+  {
     super(service)
   }
-  private parseData(buildingMaterial: any) {
+
+  protected parseData(buildingMaterial: any) {
     if (Array.isArray(buildingMaterial.city)) {
       const list = []
       for (let i = 0; i < buildingMaterial.city.length; ++i) {
@@ -48,7 +50,6 @@ export class BuildingMaterialsController extends ImageController<
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   post(@UploadedFile() file, @Body() buildingMaterial: any) {
-    console.log(buildingMaterial)
     buildingMaterial = this.parseData(buildingMaterial)
     return super.post(file, buildingMaterial)
   }
@@ -59,10 +60,7 @@ export class BuildingMaterialsController extends ImageController<
     @UploadedFile() file,
     buildingMaterial: any
   ): Promise<IBuildingMaterialsInterface> {
-    console.log(buildingMaterial)
-    console.log(file)
     buildingMaterial = this.parseData(buildingMaterial)
-    console.log(buildingMaterial)
     return super.patch(file, buildingMaterial)
   }
 

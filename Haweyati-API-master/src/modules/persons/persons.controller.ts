@@ -42,6 +42,11 @@ export class PersonsController extends ImageController<IPerson> {
     return await this.service.changePassword(data)
   }
 
+  @Patch('update-password')
+  async updatePassword(@Body() data: any): Promise<IPerson>{
+    return await this.service.updatePassword(data)
+  }
+
   @Get('persons-notification')
   async getExceptAdmin(): Promise<IPerson[]>{
     return await this.service.exceptAdmin();

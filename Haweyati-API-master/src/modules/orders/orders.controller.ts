@@ -50,7 +50,6 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
         sort: 'delivery location'
       })
     }
-    console.log(data)
     return super.post(data)
   }
 
@@ -106,7 +105,6 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
 
   @Post('view')
   async viewOrders(@Body() data: any): Promise<any>{
-    console.log(data)
     return await this.service.viewOrders(data);
   }
 }

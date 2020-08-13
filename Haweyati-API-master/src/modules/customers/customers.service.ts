@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import {SimpleService} from "../../common/lib/simple.service";
-import {ICustomerInterface} from "../../data/interfaces/customers.interface";
-import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
-import { PersonsService } from '../persons/persons.service';
-import { IPerson } from '../../data/interfaces/person.interface';
+import { SimpleService } from '../../common/lib/simple.service'
+import { ICustomerInterface } from '../../data/interfaces/customers.interface'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { PersonsService } from '../persons/persons.service'
+import { IPerson } from '../../data/interfaces/person.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
@@ -20,51 +20,26 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
 
    async fetch(id?: string): Promise<any> {
       if (id) {
-         const data = (await this.model.findById(id).where('status', 'Active').populate('profile').exec()) as ICustomerInterface
-         if (data){
-            if (data.profile != null){
-               // @ts-ignore
-               data.profile.username = "";
-               // @ts-ignore
-               data.profile.password = "";
-            }
-         }
-         return data;
+         return (await this.model.findById(id).where('status', 'Active').populate('profile').exec()) as ICustomerInterface;
       }
       else {
-         const data = await this.model.find().where('status', 'Active').populate('profile').exec() as ICustomerInterface[];
-         if (data){
-            for (let i = 0; i < data.length; ++i) {
-               // @ts-ignore
-               data[i].profile.username = "";
-               // @ts-ignore
-               data[i].profile.password = "";
-            }
-         }
-         return data;
+         return await this.model.find().where('status', 'Active').populate('profile').exec() as ICustomerInterface[];
       }
    }
 
    async create(document: any): Promise<any> {
 
       let customer:any = undefined;
-      const person = await this.personService.create(document)
-      if (person){
-         try {
+      const profile = await this.personService.create(document)
+      if (profile){
+         // try {
             document.location = {
                longitude: document.longitude,
                latitude: document.latitude,
                address: document.address
             }
-            document.profile = await this.personService.fetchFromContact(document.contact);
+            document.profile = profile
             customer = await super.create(document)
-         }catch (e) {
-            await this.personService.delete(document.profile._id)
-            throw new HttpException(
-              'Profile unable to SignUp, Please contact Admin Support',
-              HttpStatus.NOT_ACCEPTABLE
-            )
-         }
       }
       else
          throw new HttpException(
@@ -74,22 +49,73 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
 
       //notification for admin
       if (customer){
+         if (typeof(profile) != 'string'){
+            await this.personService.change(document.profile)
+         }
          const notification = {
             type: 'Customer',
             title: 'New Customer',
             // @ts-ignore
             message: 'New Customer SignUp with name : ' + (await this.model.findOne({profile: customer.profile}).populate('profile').exec()).profile.name +'.'
          }
-         this.adminNotificationsService.create(notification);
+         await this.adminNotificationsService.create(notification);
+      }
+      else {
+         if (typeof(profile) == 'string'){
+            await this.personService.delete(document.profile._id)
+         }
+         throw new HttpException(
+           'Profile unable to SignUp, Please contact Admin Support',
+           HttpStatus.NOT_ACCEPTABLE
+         )
       }
 
       return customer
    }
 
+   async change(document: any): Promise<any> {
+      console.log(document)
+      const _id = document._id
+      document._id = document.personId
+
+      const person = await this.personService.change(document)
+      console.log(person)
+
+      document.personId = document._id
+      document._id = _id
+      if (person){
+         try {
+            console.log('in try')
+            document.location = {
+               longitude: document.longitude,
+               latitude: document.latitude,
+               address: document.address
+            }
+            document.profile = document.personId
+            await super.change(document)
+         }catch (e) {
+            throw new HttpException(
+              'Customer unable to Update, Please contact Admin Support',
+              HttpStatus.NOT_ACCEPTABLE
+            )
+         }
+      }
+      else
+         throw new HttpException(
+           'Customer unable to Update, Please contact Admin Support',
+           HttpStatus.NOT_ACCEPTABLE
+         )
+
+      return await this.fetch(document._id);
+   }
+
    async getProfile(contact: string): Promise<ICustomerInterface | string>{
       const person = await this.personService.fetchFromContact(contact);
       if (person){
-         return await this.model.findOne({profile: person._id}).populate('profile').exec()
+         const customer = await this.model.findOne({profile: person._id}).populate('profile').exec()
+         // @ts-ignore
+         customer.profile.password = ''
+         return customer
       }
       else{
          return "No Data"
@@ -97,11 +123,8 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
    }
 
    async getAll(id? : string): Promise<ICustomerInterface[] | ICustomerInterface>{
-      if (id){
-         return await this.model.findById(id).populate('profile').exec()
-      }else {
-         return await this.model.find().populate('profile').exec()
-      }
+      if (id) return await this.model.findById(id).populate('profile').exec()
+      else return await this.model.find().populate('profile').exec()
    }
 
    async getBlocked(id?: string, msg?: string): Promise<any>{
@@ -137,11 +160,10 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
 
       const persons = await this.personService.search(query);
       const activeCustomers = await this.model.find({status: 'Active'}).populate('profile').exec()
-      console.log(activeCustomers)
       if (activeCustomers){
          for (const item of persons){
+            item.password = ''
             for (const index of activeCustomers){
-
                // @ts-ignore
                if (item._id == index.profile.id){
                   results.push(index)
@@ -149,7 +171,6 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
             }
          }
       }
-      console.log(results)
       return results
    }
 
@@ -160,6 +181,7 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
 
       if (activeCustomers){
          for (const item of persons){
+            item.password = ''
             for (const index of activeCustomers){
                // @ts-ignore
                if (item._id == index.profile.id){

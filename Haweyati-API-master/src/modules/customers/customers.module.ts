@@ -5,11 +5,15 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {CustomersSchema} from "../../data/schemas/customers.schema";
 import { PersonsModule } from '../persons/persons.module';
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { MulterModule } from '@nestjs/platform-express'
 
 @Module({
   imports: [
-     MongooseModule.forFeature([{name:'customers', schema: CustomersSchema}]),
-     PersonsModule,
+    MongooseModule.forFeature([{name:'customers', schema: CustomersSchema}]),
+    MulterModule.register({
+      dest: '../uploads',
+    }),
+    PersonsModule,
     AdminNotificationsModule
   ],
   providers: [CustomersService],

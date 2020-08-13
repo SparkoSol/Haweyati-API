@@ -14,7 +14,6 @@ export class LocationUtils {
         timeout: 1000 // milliseconds
       })
     } catch (e) {
-      console.log(e.response)
       console.log(e.response.data.error_message)
     }
 

@@ -6,6 +6,7 @@ import { OrdersSchema } from '../../data/schemas/orders.schema'
 import { PersonsModule } from '../persons/persons.module'
 import { MulterModule } from '@nestjs/platform-express'
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { CustomersModule } from '../customers/customers.module'
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
       dest: '../uploads',
     }),
     PersonsModule,
-    AdminNotificationsModule
+    AdminNotificationsModule,
+    CustomersModule
   ],
   providers: [OrdersService],
   controllers: [OrdersController],

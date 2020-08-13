@@ -80,4 +80,10 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   async post(@UploadedFile() file, @Body() data: any): Promise<any> {
     return await super.post(file, data);
   }
+
+  @Patch()
+  @UseInterceptors(FileInterceptor('image'))
+  async patch(@UploadedFile() file, @Body() data: any): Promise<any> {
+    return await super.patch(file, data);
+  }
 }
