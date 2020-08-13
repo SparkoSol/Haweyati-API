@@ -1,7 +1,7 @@
 import {
   Body,
   Controller,
-  Patch
+  Patch, Post
 } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { ITimeSlots } from '../../data/interfaces/timeSlots.interface'
@@ -11,6 +11,11 @@ import { TimeSlotsService } from './time-slots.service'
 export class TimeSlotsController extends SimpleController<ITimeSlots> {
   constructor(protected readonly service: TimeSlotsService) {
     super(service)
+  }
+  @Post()
+  post(data: ITimeSlots): Promise<ITimeSlots> {
+    console.log(data)
+    return super.post(data)
   }
 
   @Patch()
