@@ -14,7 +14,6 @@ export class TimeSlotsController extends SimpleController<ITimeSlots> {
   }
   @Post()
   post(data: ITimeSlots): Promise<ITimeSlots> {
-    console.log(data)
     return super.post(data)
   }
 

@@ -10,9 +10,7 @@ import { LocationUtils } from '../../common/lib/location-utils'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
-export class ShopRegistrationService extends SimpleService<
-  IShopRegistrationInterface
-> {
+export class ShopRegistrationService extends SimpleService<IShopRegistrationInterface> {
   constructor(
     @InjectModel('shopregistration')
     protected readonly model: Model<IShopRegistrationInterface>,
@@ -45,6 +43,7 @@ export class ShopRegistrationService extends SimpleService<
 
   async create(document: any): Promise<IShopRegistrationInterface> {
     document.username = document.contact
+    document.scope = 'Supplier'
     const person = await this.personService.create(document)
     let supplier = undefined
 
@@ -73,11 +72,10 @@ export class ShopRegistrationService extends SimpleService<
         await this.personService.change(person)
       }
       //notification for admin
-      if (supplier){
+      if (document.status != "Active"){
         const notification = {
           type: 'Supplier',
           title: 'New Supplier',
-          // @ts-ignore
           message: 'New Supplier SignUp with name : ' + document.name +'.'
         }
         this.adminNotificationsService.create(notification);

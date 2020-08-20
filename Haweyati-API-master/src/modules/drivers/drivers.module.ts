@@ -13,7 +13,7 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
      MongooseModule.forFeature([
        {name:'drivers', schema:DriversSchema},
        {name:'driverRequest', schema:DriverRequestSchema},
-        {name: 'driverRejection', schema: RejectedDriversSchema}
+       {name: 'driverRejection', schema: RejectedDriversSchema}
      ]
     ),
      PersonsModule,

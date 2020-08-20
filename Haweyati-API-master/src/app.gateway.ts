@@ -28,13 +28,7 @@ export class AppGateway implements OnGatewayInit{
   async handleConnection(client: Socket, ...args: any[]) {
     AppGateway.socket = client
     this.logger.log(`Client connected: ${client.id}`);
-    if (await AdminNotificationsService.findSeen())
-    {
-      this.server.emit('msgToClient', 'Connection Established with Client', true);
-    }
-    else
-    {
-      this.server.emit('msgToClient', 'Connection Established with Client', false);
-    }
+    if (await AdminNotificationsService.findSeen()) this.server.emit('msgToClient', 'Connection Established with Client', true)
+    else this.server.emit('msgToClient', 'Connection Established with Client', false)
   }
 }

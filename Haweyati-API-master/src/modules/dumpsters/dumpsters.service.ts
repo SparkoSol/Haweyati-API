@@ -4,8 +4,6 @@ import { Model } from 'mongoose'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import * as fs from 'fs'
-import { PersonsService } from '../persons/persons.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 
 @Injectable()
@@ -78,16 +76,4 @@ export class DumpstersService extends SimpleService<IDumpster> {
   async remove(id: string): Promise<IDumpster> {
     return await this.model.findByIdAndUpdate(id, { status: 'Inactive' }).exec()
   }
-
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  // async deleteImage(data: any){
-  //    const dump = (await this.model.findById(data.dumpster).exec()) as IDumpster
-  //    for (let i=0; i<dump.images.length; ++i){
-  //       if (dump.images[i].name == data.image){
-  //          dump.images.splice(i, 1);
-  //          fs.unlinkSync(dump.images[i].path)
-  //       }
-  //    }
-  //    return await super.change(dump);
-  // }
 }

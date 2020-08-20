@@ -21,7 +21,7 @@ export class DumpstersController extends ImageController<IDumpster> {
     super(service)
   }
 
-  private parseData(dumpster: any): any {
+  protected parseData(dumpster: any): any {
     if (Array.isArray(dumpster.city)) {
       const list = []
       for (let i = 0; i < dumpster.city.length; ++i) {
@@ -75,9 +75,4 @@ export class DumpstersController extends ImageController<IDumpster> {
   async deleteDumpster(@Param('id') id: string): Promise<any> {
     return await this.service.remove(id)
   }
-
-  // @Patch('deleteimage')
-  // async imageDelete(@Body() data: any): Promise<any>{
-  //    return await this.service.deleteImage(data);
-  // }
 }

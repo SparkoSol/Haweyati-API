@@ -16,7 +16,8 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
     protected readonly personsService: PersonsService,
     protected readonly customersService: CustomersService,
     protected readonly adminNotificationsService : AdminNotificationsService
-  ) {
+  )
+  {
     super(model)
   }
 
