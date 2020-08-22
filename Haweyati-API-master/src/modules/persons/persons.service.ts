@@ -7,6 +7,7 @@ import * as blake2 from 'blake2'
 import * as nodeMailer from 'nodemailer'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
 import * as moment from 'moment'
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Injectable()
 export class PersonsService extends SimpleService<any> {
@@ -48,8 +49,13 @@ export class PersonsService extends SimpleService<any> {
           return profile
         }
       }
-    } else {
-      return (await super.create(data))._id
+    }
+    else {
+      const person = await super.create(data)
+      if (person.image){
+        await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
+      }
+      return person._id
     }
   }
 
@@ -73,7 +79,11 @@ export class PersonsService extends SimpleService<any> {
   }
 
   async change(document: any): Promise<any> {
-    return await this.model.findByIdAndUpdate(document._id, document).exec()
+    const person = await this.model.findByIdAndUpdate(document._id, document).exec()
+    if (person.image){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
+    }
+    return person
   }
 
   async exceptAdmin(): Promise<IPerson[]> {

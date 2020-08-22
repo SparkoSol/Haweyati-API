@@ -32,14 +32,13 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
       let customer:any = undefined;
       const profile = await this.personService.create(document)
       if (profile){
-         // try {
-            document.location = {
-               longitude: document.longitude,
-               latitude: document.latitude,
-               address: document.address
-            }
-            document.profile = profile
-            customer = await super.create(document)
+         document.location = {
+            longitude: document.longitude,
+            latitude: document.latitude,
+            address: document.address
+         }
+         document.profile = profile
+         customer = await super.create(document)
       }
       else
          throw new HttpException(

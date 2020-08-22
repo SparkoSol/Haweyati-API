@@ -47,6 +47,8 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     const person = await this.personService.create(document)
     let supplier = undefined
 
+    console.log(document)
+
     if (person){
       document.person = person
 

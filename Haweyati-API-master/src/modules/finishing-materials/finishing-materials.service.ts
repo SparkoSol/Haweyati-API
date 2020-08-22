@@ -7,6 +7,7 @@ import { ShopRegistrationService } from '../shop-registration/shop-registration.
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Injectable()
 export class FinishingMaterialsService extends SimpleService<IFinishingMaterialsInterface> {
@@ -42,6 +43,22 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
       }
       return big
     }
+  }
+
+  async create(document: IFinishingMaterialsInterface): Promise<IFinishingMaterialsInterface> {
+    const fm = await super.create(document)
+    if (document.image){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+fm.image.path, process.cwd()+"\\..\\uploads\\"+fm.image.name, 20)
+    }
+    return fm
+  }
+
+  async change(document: IFinishingMaterialsInterface): Promise<IFinishingMaterialsInterface> {
+    const fm = await super.change(document)
+    if (document.image){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+fm.image.path, process.cwd()+"\\..\\uploads\\"+fm.image.name, 20)
+    }
+    return fm
   }
 
   fetchByParentId(id: string): Promise<IFinishingMaterialsInterface[]> {
@@ -92,7 +109,7 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
   }
 
   async remove(id: string): Promise<any> {
-    return await this.model.findByIdAndUpdate(id, { status: 'Inactive' })
+    return await this.model.findByIdAndUpdate(id, { status: 'Inactive' }).exec()
   }
 
   async deleteCategory(id: string): Promise<any> {

@@ -17,7 +17,10 @@ import { ImageController } from '../../common/lib/image.controller'
 
 @Controller('dumpsters')
 export class DumpstersController extends ImageController<IDumpster> {
-  constructor(protected readonly service: DumpstersService) {
+  constructor(
+    protected readonly service: DumpstersService
+  )
+  {
     super(service)
   }
 

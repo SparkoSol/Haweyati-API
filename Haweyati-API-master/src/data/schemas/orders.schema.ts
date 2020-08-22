@@ -49,6 +49,10 @@ export const OrdersSchema = new Schema(
     city: {
       type: String,
       required: true
+    },
+    reason : {
+      type: String,
+      required: false
     }
   },
   { timestamps: true }

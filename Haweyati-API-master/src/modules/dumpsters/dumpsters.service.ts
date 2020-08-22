@@ -5,6 +5,7 @@ import { SimpleService } from 'src/common/lib/simple.service'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Injectable()
 export class DumpstersService extends SimpleService<IDumpster> {
@@ -12,7 +13,8 @@ export class DumpstersService extends SimpleService<IDumpster> {
     @InjectModel('dumpsters')
     protected readonly model: Model<IDumpster>,
     private readonly service: ShopRegistrationService
-  ) {
+  )
+  {
     super(model)
   }
 
@@ -36,6 +38,22 @@ export class DumpstersService extends SimpleService<IDumpster> {
       }
       return big
     }
+  }
+
+  async create(document: IDumpster): Promise<IDumpster> {
+    const dumpster = await super.create(document)
+    if (dumpster.image){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+dumpster.image.path, process.cwd()+"\\..\\uploads\\"+dumpster.image.name, 20)
+    }
+    return dumpster
+  }
+
+  async change(document: IDumpster): Promise<IDumpster> {
+    const dumpster = await super.change(document)
+    if (document.image){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+dumpster.image.path, process.cwd()+"\\..\\uploads\\"+dumpster.image.name, 20)
+    }
+    return dumpster
   }
 
   async fromSuppliers(id: string): Promise<IDumpster[]> {

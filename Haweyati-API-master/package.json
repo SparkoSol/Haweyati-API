@@ -36,8 +36,6 @@
     "blake2": "^4.0.1",
     "carbone": "^2.0.1",
     "dotenv": "^8.2.0",
-    "imagemin": "^7.0.1",
-    "imagemin-webp": "^6.0.0",
     "mongoose": "^5.9.18",
     "nodemailer": "^6.4.11",
     "passport": "^0.4.1",
@@ -46,7 +44,8 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.5.4",
-    "spherical-geometry-js": "^2.0.0"
+    "spherical-geometry-js": "^2.0.0",
+    "webp-converter": "^2.3.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.0.0",
