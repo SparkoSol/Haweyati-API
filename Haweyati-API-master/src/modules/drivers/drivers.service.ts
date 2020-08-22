@@ -19,7 +19,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
     protected readonly rejectedModel: Model<IRejectedDrivers>,
 
     protected readonly personsService: PersonsService,
-    protected readonly adminNotificationsService:AdminNotificationsService
+    protected readonly adminNotificationsService: AdminNotificationsService
   )
   {
     super(model)
@@ -137,7 +137,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
   async getRejected(id: string, data?: any): Promise<any> {
     const request = await this.requestModel.findById(id).exec()
     if (data != null) {
-      this.rejectedModel.create({
+      await this.rejectedModel.create({
         request: id,
         message: data.message,
         createdAt: Date.now()

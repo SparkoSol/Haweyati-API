@@ -1,4 +1,3 @@
-import { IPerson } from 'src/data/interfaces/person.interface'
 import {
   Body,
   Controller,
@@ -10,11 +9,15 @@ import {
 } from '@nestjs/common'
 import { PersonsService } from './persons.service'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { IPerson } from 'src/data/interfaces/person.interface'
 import { ImageController } from '../../common/lib/image.controller'
 
 @Controller('persons')
 export class PersonsController extends ImageController<IPerson> {
-  constructor(protected readonly service: PersonsService) {
+  constructor(
+    protected readonly service: PersonsService
+  )
+  {
     super(service)
   }
 

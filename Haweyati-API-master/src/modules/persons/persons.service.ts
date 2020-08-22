@@ -68,7 +68,7 @@ export class PersonsService extends SimpleService<any> {
   }
 
   async fetchAll(id: string): Promise<IPerson>{
-    return await this.model.findById(id).exec()
+    return (await this.fetch(id)) as IPerson
   }
 
   async fetchByUsername(name: string): Promise<IPerson> {

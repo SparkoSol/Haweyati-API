@@ -12,33 +12,33 @@ export class ServiceRequestsController extends SimpleController<IServicesRequest
   }
 
   @Post()
-  async postOverride(@Body() data: any){
+  async post(@Body() data: any){
     return await this.service.create(data);
   }
 
   @Get('pending')
   async pending(): Promise<any>{
-    return await this.service.Pending();
+    return await this.service.getByStatus('Pending');
   }
 
   @Get('rejected')
   async rejectedData(): Promise<any>{
-    return await this.service.Rejected();
+    return await this.service.getByStatus('Rejected');
   }
 
   @Patch('rejected/:id')
   async rejected(@Param('id') id: string) : Promise<any>{
-    return await this.service.Rejected(id);
+    return await this.service.updateByStatus(id, 'Rejected');
   }
 
   @Get('completed')
   async completedData(): Promise<any>{
-    return await this.service.Completed();
+    return await this.service.getByStatus('Completed');
   }
 
   @Patch('completed/:id')
   async completed(@Param('id') id: string) : Promise<any>{
-    return await this.service.Completed(id);
+    return await this.service.updateByStatus(id, 'Completed');
   }
 
   @Get('getBySupplier/:id')

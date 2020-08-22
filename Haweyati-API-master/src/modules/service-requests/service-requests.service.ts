@@ -26,22 +26,21 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests>{
          data.suppliers.person = await this.personsService.fetch(data.suppliers.person)
          return data
       }
-      else{
+      else
          return this.getByStatus()
-      }
    }
 
    protected getRandomArbitrary() {
       return (Math.random() * (999999 - 100000) + 100000).toFixed(0);
    }
 
-   create(document: IServicesRequests): Promise<IServicesRequests> {
-      let code = this.getRandomArbitrary();
+   async create(document: IServicesRequests): Promise<IServicesRequests> {
+      let code = await this.getRandomArbitrary();
       code = code+Date.now().toString()
       const h = blake2.createHash('blake2b', {digestLength: 3});
       h.update(Buffer.from(code));
       document.requestNo = h.digest("hex")
-      const serviceRequest = super.create(document)
+      const serviceRequest = await super.create(document)
 
       //notification for admin
       if (serviceRequest){
@@ -50,7 +49,7 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests>{
             title: 'New Service Request',
             message: 'New Service Request with id : '+ document.requestNo +'.'
          }
-         this.adminNotificationsService.create(notification);
+         await this.adminNotificationsService.create(notification);
       }
       return serviceRequest
    }
@@ -67,19 +66,8 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests>{
       return all
    }
 
-   async Pending(){
-      return await this.getByStatus('Pending');
-
-   }
-
-   async Rejected(id? : string){
-      if (id) return await this.model.findByIdAndUpdate(id, {status: 'Rejected'}).exec()
-      else return await this.getByStatus('Rejected')
-   }
-
-   async Completed(id? : string){
-      if (id) return await this.model.findByIdAndUpdate(id, {status: 'Completed'}).exec()
-      else return await this.getByStatus('Completed');
+   async updateByStatus(id: string, status: string): Promise<IServicesRequests>{
+      return await this.model.findByIdAndUpdate(id, {status}).exec()
    }
 
    async getBySupplier(id:string){
