@@ -49,8 +49,10 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async create(document: any): Promise<IDriversInterface> {
     let driver = undefined;
+    document._id = undefined
+    document.scope = 'driver'
     const person = await this.personsService.create(document)
-
+    console.log(person)
     if (person){
         document.profile = person
 
@@ -92,7 +94,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
         // @ts-ignore
         message: 'New Driver SignUp with name : ' + (await this.model.findOne({profile: driver.profile}).populate('profile').exec()).profile.name +'.'
       }
-      this.adminNotificationsService.create(notification);
+      await this.adminNotificationsService.create(notification);
     }
     else {
       if (typeof(person) == 'string'){

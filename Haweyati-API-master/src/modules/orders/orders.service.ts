@@ -7,6 +7,8 @@ import { PersonsService } from '../persons/persons.service'
 import * as blake2 from 'blake2'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 import { CustomersService } from '../customers/customers.service'
+import * as moment from 'moment'
+import { defaultAxiosInstance } from '@googlemaps/google-maps-services-js/dist'
 
 @Injectable()
 export class OrdersService extends SimpleService<IOrdersInterface> {
@@ -96,15 +98,6 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
     }
   }
 
-  async getByDateRange(min: string, max: string): Promise<IOrdersInterface[]> {
-    let all = await this.model
-      .find({ createdAt: { $gte: min, $lt: max } })
-      .populate('customer')
-      .exec()
-    all = await this.getPerson(all)
-    return all
-  }
-
   async updateStatus(id: string, status: string) {
     return await this.model
       .findByIdAndUpdate(id, { status })
@@ -112,6 +105,7 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
       .exec()
   }
 
+  //also used in reports module
   async getByStatus(status: string) {
     let all = await this.model
       .find({ status })
@@ -143,5 +137,67 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
       }
     }
     return Array.from(results);
+  }
+
+  //used in reports module
+  async getByDate(date: string): Promise<any[]>{
+    let orders = await this.getByStatus('completed')
+    let result = []
+    for (let order of orders){
+      // @ts-ignore
+      const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
+      if (convertedDate == date){
+        result.push(order)
+      }
+    }
+    return result
+  }
+  async getByWeek(date: number): Promise<any[]>{
+    let orders = await this.getByStatus('completed')
+    let result = []
+    for (let order of orders){
+      // @ts-ignore
+      const convertedDate = moment(order.updatedAt).week()
+      if (date == convertedDate){
+        result.push(order)
+      }
+    }
+    return result
+  }
+  async getByMonth(date: number): Promise<any[]>{
+    let orders = await this.getByStatus('completed')
+    let result = []
+    for (let order of orders){
+      // @ts-ignore
+      const convertedDate = moment(order.updatedAt).month() + 1
+      if (date == convertedDate){
+        result.push(order)
+      }
+    }
+    return result
+  }
+  async getByYear(date: number): Promise<any[]>{
+    let orders = await this.getByStatus('completed')
+    let result = []
+    for (let order of orders){
+      // @ts-ignore
+      const convertedDate = moment(order.updatedAt).year()
+      if (date == convertedDate){
+        result.push(order)
+      }
+    }
+    return result
+  }
+  async getCustom(date: string, dateTo: string): Promise<any[]>{
+    let orders = await this.getByStatus('completed')
+    let result = []
+    for (let order of orders){
+      // @ts-ignore
+      const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
+      if (convertedDate >= date && convertedDate <= dateTo){
+        result.push(order)
+      }
+    }
+    return result
   }
 }

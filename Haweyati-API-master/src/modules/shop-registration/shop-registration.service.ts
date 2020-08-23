@@ -47,8 +47,6 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     const person = await this.personService.create(document)
     let supplier = undefined
 
-    console.log(document)
-
     if (person){
       document.person = person
 
@@ -187,6 +185,15 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
 
   async getByProfile(id: string): Promise<IShopRegistrationInterface>{
     return await this.model.findOne({person: id}).populate('person').exec()
+  }
+
+  async getSupplierCities(): Promise<any>{
+    const suppliers = await this.model.find().exec()
+    let result = new Set()
+    for (let item of suppliers){
+      result.add(item.city)
+    }
+    return Array.from(result)
   }
 
   async generateReport() {

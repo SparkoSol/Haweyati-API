@@ -17,6 +17,7 @@ import { OrdersModule } from './modules/orders/orders.module'
 import { TimeSlotsModule } from './modules/time-slots/time-slots.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { AdminNotificationsModule } from './modules/admin-notifications/admin-notifications.module'
+import { ReportsModule } from './modules/reports/reports.module'
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AdminNotificationsModule } from './modules/admin-notifications/admin-no
     FcmModule,
     AuthModule,
     OrdersModule,
+    ReportsModule,
     PersonsModule,
     DriversModule,
     DumpstersModule,

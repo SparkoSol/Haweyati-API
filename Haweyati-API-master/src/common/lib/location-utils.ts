@@ -16,14 +16,13 @@ export class LocationUtils {
     } catch (e) {
       console.log(e.response.data.error_message)
     }
-
     return location
   }
 
   static async getCity(lat: any, lng: any): Promise<string> {
     const location = await this.getLocationData(lat, lng)
     const length = location.data?.results[0]?.address_components.length
-    return location.data?.results[0]?.address_components[length - 3]?.long_name
+    return location.data?.results[0]?.address_components[length - 6]?.long_name
   }
 
   static async getAddress(lat: any, lng: any): Promise<string> {

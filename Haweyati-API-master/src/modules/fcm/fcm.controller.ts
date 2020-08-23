@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { IFcm } from '../../data/interfaces/fcm.interface'
 import { FcmService } from './fcm.service'
@@ -6,7 +6,10 @@ import { IFcmMessages } from '../../data/interfaces/fcmMessages.interface'
 
 @Controller('fcm')
 export class FcmController extends SimpleController<IFcm> {
-  constructor(protected readonly service: FcmService) {
+  constructor(
+    protected readonly service: FcmService
+  )
+  {
     super(service)
   }
 
@@ -21,4 +24,8 @@ export class FcmController extends SimpleController<IFcm> {
     return await this.service.getFcmHistory();
   }
 
+  @Get('person/:id')
+  async getPersonHistory(@Param('id') id: string): Promise<IFcmMessages[]>{
+    return await this.service.getPersonHistory(id)
+  }
 }

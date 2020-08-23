@@ -53,16 +53,6 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
     return super.post(data)
   }
 
-  @Get('range')
-  async getByDateRange(@Body() data: any): Promise<IOrdersInterface[]> {
-    return await this.service.getByDateRange(data.min, data.max)
-  }
-
-  @Get('range/:date')
-  async getByDate(@Body() data: any): Promise<IOrdersInterface[]> {
-    return await this.service.getByDateRange(data.min, data.max)
-  }
-
   @Get('getpending')
   async getPendingOrders(): Promise<IOrdersInterface[]> {
     return await this.service.getByStatus('pending')
@@ -90,12 +80,12 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
 
   @Get('getclosed')
   async getClosedOrders(): Promise<IOrdersInterface[]> {
-    return await this.service.getByStatus('closed')
+    return await this.service.getByStatus('completed')
   }
 
   @Patch('getclosed/:id')
   async getClosed(@Param('id') id: string): Promise<any> {
-    return this.service.updateStatus(id, 'closed')
+    return this.service.updateStatus(id, 'completed')
   }
 
   @Get('search')

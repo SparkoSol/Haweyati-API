@@ -26,8 +26,10 @@ export class PersonsService extends SimpleService<any> {
 
   async create(data: any): Promise<any> {
     const profile = await this.fetchFromContact(data.contact)
+    console.log(profile)
     data.username = data.contact
     if (profile) {
+      console.log('in if')
       if (Array.isArray(data.scope)) {
         if (profile.scope.includes(data.scope[0])) {
           throw new HttpException(
@@ -51,7 +53,9 @@ export class PersonsService extends SimpleService<any> {
       }
     }
     else {
+      console.log('in else')
       const person = await super.create(data)
+      console.log(person)
       if (person.image){
         await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
       }

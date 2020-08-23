@@ -73,12 +73,10 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
    }
 
    async change(document: any): Promise<any> {
-      console.log(document)
       const _id = document._id
       document._id = document.personId
 
       const person = await this.personService.change(document)
-      console.log(person)
 
       document.personId = document._id
       document._id = _id

@@ -117,6 +117,11 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
     return this.service.change(data)
   }
 
+  @Get('cities')
+  async getSupplierCities(): Promise<any>{
+    return await this.service.getSupplierCities();
+  }
+
   @Get('report')
   async report(@Res() res) {
     ;(await this.service.generateReport()).pipe(res)

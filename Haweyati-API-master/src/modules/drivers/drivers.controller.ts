@@ -3,12 +3,13 @@ import {
   Controller,
   Get,
   Param,
-  Patch
+  Patch, Post, UploadedFile, UseInterceptors
 } from '@nestjs/common'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { DriversService } from './drivers.service'
 import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 import { ImageController } from '../../common/lib/image.controller'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('drivers')
 export class DriversController extends ImageController<IDriversInterface> {
@@ -17,6 +18,14 @@ export class DriversController extends ImageController<IDriversInterface> {
   )
   {
     super(service)
+  }
+
+  @Post()
+  @UseInterceptors(FileInterceptor('image'))
+  async post(@UploadedFile() file, @Body() data: any): Promise<IDriversInterface> {
+    console.log(data)
+    console.log(file)
+    return super.post(file, data)
   }
 
   @Get('getrequests')

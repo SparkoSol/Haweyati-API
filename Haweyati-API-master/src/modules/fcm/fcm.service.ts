@@ -21,6 +21,10 @@ export class FcmService extends SimpleService<IFcm> {
     super(model)
   }
 
+  async getPersonHistory(id: string): Promise<IFcmMessages[]>{
+    return await this.modelMessage.find({person: id}).exec()
+  }
+
   async getFcmHistory(): Promise<IFcmMessages[]>{
     let all = await this.modelMessage.find().exec()
     for (let i =0 ; i< all.length; ++i){
