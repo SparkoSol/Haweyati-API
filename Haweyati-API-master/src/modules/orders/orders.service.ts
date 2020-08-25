@@ -8,7 +8,6 @@ import * as blake2 from 'blake2'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 import { CustomersService } from '../customers/customers.service'
 import * as moment from 'moment'
-import { defaultAxiosInstance } from '@googlemaps/google-maps-services-js/dist'
 
 @Injectable()
 export class OrdersService extends SimpleService<IOrdersInterface> {
@@ -200,4 +199,118 @@ export class OrdersService extends SimpleService<IOrdersInterface> {
     }
     return result
   }
+
+  async getByProduct(date: string, dateTo: string): Promise<any[]>{
+    let orders = await this.getByStatus('completed')
+    let name = [], qty = [], total = [], result = []
+    for (let order of orders){
+      // @ts-ignore
+      const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
+      if (convertedDate >= date && convertedDate <= dateTo){
+        for (let i=0; i< order.details.items.length; ++i){
+          let flag: boolean = false
+          switch (order.service) {
+            case 'Construction Dumpster': {
+              if (name.length > 0) {
+                for (let j = 0; j < name.length; ++j) {
+                  if (name[j] == order.details.items[i].product.size + ' Yard Dumpster') {
+                    qty[j] += 1
+                    total[j] += +order.details.items[i].total
+                    flag = true
+                    break
+                  }
+                }
+                if (!flag){
+                  name.push(order.details.items[i].product.size + ' Yard Dumpster')
+                  qty.push(1)
+                  total.push(+order.details.items[i].total)
+                  break
+                }
+              } else {
+                name.push(order.details.items[i].product.size + ' Yard Dumpster')
+                qty.push(1)
+                total.push(+order.details.items[i].total)
+              }
+            }
+            case 'Building Material': {
+              if (name.length > 0) {
+                for (let j = 0; j < name.length; ++j) {
+                  if (name[j] == (order.details.items[i].product.name + ' ' + order.details.items[i].size)) {
+                    qty[j] += +order.details.items[i].qty
+                    total[j] += +order.details.items[i].total
+                    flag = true
+                    break
+                  }
+                }
+                if (!flag){
+                  name.push(order.details.items[i].product.name + ' ' + order.details.items[i].size)
+                  qty.push(+order.details.items[i].qty)
+                  total.push(+order.details.items[i].total)
+                  break
+                }
+              } else {
+                name.push(order.details.items[i].product.name + ' ' + order.details.items[i].size)
+                qty.push(+order.details.items[i].qty)
+                total.push(+order.details.items[i].total)
+              }
+            }
+            case 'Finishing Material': {
+              if (name.length > 0) {
+                for (let j = 0; j < name.length; ++j) {
+                  if (name[j] == (order.details.items[i].product.name)) {
+                    qty[j] += +order.details.items[i].qty
+                    total[j] += +order.details.items[i].total
+                    flag = true
+                    break
+                  }
+                  if (!flag){
+                    name.push(order.details.items[i].product.name)
+                    qty.push(+order.details.items[i].qty)
+                    total.push(+order.details.items[i].total)
+                    break
+                  }
+                }
+              } else {
+                name.push(order.details.items[i].product.name)
+                qty.push(+order.details.items[i].qty)
+                total.push(+order.details.items[i].total)
+              }
+            }
+            case 'Scaffolding': {
+              if (name.length > 0) {
+                for (let j = 0; j < name.length; ++j) {
+                  if (name[j] == (order.details.items[i].name + ' ' + order.details.items[i].size)) {
+                    qty[j] += +order.details.items[i].qty
+                    total[j] += +order.details.items[i].total
+                    flag = true
+                    break
+                  }
+                  if (!flag){
+                    name.push(order.details.items[i].name + ' ' + order.details.items[i].size)
+                    qty.push(+order.details.items[i].qty)
+                    total.push(+order.details.items[i].total)
+                    break
+                  }
+                }
+              } else {
+                name.push(order.details.items[i].name + ' ' + order.details.items[i].size)
+                qty.push(+order.details.items[i].qty)
+                total.push(+order.details.items[i].total)
+              }
+            }
+          }
+        }
+      }
+    }
+    for (let i=0; i< name.length; ++i){
+      result.push({
+        name: name[i],
+        quantity: qty[i],
+        total: total[i]
+      })
+    }
+    console.log(result)
+    return result
+  }
 }
+

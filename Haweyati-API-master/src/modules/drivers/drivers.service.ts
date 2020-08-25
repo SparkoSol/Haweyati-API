@@ -51,8 +51,18 @@ export class DriversService extends SimpleService<IDriversInterface> {
     let driver = undefined;
     document._id = undefined
     document.scope = 'driver'
-    const person = await this.personsService.create(document)
-    console.log(person)
+
+    const personObject = {
+      scope : document.scope,
+      contact: document.contact,
+      email: document.email,
+      password: document.password,
+      image: document.image,
+      name: document.name,
+      username: document.username
+    }
+
+    const person = await this.personsService.create(personObject)
     if (person){
         document.profile = person
 

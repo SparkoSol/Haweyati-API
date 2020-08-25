@@ -27,7 +27,7 @@ export abstract class ImageController<T extends Document> {
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  post(@UploadedFile('file') file, @Body() data: any): Promise<T> {
+  post(@UploadedFile() file, @Body() data: any): Promise<T> {
     if (file) {
       // @ts-ignore
       data.image = {

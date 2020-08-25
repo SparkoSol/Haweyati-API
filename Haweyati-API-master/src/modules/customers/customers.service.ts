@@ -69,7 +69,7 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
          )
       }
 
-      return customer
+      return await this.model.findById(customer._id).populate('profile').exec()
    }
 
    async change(document: any): Promise<any> {

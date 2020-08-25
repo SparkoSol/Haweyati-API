@@ -195,8 +195,4 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     }
     return Array.from(result)
   }
-
-  async generateReport() {
-    return ReportUtils.renderReport('SupplierReport.odt', await this.fetch())
-  }
 }

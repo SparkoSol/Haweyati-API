@@ -23,8 +23,6 @@ export class DriversController extends ImageController<IDriversInterface> {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async post(@UploadedFile() file, @Body() data: any): Promise<IDriversInterface> {
-    console.log(data)
-    console.log(file)
     return super.post(file, data)
   }
 

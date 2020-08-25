@@ -83,7 +83,21 @@ export class PersonsService extends SimpleService<any> {
   }
 
   async change(document: any): Promise<any> {
-    const person = await this.model.findByIdAndUpdate(document._id, document).exec()
+    let person: IPerson
+    if (document.old){
+      person = await this.model.findOneAndUpdate({_id: document._id, password: document.old}, document).exec()
+      if (person){
+        return person
+      }else {
+        throw new HttpException(
+          'Old Password Not Matched!',
+          HttpStatus.NOT_ACCEPTABLE
+        )
+      }
+    }
+    else {
+      person = await this.model.findByIdAndUpdate(document._id, document).exec()
+    }
     if (person.image){
       await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
     }
@@ -111,7 +125,7 @@ export class PersonsService extends SimpleService<any> {
 
   async forgotPassword(email: string) {
     const person = await this.model
-      .findOne({ email: email, scope: 'Admin' })
+      .findOne({ email: email, scope: 'admin' })
       .exec()
 
     if (person) {
@@ -140,7 +154,7 @@ export class PersonsService extends SimpleService<any> {
         text: '', // plain text body
         html:
           '<button onclick="">Click Here</button>' +
-          ' http://192.168.100.23:3000/auth/reset-password/' +
+          ' http://192.168.100.23/auth/reset-password/' +
           hash // html body
       })
       console.log('Message sent: %s', info.messageId)

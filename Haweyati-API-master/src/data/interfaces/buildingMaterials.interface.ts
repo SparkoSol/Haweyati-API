@@ -9,8 +9,8 @@ export interface IBuildingMaterialsInterface extends Document {
   parent: IBuildingMaterialCategory
   suppliers: IShopRegistrationInterface[]
   image: IImage
-  price12yard: number
-  price20yard: number
+  price12yard: number[]
+  price20yard: number[]
   pricing: [
     {
       city: string

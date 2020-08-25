@@ -7,6 +7,7 @@ import { DriverRequestSchema } from '../../data/schemas/driverRequest.schema';
 import { PersonsModule } from '../persons/persons.module';
 import { RejectedDriversSchema } from "../../data/schemas/rejectedDrivers.schema";
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { MulterModule } from '@nestjs/platform-express'
 
 @Module({
   imports: [
@@ -16,6 +17,9 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
        {name: 'driverRejection', schema: RejectedDriversSchema}
      ]
     ),
+    MulterModule.register({
+      dest: '../uploads'
+    }),
      PersonsModule,
     AdminNotificationsModule
   ],

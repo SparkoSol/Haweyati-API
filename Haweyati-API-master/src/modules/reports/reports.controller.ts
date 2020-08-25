@@ -12,8 +12,13 @@ export class ReportsController {
   }
 
   @Get('orders-report')
-  async getOrdersReport(@Query() data: any,@Res() res){
+  async generateOrdersReport(@Query() data: any,@Res() res){
+    ;(await this.service.generateOrdersReport(data)).pipe(res)
+  }
+
+  @Post('sales')
+  async getSalesData(@Body() data: any) {
     console.log(data)
-    ;(await this.service.generateReport(data)).pipe(res)
+    return await this.service.getSalesData(data)
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service'
 import { ReportUtils } from '../../common/lib/report-utils'
+import * as moment from 'moment'
 
 @Injectable()
 export class ReportsService {
@@ -25,9 +26,33 @@ export class ReportsService {
     }
   }
 
-  async generateReport(data: any){
-    console.log(data)
-    console.log(await this.getOrdersData(data))
-    return ReportUtils.renderReport('SupplierReport.odt', await this.getOrdersData(data))
+  async generateOrdersReport(data: any){
+    const orders = await this.getOrdersData(data)
+    let total = 0;
+    for (let order of orders){
+      order.orderDate = moment(order.updatedAt).format('MM-DD-YYYY')
+      total += +order.details.netTotal
+    }
+    const dateTo = data.dateTo? ' - '+data.dateTo: ''
+    const date = data.date? data.date: ''
+    const dataForReport = {
+      title: data.type[0].toUpperCase() + data.type.slice(1),
+      create: moment().format('MM-DD-YYYY'),
+      date:  date+ dateTo,
+      orders: orders,
+      total: total
+    }
+    return ReportUtils.renderReport('order_report.odt', dataForReport)
+  }
+
+  async getSalesData(data){
+    switch (data.type) {
+      case 'product':
+        return await this.ordersService.getByProduct(data.date, data.dateTo)
+      case 'supplier':
+        return
+      case 'all':
+        return
+    }
   }
 }
