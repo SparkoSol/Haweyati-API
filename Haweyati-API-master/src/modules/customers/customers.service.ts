@@ -28,7 +28,7 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
    }
 
    async create(document: any): Promise<any> {
-
+      document.email = undefined
       let customer:any = undefined;
       const profile = await this.personService.create(document)
       if (profile){

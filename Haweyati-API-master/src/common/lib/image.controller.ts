@@ -46,7 +46,7 @@ export abstract class ImageController<T extends Document> {
   @UseInterceptors(FileInterceptor('image'))
   patch(@UploadedFile() file, @Body() data: any): Promise<T> {
     // @ts-ignore
-    if (file != null) {
+    if (file) {
       // @ts-ignore
       data.image = {
         name: file.filename,
