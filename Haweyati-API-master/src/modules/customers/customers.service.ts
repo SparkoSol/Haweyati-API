@@ -28,8 +28,11 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
    }
 
    async create(document: any): Promise<any> {
+      console.log(document)
       document.email = undefined
       let customer:any = undefined;
+      console.log(document)
+
       const profile = await this.personService.create(document)
       if (profile){
          document.location = {
