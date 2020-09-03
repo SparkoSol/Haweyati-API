@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"haweyati--db.buildingmaterials"}],"uuid":"5c99d0070c9d4cd084b3f02d0f226838"}
