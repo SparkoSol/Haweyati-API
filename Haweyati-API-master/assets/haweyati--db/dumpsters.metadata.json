@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"haweyati--db.dumpsters"}],"uuid":"3e6cb78397304e7db7156ebfb96110df"}
