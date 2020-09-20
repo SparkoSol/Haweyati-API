@@ -14,6 +14,7 @@ export const PersonsSchema = new Schema(
     },
     email: {
       type: String,
+      unique: true
     },
     image: {
       type: ImagesSchema,

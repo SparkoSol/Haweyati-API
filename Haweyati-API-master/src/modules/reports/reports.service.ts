@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service'
 import { ReportUtils } from '../../common/lib/report-utils'
 import * as moment from 'moment'
+import { OrderStatus } from '../../data/interfaces/orders.interface'
 
 @Injectable()
 export class ReportsService {
@@ -12,7 +13,7 @@ export class ReportsService {
   async getOrdersData(data: any){
     switch (data.type) {
       case 'all':
-        return await this.ordersService.getByStatus('completed')
+        return await this.ordersService.getByStatus(OrderStatus.Closed)
       case 'daily':
         return await this.ordersService.getByDate(data.date)
       case 'weekly':
@@ -48,7 +49,7 @@ export class ReportsService {
   async getSalesData(data){
     switch (data.type) {
       case 'product':
-        return await this.ordersService.getByProduct(data.date, data.dateTo)
+        // return await this.ordersService.getByProduct(data.date, data.dateTo)
       case 'supplier':
         return
       case 'all':

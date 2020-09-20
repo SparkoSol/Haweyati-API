@@ -1,19 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common'
-import {SimpleController} from "../../common/lib/simple.controller";
 import {IServicesRequests} from "../../data/interfaces/serviceRequests.interface";
 import {ServiceRequestsService} from "./service-requests.service";
+import { ImageController } from '../../common/lib/image.controller'
 
 @Controller('service-requests')
-export class ServiceRequestsController extends SimpleController<IServicesRequests>{
+export class ServiceRequestsController extends ImageController<IServicesRequests>{
   constructor(
     protected readonly service: ServiceRequestsService
   ) {
     super(service);
-  }
-
-  @Post()
-  async post(@Body() data: any){
-    return await this.service.create(data);
   }
 
   @Get('pending')

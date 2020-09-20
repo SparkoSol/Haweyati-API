@@ -12,10 +12,6 @@ export class TimeSlotsController extends SimpleController<ITimeSlots> {
   constructor(protected readonly service: TimeSlotsService) {
     super(service)
   }
-  @Post()
-  post(data: ITimeSlots): Promise<ITimeSlots> {
-    return super.post(data)
-  }
 
   @Patch()
   async update(@Body() data: any): Promise<ITimeSlots[]> {

@@ -1,5 +1,3 @@
-
-
 export const LocationSchema = {
   latitude: {
     type: Number,

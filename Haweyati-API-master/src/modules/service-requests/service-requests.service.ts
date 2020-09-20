@@ -4,8 +4,8 @@ import {IServicesRequests} from "../../data/interfaces/serviceRequests.interface
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import { PersonsService } from '../persons/persons.service'
-import * as blake2 from 'blake2'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 
 @Injectable()
 export class ServiceRequestsService extends SimpleService<IServicesRequests>{
@@ -30,17 +30,19 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests>{
          return this.getByStatus()
    }
 
-   protected getRandomArbitrary() {
-      return (Math.random() * (999999 - 100000) + 100000).toFixed(0);
-   }
+   async create(document: any): Promise<IServicesRequests> {
+      const {suppliers, note, type, image, description, ...data} = document
 
-   async create(document: IServicesRequests): Promise<IServicesRequests> {
-      let code = await this.getRandomArbitrary();
-      code = code+Date.now().toString()
-      const h = blake2.createHash('blake2b', {digestLength: 3});
-      h.update(Buffer.from(code));
-      document.requestNo = h.digest("hex")
-      const serviceRequest = await super.create(document)
+      const serviceReq = {
+         suppliers: suppliers,
+         type: type,
+         description: description,
+         data: data,
+         note: note,
+         image: document.image,
+         requestNo: await NoGeneratorUtils.generateCode()
+      }
+      const serviceRequest = await super.create(<IServicesRequests>serviceReq)
 
       //notification for admin
       if (serviceRequest){

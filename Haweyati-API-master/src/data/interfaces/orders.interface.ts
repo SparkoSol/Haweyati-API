@@ -1,10 +1,15 @@
 import { Document } from 'mongoose'
-import { ILocation } from './location.interface'
-import { IImage } from './image.interface'
 import { ICustomerInterface } from './customers.interface'
 import { IDropoffDetails } from './dropoffDetails.interface'
 
-export interface IOrdersInterface extends Document {
+export enum OrderStatus {
+  Pending,
+  Active,
+  Closed,
+  Rejected
+}
+
+export interface IOrders extends Document {
   service: string
   dropoff: IDropoffDetails
   image: [{
@@ -12,9 +17,17 @@ export interface IOrdersInterface extends Document {
     path: string,
     sort: string
   }]
-  details: any
+  total: number
+  items: [
+    {
+      item: Object,
+      subtotal: String,
+      supplier: Object
+    }
+  ],
+  driver: Object
   customer: ICustomerInterface | string
-  status: string
+  status: OrderStatus
   paymentType: string
   paymentIntentId: string
   note: string

@@ -10,7 +10,7 @@ import * as moment from 'moment'
 import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Injectable()
-export class PersonsService extends SimpleService<any> {
+export class PersonsService extends SimpleService<IPerson> {
   constructor(
     @InjectModel('persons')
     protected readonly model: Model<IPerson>,
@@ -25,41 +25,44 @@ export class PersonsService extends SimpleService<any> {
   }
 
   async create(data: any): Promise<any> {
-    const profile = await this.fetchFromContact(data.contact)
-    console.log(profile)
-    data.username = data.contact
-    if (profile) {
-      console.log('in if')
-      if (Array.isArray(data.scope)) {
-        if (profile.scope.includes(data.scope[0])) {
-          throw new HttpException(
-            'Profile with this contact already exists!',
-            HttpStatus.NOT_ACCEPTABLE
-          )
+    if (!await this.model.findOne({email: data.email}).exec()){
+      const profile = await this.fetchFromContact(data.contact)
+      data.username = data.contact
+      if (profile) {
+        if (Array.isArray(data.scope)) {
+          if (profile.scope.includes(data.scope[0])) {
+            throw new HttpException(
+              'Profile with this contact already exists!',
+              HttpStatus.NOT_ACCEPTABLE
+            )
+          } else {
+            profile.scope.push(data.scope[0])
+            return profile
+          }
         } else {
-          profile.scope.push(data.scope[0])
-          return profile
-        }
-      } else {
-        if (profile.scope.includes(data.scope)) {
-          throw new HttpException(
-            'Profile with this contact already exists!',
-            HttpStatus.NOT_ACCEPTABLE
-          )
-        } else {
-          profile.scope.push(data.scope)
-          return profile
+          if (profile.scope.includes(data.scope)) {
+            throw new HttpException(
+              'Profile with this contact already exists!',
+              HttpStatus.NOT_ACCEPTABLE
+            )
+          } else {
+            profile.scope.push(data.scope)
+            return profile
+          }
         }
       }
-    }
-    else {
-      console.log('in else')
-      const person = await super.create(data)
-      console.log(person)
-      if (person.image){
-        await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
+      else {
+        const person = await super.create(data)
+        if (person.image){
+          await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
+        }
+        return person._id
       }
-      return person._id
+    } else {
+      throw new HttpException(
+        "Email Already Exists",
+        HttpStatus.NOT_ACCEPTABLE
+      )
     }
   }
 

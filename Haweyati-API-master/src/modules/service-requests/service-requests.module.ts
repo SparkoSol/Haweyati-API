@@ -5,12 +5,16 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ServicesRequestsSchema } from "../../data/schemas/serviceRequests.schema";
 import { PersonsModule } from '../persons/persons.module'
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { MulterModule } from '@nestjs/platform-express'
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {name: 'servicerequests', schema : ServicesRequestsSchema}
       ]),
+    MulterModule.register({
+      dest: '../uploads'
+    }),
     PersonsModule,
     AdminNotificationsModule
   ],

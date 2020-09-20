@@ -4,7 +4,7 @@ import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 import { OrdersService } from '../orders/orders.service'
-import { IOrdersInterface } from '../../data/interfaces/orders.interface'
+import { IOrders } from '../../data/interfaces/orders.interface'
 import { CustomersService } from '../customers/customers.service'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 
@@ -20,15 +20,16 @@ export class DashboardService {
   async allData(): Promise<any>{
     const drivers = ((await this.driversService.fetch()) as IDriversInterface[]).length
     const suppliers = ((await this.suppliersService.fetch()) as IShopRegistrationInterface[]).length
-    const orders = ((await this.ordersService.fetch()) as IOrdersInterface[]).length
+    const orders = ((await this.ordersService.fetch()) as IOrders[]).length
     const customers = ((await this.customersService.getAll()) as ICustomerInterface[]).length
 
     let count: number = 0
-    const sold = await this.ordersService.fetch() as IOrdersInterface[]
+    const sold = await this.ordersService.fetch() as IOrders[]
     for (const item of sold){
       if (item.service == 'Finishing Material' || item.service == 'Building Material'){
-        for (const index of item.details.items){
-          count += parseInt(index.qty)
+        for (const index of item.items){
+          // @ts-ignore
+          count += +index.item.qty
         }
       }
     }

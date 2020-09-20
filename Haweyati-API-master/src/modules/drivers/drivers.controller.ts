@@ -3,7 +3,10 @@ import {
   Controller,
   Get,
   Param,
-  Patch, Post, UploadedFile, UseInterceptors
+  Patch,
+  Post,
+  UploadedFile,
+  UseInterceptors
 } from '@nestjs/common'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { DriversService } from './drivers.service'
@@ -13,16 +16,16 @@ import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('drivers')
 export class DriversController extends ImageController<IDriversInterface> {
-  constructor(
-    protected readonly service: DriversService
-  )
-  {
+  constructor(protected readonly service: DriversService) {
     super(service)
   }
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  async post(@UploadedFile() file, @Body() data: any): Promise<IDriversInterface> {
+  async post(
+    @UploadedFile() file,
+    @Body() data: any
+  ): Promise<IDriversInterface> {
     return super.post(file, data)
   }
 
@@ -33,12 +36,12 @@ export class DriversController extends ImageController<IDriversInterface> {
 
   @Get('getverified')
   async getVerifiedDrivers(): Promise<IDriversInterface[]> {
-    return await this.service.getByStatus('Approved')
+    return await this.service.getByStatus('Active')
   }
 
   @Patch('getverified/:id')
   async getVerified(@Param('id') id: string): Promise<any> {
-    return await this.service.updateByStatus(id, 'Approved')
+    return await this.service.updateByStatus(id, 'Active')
   }
 
   @Get('getrejected')
@@ -66,7 +69,7 @@ export class DriversController extends ImageController<IDriversInterface> {
     return await this.service.updateByStatus(id, 'Approved')
   }
 
-  @Get('getcompanydrivers/:id')
+  @Get('supplier/:id')
   async getCompanyDrivers(@Param('id') id: string): Promise<any> {
     return await this.service.getCompanyDrivers(id)
   }

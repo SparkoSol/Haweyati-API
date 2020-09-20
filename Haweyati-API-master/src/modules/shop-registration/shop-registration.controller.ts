@@ -15,6 +15,7 @@ import { IShopRegistrationInterface } from '../../data/interfaces/shop-registrat
 import { ShopRegistrationService } from './shop-registration.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
+import { defaultAxiosInstance } from '@googlemaps/google-maps-services-js/dist'
 
 @Controller('suppliers')
 export class ShopRegistrationController extends ImageController<IShopRegistrationInterface> {
@@ -56,8 +57,11 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
   }
 
   @Patch('getrejected/:id')
-  async getRejected(@Param('id') id: string): Promise<any> {
-    return this.service.changeSupplierStatus(id, 'Rejected')
+  async getRejected(@Param('id') id: string, @Body() data: any): Promise<any> {
+    if (data.message)
+      return this.service.changeSupplierStatus(id, 'Rejected', data.message)
+    else
+      return this.service.changeSupplierStatus(id, 'Rejected')
   }
 
   @Get('getsubsuppliers/:id')
@@ -120,5 +124,11 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
   @Get('cities')
   async getSupplierCities(): Promise<any>{
     return await this.service.getSupplierCities();
+  }
+
+  //Mobile app to access supplier of any kind from person id
+  @Get('person/:id')
+  async getSupplierByPerson(@Param('id') id: string): Promise<any>{
+    return await this.service.getSupplierByPerson(id);
   }
 }

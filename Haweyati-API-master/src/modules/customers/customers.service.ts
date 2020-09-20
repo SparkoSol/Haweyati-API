@@ -28,10 +28,7 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
    }
 
    async create(document: any): Promise<any> {
-      console.log(document)
-      document.email = undefined
       let customer:any = undefined;
-      console.log(document)
 
       const profile = await this.personService.create(document)
       if (profile){
@@ -85,7 +82,6 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
       document._id = _id
       if (person){
          try {
-            console.log('in try')
             document.location = {
                longitude: document.longitude,
                latitude: document.latitude,

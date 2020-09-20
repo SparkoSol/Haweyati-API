@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 import { ImagesSchema } from './images.schema'
 import { DropoffDetailsSchema } from './dropoffDetails'
+import { OrderStatus } from '../interfaces/orders.interface'
 
 export const OrdersSchema = new Schema(
   {
@@ -15,7 +16,17 @@ export const OrdersSchema = new Schema(
     dropoff: {
       type: DropoffDetailsSchema
     },
-    details: {
+    total: {
+      type: Number
+    },
+    items: [
+      {
+        item: Object,
+        subtotal: String,
+        supplier: Object
+      }
+    ],
+    driver: {
       type: Object,
       required: false
     },
@@ -25,9 +36,9 @@ export const OrdersSchema = new Schema(
       required: false
     },
     status: {
-      type: String,
+      type: Number,
       required: false,
-      default: 'pending'
+      default: OrderStatus.Pending
     },
     paymentType: {
       type: String,
