@@ -2,26 +2,23 @@ import {
   Body,
   Controller,
   Patch,
-  Post,
   UseInterceptors,
   Get,
   Param,
-  Res,
   UploadedFile,
   HttpException,
   HttpStatus
 } from '@nestjs/common'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
-import { ShopRegistrationService } from './shop-registration.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
+import { ShopRegistrationService } from './shop-registration.service'
+import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 
 @Controller('suppliers')
-export class ShopRegistrationController extends ImageController<IShopRegistrationInterface> {
-  constructor(
-    protected readonly service: ShopRegistrationService
-  )
-  {
+export class ShopRegistrationController extends ImageController<
+  IShopRegistrationInterface
+> {
+  constructor(protected readonly service: ShopRegistrationService) {
     super(service)
   }
 
@@ -36,8 +33,10 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
   }
 
   @Get('getbyprofile/:id')
-  async getByProfile(@Param('id') id: string): Promise<IShopRegistrationInterface>{
-    return await this.service.getByProfile(id);
+  async getByProfile(
+    @Param('id') id: string
+  ): Promise<IShopRegistrationInterface> {
+    return await this.service.getByProfile(id)
   }
 
   @Get('getbyservice/:name')
@@ -118,7 +117,7 @@ export class ShopRegistrationController extends ImageController<IShopRegistratio
   }
 
   @Get('cities')
-  async getSupplierCities(): Promise<any>{
-    return await this.service.getSupplierCities();
+  async getSupplierCities(): Promise<any> {
+    return await this.service.getSupplierCities()
   }
 }

@@ -7,6 +7,7 @@ import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 import { IRejectedDrivers } from '../../data/interfaces/rejectedDrivers.interface'
 import { PersonsService } from '../persons/persons.service'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { IPerson } from '../../data/interfaces/person.interface'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriversInterface> {
@@ -20,40 +21,38 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
     protected readonly personsService: PersonsService,
     protected readonly adminNotificationsService: AdminNotificationsService
-  )
-  {
+  ) {
     super(model)
   }
 
   async fetch(id?: string): Promise<IDriversInterface[] | IDriversInterface> {
     if (id) {
       const data = await this.model
-        .findOne({ _id: id, supplier: null })
+        .findOne({ _id: id })
         .populate('profile')
         .exec()
-      // @ts-ignore
-      data.profile.password = ''
+      ;(data.profile as IPerson).password = ''
       return data
     } else {
       const all = await this.model
         .find({ supplier: null })
         .populate('profile')
         .exec()
-      for (let data of all) {
-        // @ts-ignore
-        data.profile.password = ''
+
+      for (const data of all) {
+        ;(data.profile as IPerson).password = ''
       }
       return all
     }
   }
 
   async create(document: any): Promise<IDriversInterface> {
-    let driver = undefined;
+    let driver = undefined
     document._id = undefined
     document.scope = 'driver'
 
     const personObject = {
-      scope : document.scope,
+      scope: document.scope,
       contact: document.contact,
       email: document.email,
       password: document.password,
@@ -63,30 +62,29 @@ export class DriversService extends SimpleService<IDriversInterface> {
     }
 
     const person = await this.personsService.create(personObject)
-    if (person){
-        document.profile = person
+    if (person) {
+      document.profile = person
 
-        document.location = {
-          latitude: document.latitude,
-          longitude: document.longitude,
-          address: document.address
-        }
-        document.vehicle = {
-          name: document.vehicleName,
-          model: document.model,
-          identificationNo: document.identificationNo,
-          type: document.type
-        }
-
-        driver = await super.create(document)
-        if (driver){
-          await this.requestModel.create({
-            driver: driver._id,
-            status: driver.status
-          })
-        }
+      document.location = {
+        latitude: document.latitude,
+        longitude: document.longitude,
+        address: document.address
       }
-    else{
+      document.vehicle = {
+        name: document.vehicleName,
+        model: document.model,
+        identificationNo: document.identificationNo,
+        type: document.type
+      }
+
+      driver = await super.create(document)
+      if (driver) {
+        await this.requestModel.create({
+          driver: driver._id,
+          status: driver.status
+        })
+      }
+    } else {
       throw new HttpException(
         'Driver unable to SignUp, Please contact Admin Support',
         HttpStatus.NOT_ACCEPTABLE
@@ -94,20 +92,26 @@ export class DriversService extends SimpleService<IDriversInterface> {
     }
 
     //notification for admin
-    if (driver){
-      if (typeof(person) != 'string'){
+    if (driver) {
+      if (typeof person != 'string') {
         await this.personsService.change(person)
       }
       const notification = {
         type: 'Driver',
         title: 'New Driver',
-        // @ts-ignore
-        message: 'New Driver SignUp with name : ' + (await this.model.findOne({profile: driver.profile}).populate('profile').exec()).profile.name +'.'
+        message:
+          'New Driver SignUp with name : ' +
+          ((
+            await this.model
+              .findOne({ profile: driver.profile })
+              .populate('profile')
+              .exec()
+          ).profile as IPerson).name +
+          '.'
       }
-      await this.adminNotificationsService.create(notification);
-    }
-    else {
-      if (typeof(person) == 'string'){
+      await this.adminNotificationsService.create(notification)
+    } else {
+      if (typeof person == 'string') {
         await this.personsService.delete(person)
       }
     }
@@ -128,18 +132,16 @@ export class DriversService extends SimpleService<IDriversInterface> {
     return requests
   }
 
-  async getByStatus(status: string): Promise<IDriversInterface[]>{
+  async getByStatus(status: string): Promise<IDriversInterface[]> {
     return await this.model
       .find({ status, supplier: null })
       .populate('profile')
       .exec()
   }
 
-  async updateByStatus(id: string, status: string): Promise<any>{
+  async updateByStatus(id: string, status: string): Promise<any> {
     const request = await this.requestModel.findById(id).exec()
-    await this.model
-      .findByIdAndUpdate(request.driver._id, { status })
-      .exec()
+    await this.model.findByIdAndUpdate(request.driver._id, { status }).exec()
     await this.requestModel.findByIdAndDelete(id)
     return {
       message: 'Request Approved'
@@ -172,8 +174,8 @@ export class DriversService extends SimpleService<IDriversInterface> {
       .exec()
   }
 
-  async getByPersonId(id: string) {
-    return await this.model
+  getByPersonId(id: string) {
+    return this.model
       .findOne({ profile: id })
       .populate('profile')
       .exec()
