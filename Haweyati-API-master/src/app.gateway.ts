@@ -1,7 +1,7 @@
-import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import { Global, Logger } from '@nestjs/common'
 import { AdminNotificationsService } from './modules/admin-notifications/admin-notifications.service'
+import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 
 @Global()
 @WebSocketGateway()

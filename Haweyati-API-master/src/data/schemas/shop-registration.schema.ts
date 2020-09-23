@@ -19,6 +19,11 @@ export const ShopRegistrationSchema = new Schema(
       type: String,
       required: false,
       default: 'Pending'
+    },
+    message: {
+      type: String,
+      required: false,
+      default: 'No Reason given by administrator'
     }
   },
   { timestamps: true }

@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose'
+import { ImagesSchema } from './images.schema'
 
 export const ServicesRequestsSchema = new Schema(
   {
@@ -10,6 +11,9 @@ export const ServicesRequestsSchema = new Schema(
     type: {
       type: String,
       required: true
+    },
+    description: {
+      type: String
     },
     data: {
       type: Object,
@@ -27,6 +31,10 @@ export const ServicesRequestsSchema = new Schema(
     requestNo : {
       type: String,
       required: true
+    },
+    image : {
+      type: ImagesSchema,
+      required: false
     }
   },
   { timestamps: true }

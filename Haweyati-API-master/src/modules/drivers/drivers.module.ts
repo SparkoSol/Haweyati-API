@@ -5,7 +5,6 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {DriversSchema} from "../../data/schemas/drivers.schema";
 import { DriverRequestSchema } from '../../data/schemas/driverRequest.schema';
 import { PersonsModule } from '../persons/persons.module';
-import { RejectedDriversSchema } from "../../data/schemas/rejectedDrivers.schema";
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
 import { MulterModule } from '@nestjs/platform-express'
 
@@ -13,8 +12,7 @@ import { MulterModule } from '@nestjs/platform-express'
   imports: [
      MongooseModule.forFeature([
        {name:'drivers', schema:DriversSchema},
-       {name:'driverRequest', schema:DriverRequestSchema},
-       {name: 'driverRejection', schema: RejectedDriversSchema}
+       {name:'driverRequest', schema:DriverRequestSchema}
      ]
     ),
     MulterModule.register({

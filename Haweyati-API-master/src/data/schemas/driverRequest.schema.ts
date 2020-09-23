@@ -11,6 +11,10 @@ export const DriverRequestSchema = new Schema(
       type: String,
       default: 'Pending',
       required: false
+    },
+    message: {
+     type: String,
+      required: false
     }
   },
   { timestamps: true }

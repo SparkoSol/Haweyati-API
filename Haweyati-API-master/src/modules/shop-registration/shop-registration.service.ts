@@ -1,9 +1,8 @@
-import { HttpService, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { ReportUtils } from '../../common/lib/report-utils'
 import { PersonsService } from '../persons/persons.service'
 import { IPerson } from '../../data/interfaces/person.interface'
 import { LocationUtils } from '../../common/lib/location-utils'
@@ -15,7 +14,6 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     @InjectModel('shopregistration')
     protected readonly model: Model<IShopRegistrationInterface>,
     protected readonly personService: PersonsService,
-    private httpService: HttpService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
     super(model)
@@ -43,7 +41,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
 
   async create(document: any): Promise<IShopRegistrationInterface> {
     document.username = document.contact
-    document.scope = 'Supplier'
+    document.scope = 'supplier'
     const person = await this.personService.create(document)
     let supplier = undefined
 
@@ -161,8 +159,11 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
       .exec()
   }
 
-  async changeSupplierStatus(id: string, status: string): Promise<any> {
-    return await this.model.findByIdAndUpdate(id, { status }).exec()
+  async changeSupplierStatus(id: string, status: string, message?:string): Promise<any> {
+    if (message)
+      return await this.model.findByIdAndUpdate(id, { status , message}).exec()
+    else
+      return await this.model.findByIdAndUpdate(id, { status }).exec()
   }
 
   async getAvailableServices(city: string): Promise<any> {
@@ -194,5 +195,9 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
       result.add(item.city)
     }
     return Array.from(result)
+  }
+
+  async getSupplierByPerson(id: string): Promise<any>{
+    return await this.model.findOne({person: id}).populate('person').exec()
   }
 }

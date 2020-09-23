@@ -1,20 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post, Query,
-  UploadedFile,
-  UseInterceptors
-} from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
-import { IOrdersInterface } from '../../data/interfaces/orders.interface'
+import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
 import { OrdersService } from './orders.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('orders')
-export class OrdersController extends SimpleController<IOrdersInterface> {
+export class OrdersController extends SimpleController<IOrders> {
   constructor(
     protected readonly service: OrdersService
   )
@@ -23,7 +14,7 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
   }
 
   @Get('getbycustomer/:id')
-  async getByCustomerId(@Param('id') id: string): Promise<IOrdersInterface[]>{
+  async getByCustomerId(@Param('id') id: string): Promise<IOrders[]>{
     return await this.service.getByCustomerId(id);
   }
 
@@ -32,7 +23,7 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
   postOverride(
     @UploadedFile() file,
     @Body() data: any
-  ): Promise<IOrdersInterface> {
+  ): Promise<IOrders> {
     data.dropoff = {
       dropoffLocation: {
         longitude: data.longitude,
@@ -50,42 +41,43 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
         sort: 'delivery location'
       })
     }
+    console.log(data)
     return super.post(data)
   }
 
   @Get('getpending')
-  async getPendingOrders(): Promise<IOrdersInterface[]> {
-    return await this.service.getByStatus('pending')
+  async getPendingOrders(): Promise<IOrders[]> {
+    return await this.service.getByStatus(OrderStatus.Pending)
   }
 
   @Get('getactive')
-  async getActiveOrders(): Promise<IOrdersInterface[]> {
-    return await this.service.getByStatus('active')
+  async getActiveOrders(): Promise<IOrders[]> {
+    return await this.service.getByStatus(OrderStatus.Active)
   }
 
   @Patch('getactive/:id')
   async getActive(@Param('id') id: string): Promise<any> {
-    return await this.service.updateStatus(id, 'active')
+    return await this.service.updateStatus(id, OrderStatus.Active)
   }
 
   @Get('getrejected')
-  async getRejectedOrders(): Promise<IOrdersInterface[]> {
-    return await this.service.getByStatus('rejected')
+  async getRejectedOrders(): Promise<IOrders[]> {
+    return await this.service.getByStatus(OrderStatus.Rejected)
   }
 
   @Patch('getrejected/:id')
   async getRejected(@Param('id') id: string): Promise<any> {
-    return await this.service.updateStatus(id, 'rejected')
+    return await this.service.updateStatus(id, OrderStatus.Rejected)
   }
 
   @Get('getclosed')
-  async getClosedOrders(): Promise<IOrdersInterface[]> {
-    return await this.service.getByStatus('completed')
+  async getClosedOrders(): Promise<IOrders[]> {
+    return await this.service.getByStatus(OrderStatus.Closed)
   }
 
   @Patch('getclosed/:id')
   async getClosed(@Param('id') id: string): Promise<any> {
-    return this.service.updateStatus(id, 'completed')
+    return this.service.updateStatus(id, OrderStatus.Closed)
   }
 
   @Get('search')
@@ -96,5 +88,16 @@ export class OrdersController extends SimpleController<IOrdersInterface> {
   @Post('view')
   async viewOrders(@Body() data: any): Promise<any>{
     return await this.service.viewOrders(data);
+  }
+
+  //Order Progress Update
+  @Patch('add-supplier')
+  async AddSupplierToItem(@Body() data: any): Promise<any>{
+    return await this.service.AddSupplierToItem(data)
+  }
+
+  @Get('supplier/:id')
+  async getBySupplierId(@Param('id') id: string): Promise<any>{
+    return await this.service.getBySupplierId(id)
   }
 }

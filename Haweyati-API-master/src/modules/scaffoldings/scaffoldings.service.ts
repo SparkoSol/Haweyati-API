@@ -44,11 +44,10 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
     const dump = await this.model.find().exec()
     const result = []
     for (const item of dump) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (item.suppliers.includes(id)) {
-        result.push(item)
-      }
+            result.push(item)
+          }
     }
     return result
   }

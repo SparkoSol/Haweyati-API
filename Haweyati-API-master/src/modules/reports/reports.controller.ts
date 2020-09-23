@@ -18,7 +18,6 @@ export class ReportsController {
 
   @Post('sales')
   async getSalesData(@Body() data: any) {
-    console.log(data)
     return await this.service.getSalesData(data)
   }
 }

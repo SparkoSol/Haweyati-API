@@ -1,4 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ShopRegistrationController } from './shop-registration.controller';
 import { ShopRegistrationService } from './shop-registration.service';
 import {MongooseModule} from "@nestjs/mongoose";
@@ -16,7 +16,6 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
     MulterModule.register({
       dest : '../uploads'
     }),
-    HttpModule,
     AdminNotificationsModule
   ],
   controllers: [ShopRegistrationController],
