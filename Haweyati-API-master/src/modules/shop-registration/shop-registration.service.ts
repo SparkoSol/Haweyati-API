@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common'
-import { SimpleService } from '../../common/lib/simple.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
-import { IPerson } from '../../data/interfaces/person.interface'
+import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
+import { IPerson } from '../../data/interfaces/person.interface'
+import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()

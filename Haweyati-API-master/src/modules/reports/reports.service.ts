@@ -1,7 +1,7 @@
+import * as moment from 'moment'
 import { Injectable } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service'
 import { ReportUtils } from '../../common/lib/report-utils'
-import * as moment from 'moment'
 import { OrderStatus } from '../../data/interfaces/orders.interface'
 
 @Injectable()

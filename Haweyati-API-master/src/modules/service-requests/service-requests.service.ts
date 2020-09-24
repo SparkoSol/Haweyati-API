@@ -1,11 +1,11 @@
+import { Model } from "mongoose";
 import { Injectable } from '@nestjs/common';
-import {SimpleService} from "../../common/lib/simple.service";
-import {IServicesRequests} from "../../data/interfaces/serviceRequests.interface";
-import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
 import { PersonsService } from '../persons/persons.service'
-import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { SimpleService } from "../../common/lib/simple.service";
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
+import { IServicesRequests } from "../../data/interfaces/serviceRequests.interface";
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class ServiceRequestsService extends SimpleService<IServicesRequests>{

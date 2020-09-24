@@ -1,7 +1,8 @@
 import {
   Body,
-  Controller,
-  Patch, Post
+  Post,
+  Patch,
+  Controller
 } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { ITimeSlots } from '../../data/interfaces/timeSlots.interface'

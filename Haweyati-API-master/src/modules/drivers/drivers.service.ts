@@ -1,13 +1,12 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { SimpleService } from '../../common/lib/simple.service'
-import { IDriversInterface } from '../../data/interfaces/drivers.interface'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
-import { IRejectedDrivers } from '../../data/interfaces/rejectedDrivers.interface'
+import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
-import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { SimpleService } from '../../common/lib/simple.service'
 import { IPerson } from '../../data/interfaces/person.interface'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { IDriversInterface } from '../../data/interfaces/drivers.interface'
+import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriversInterface> {
@@ -16,8 +15,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
     protected readonly model: Model<IDriversInterface>,
     @InjectModel('driverRequest')
     protected readonly requestModel: Model<IDriverRequest>,
-    @InjectModel('driverRejection')
-    protected readonly rejectedModel: Model<IRejectedDrivers>,
 
     protected readonly personsService: PersonsService,
     protected readonly adminNotificationsService: AdminNotificationsService
@@ -47,6 +44,23 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async create(document: any): Promise<IDriversInterface> {
+    const allDrivers = await this.model.find().exec()
+    for (let driver of allDrivers){
+      if (document.identificationNo == driver.vehicle.identificationNo){
+        if (document._id != driver._id)
+          throw new HttpException(
+            'Vehicle with this Identification No already exists!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+      }
+      if (document.license == driver.license){
+        if (document._id != driver._id)
+          throw new HttpException(
+            'Driver with this license already exists!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+      }
+    }
     let driver = undefined
     document._id = undefined
     document.scope = 'driver'
@@ -79,6 +93,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
       driver = await super.create(document)
       if (driver) {
+        // @ts-ignore
         await this.requestModel.create({
           driver: driver._id,
           status: driver.status
@@ -119,6 +134,82 @@ export class DriversService extends SimpleService<IDriversInterface> {
     return driver
   }
 
+  async change(document: any): Promise<IDriversInterface> {
+    const allDrivers = await this.model.find({ status: { $nin: ['Rejected'] } }).exec()
+    for (let driver of allDrivers){
+      if (document.identificationNo == driver.vehicle.identificationNo){
+        if (document._id != driver._id)
+          throw new HttpException(
+            'Vehicle with this Identification No already exists!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+      }
+      if (document.license == driver.license){
+        if (document._id != driver._id)
+          throw new HttpException(
+            'Driver with this license already exists!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+      }
+    }
+
+    let driver, personObject = undefined
+
+    if (document.image){
+      personObject = {
+        _id: document.person,
+        image: document.image,
+        name: document.name,
+      }
+    }else {
+      personObject = {
+        _id: document.person,
+        name: document.name,
+      }
+    }
+
+    const person = await this.personsService.change(personObject)
+    if (person) {
+      document.profile = document.person
+
+      document.location = {
+        latitude: document.latitude,
+        longitude: document.longitude,
+        address: document.address
+      }
+      if (document.isVehicleInfoChanged == true || document.isVehicleInfoChanged == 'true'){
+        document.vehicle = {
+          name: document.vehicleName,
+          model: document.model,
+          identificationNo: document.identificationNo,
+          type: document.type
+        }
+        document.status = 'Pending'
+      }
+    }
+    driver = await super.change(document)
+
+    if (driver) {
+      if (!await this.requestModel.findOne({driver: driver._id}).exec()){
+        // @ts-ignore
+        await this.requestModel.create({
+          driver: driver._id,
+          status: driver.status
+        })
+      }
+
+      const notification = {
+        type: 'Driver',
+        title: 'Driver Updated',
+        message:
+          'Driver Updated with name : ' +
+          document.name + '.'
+      }
+      await this.adminNotificationsService.create(notification)
+    }
+    return driver
+  }
+
   async getRequests(): Promise<IDriverRequest[]> {
     // eslint-disable-next-line prefer-const
     let requests = await this.requestModel.find({ status: 'Pending' }).exec()
@@ -150,13 +241,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async getRejected(id: string, data?: any): Promise<any> {
     const request = await this.requestModel.findById(id).exec()
-    if (data != null) {
-      await this.rejectedModel.create({
-        request: id,
-        message: data.message,
-        createdAt: Date.now()
-      })
-    }
     await this.model
       .findByIdAndUpdate(request.driver._id, { status: 'Rejected' })
       .exec()
@@ -174,8 +258,8 @@ export class DriversService extends SimpleService<IDriversInterface> {
       .exec()
   }
 
-  getByPersonId(id: string) {
-    return this.model
+  async getByPersonId(id: string) {
+    return await this.model
       .findOne({ profile: id })
       .populate('profile')
       .exec()

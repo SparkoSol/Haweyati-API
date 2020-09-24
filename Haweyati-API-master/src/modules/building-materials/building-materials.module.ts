@@ -1,9 +1,9 @@
-import { HttpModule, Module } from '@nestjs/common';
-import { BuildingMaterialsController } from './building-materials.controller';
-import { BuildingMaterialsService } from './building-materials.service';
 import {MongooseModule} from "@nestjs/mongoose";
-import {BuildingMaterialsSchema} from "../../data/schemas/buildingMaterials.schema";
+import { HttpModule, Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
+import { BuildingMaterialsService } from './building-materials.service';
+import { BuildingMaterialsController } from './building-materials.controller';
+import {BuildingMaterialsSchema} from "../../data/schemas/buildingMaterials.schema";
 import { ShopRegistrationModule } from '../shop-registration/shop-registration.module';
 import { BuildingMaterialCategoryModule } from "../building-material-category/building-material-category.module";
 

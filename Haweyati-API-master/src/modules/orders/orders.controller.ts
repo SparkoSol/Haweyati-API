@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common'
-import { SimpleController } from '../../common/lib/simple.controller'
-import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
+import {
+  Get,
+  Body,
+  Post,
+  Query,
+  Param,
+  Patch,
+  Controller,
+  UploadedFile,
+  UseInterceptors
+} from '@nestjs/common'
 import { OrdersService } from './orders.service'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { SimpleController } from '../../common/lib/simple.controller'
+import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
 
 @Controller('orders')
 export class OrdersController extends SimpleController<IOrders> {
@@ -96,8 +106,18 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.AddSupplierToItem(data)
   }
 
+  @Patch('add-driver')
+  async AddDriver(@Body() data: any): Promise<any>{
+    return await this.service.AddDriver(data)
+  }
+
   @Get('supplier/:id')
   async getBySupplierId(@Param('id') id: string): Promise<any>{
     return await this.service.getBySupplierId(id)
+  }
+
+  @Get('driver/:id')
+  async getByDriverId(@Param('id') id: string): Promise<IOrders[]>{
+    return await this.service.getByDriverId(id)
   }
 }

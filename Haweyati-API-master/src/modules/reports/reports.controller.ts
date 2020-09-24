@@ -1,6 +1,12 @@
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common'
+import {
+  Get,
+  Res,
+  Body,
+  Post,
+  Query,
+  Controller
+} from '@nestjs/common'
 import { ReportsService } from './reports.service'
-import { query } from 'express'
 
 @Controller('reports')
 export class ReportsController {

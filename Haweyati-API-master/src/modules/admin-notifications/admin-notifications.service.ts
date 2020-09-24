@@ -1,9 +1,9 @@
+import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { AppGateway } from '../../app.gateway'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { AppGateway } from '../../app.gateway'
 
 @Injectable()
 export class AdminNotificationsService extends SimpleService<

@@ -11,6 +11,7 @@ import {
 import { SimpleService } from './simple.service'
 import { Document } from 'mongoose'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { ImageConversionUtils } from './image-conversion-utils'
 
 export abstract class ImageController<T extends Document> {
   protected constructor(protected service: SimpleService<T>) {}
@@ -27,7 +28,7 @@ export abstract class ImageController<T extends Document> {
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  post(@UploadedFile() file, @Body() data: any): Promise<T> {
+  async post(@UploadedFile() file, @Body() data: any): Promise<T> {
     if (file) {
       // @ts-ignore
       data.image = {
@@ -39,12 +40,16 @@ export abstract class ImageController<T extends Document> {
       data.image = undefined
     }
 
-    return this.service.create(data)
+    const item = await this.service.create(data)
+    if (file){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+data.image.path, process.cwd()+"\\..\\uploads\\"+data.image.name, 20)
+    }
+    return item
   }
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  patch(@UploadedFile() file, @Body() data: any): Promise<T> {
+  async patch(@UploadedFile() file, @Body() data: any): Promise<T> {
     // @ts-ignore
     if (file) {
       // @ts-ignore
@@ -53,7 +58,11 @@ export abstract class ImageController<T extends Document> {
         path: file.path
       }
     }
-    return this.service.change(data)
+    const item = await this.service.change(data)
+    if (file){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+data.image.path, process.cwd()+"\\..\\uploads\\"+data.image.name, 20)
+    }
+    return item
   }
 
   @Delete(':id')

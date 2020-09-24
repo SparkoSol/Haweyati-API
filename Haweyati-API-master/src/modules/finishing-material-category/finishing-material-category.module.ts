@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { FinishingMaterialCategoryService } from './finishing-material-category.service';
-import { FinishingMaterialCategoryController } from './finishing-material-category.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
+import { FinishingMaterialCategoryService } from './finishing-material-category.service';
+import { FinishingMaterialCategoryController } from './finishing-material-category.controller';
 import { FinishingMaterialCategorySchema } from '../../data/schemas/finishingMaterialCategory.schema';
 
 @Module({

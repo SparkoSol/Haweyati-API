@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common'
+import {
+  Get,
+  Body,
+  Post,
+  Param,
+  Query,
+  Patch,
+  Controller
+} from '@nestjs/common'
 import {IServicesRequests} from "../../data/interfaces/serviceRequests.interface";
 import {ServiceRequestsService} from "./service-requests.service";
 import { ImageController } from '../../common/lib/image.controller'

@@ -1,13 +1,13 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { SimpleService } from '../../common/lib/simple.service'
-import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { PersonsService } from '../persons/persons.service'
-import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
-import { CustomersService } from '../customers/customers.service'
 import * as moment from 'moment'
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { PersonsService } from '../persons/persons.service'
+import { SimpleService } from '../../common/lib/simple.service'
+import { CustomersService } from '../customers/customers.service'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class OrdersService extends SimpleService<IOrders> {
@@ -66,6 +66,24 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async getByCustomerId(id: string): Promise<IOrders[]>{
     return await this.model.find({customer: id}).exec()
+  }
+
+  async getByDriverId(id: string): Promise<IOrders[]>{
+    return this.model.find({ 'driver._id': id }).exec()
+  }
+
+  async getBySupplierId(id: string): Promise<any>{
+    let result = new Set()
+    const orders = (await this.fetch()) as IOrders[]
+    for (let order of orders){
+      for (let one of order.items){
+        // @ts-ignore
+        if (one.supplier?._id == id){
+          result.add(order)
+        }
+      }
+    }
+    return Array.from(result)
   }
 
   async fetch(id?: string): Promise<IOrders[] | IOrders> {
@@ -320,18 +338,20 @@ export class OrdersService extends SimpleService<IOrders> {
     return order.save();
   }
 
-  async getBySupplierId(id: string): Promise<any>{
-    let result = new Set()
-    const orders = (await this.fetch()) as IOrders[]
-    for (let order of orders){
-      for (let one of order.items){
-        // @ts-ignore
-        if (one.supplier?._id == id){
-          result.add(order)
-        }
+  async AddDriver(data: any): Promise<any>{
+    if (data.flag){
+      if (!(await this.model.findById(data._id).exec()).driver){
+        return await this.model.findOneAndUpdate({_id: data._id}, {driver: data.driver, status: OrderStatus.Dispatched}).exec()
+      }else {
+        throw new HttpException(
+          'Order Not Available!',
+          HttpStatus.NOT_ACCEPTABLE
+        )
       }
     }
-    return Array.from(result)
+    else {
+      return await this.model.findOneAndUpdate({_id: data._id}, {driver: undefined, status: OrderStatus.Active}).exec()
+    }
   }
 
   shouldActivateOrder(order: IOrders): boolean {

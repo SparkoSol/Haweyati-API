@@ -1,32 +1,20 @@
 import {
-  Body,
-  Controller,
   Get,
-  Param,
-  Patch,
+  Body,
   Post,
-  UploadedFile,
-  UseInterceptors
+  Patch,
+  Param,
+  Controller,
 } from '@nestjs/common'
-import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { DriversService } from './drivers.service'
-import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 import { ImageController } from '../../common/lib/image.controller'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { IDriversInterface } from '../../data/interfaces/drivers.interface'
+import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 
 @Controller('drivers')
 export class DriversController extends ImageController<IDriversInterface> {
   constructor(protected readonly service: DriversService) {
     super(service)
-  }
-
-  @Post()
-  @UseInterceptors(FileInterceptor('image'))
-  async post(
-    @UploadedFile() file,
-    @Body() data: any
-  ): Promise<IDriversInterface> {
-    return super.post(file, data)
   }
 
   @Get('getrequests')

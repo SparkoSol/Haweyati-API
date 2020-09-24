@@ -1,7 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common'
+import {
+  Get,
+  Param,
+  Controller
+} from '@nestjs/common'
+import { ScaffoldingsService } from './scaffoldings.service'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { IScaffoldingsInterface } from '../../data/interfaces/scaffoldings.interface'
-import { ScaffoldingsService } from './scaffoldings.service'
 
 @Controller('scaffoldings')
 export class ScaffoldingsController extends SimpleController<

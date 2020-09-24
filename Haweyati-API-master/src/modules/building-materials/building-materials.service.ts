@@ -1,13 +1,12 @@
-import { Injectable } from '@nestjs/common'
-import { SimpleService } from '../../common/lib/simple.service'
-import { IBuildingMaterialsInterface } from '../../data/interfaces/buildingMaterials.interface'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { SimpleService } from '../../common/lib/simple.service'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { BuildingMaterialCategoryService } from '../building-material-category/building-material-category.service'
-import { IBuildingMaterialCategory } from '../../data/interfaces/buildingMaterialCategory.interface'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
-import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
+import { IBuildingMaterialsInterface } from '../../data/interfaces/buildingMaterials.interface'
+import { IBuildingMaterialCategory } from '../../data/interfaces/buildingMaterialCategory.interface'
+import { BuildingMaterialCategoryService } from '../building-material-category/building-material-category.service'
 
 @Injectable()
 export class BuildingMaterialsService extends SimpleService<
@@ -44,22 +43,6 @@ export class BuildingMaterialsService extends SimpleService<
       }
       return big
     }
-  }
-
-  async create(document: IBuildingMaterialsInterface): Promise<IBuildingMaterialsInterface> {
-    const bm = await super.create(document)
-    if (document.image){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+bm.image.path, process.cwd()+"\\..\\uploads\\"+bm.image.name, 20)
-    }
-    return bm
-  }
-
-  async change(document: IBuildingMaterialsInterface): Promise<IBuildingMaterialsInterface> {
-    const bm = await super.change(document)
-    if (document.image){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+bm.image.path, process.cwd()+"\\..\\uploads\\"+bm.image.name, 20)
-    }
-    return bm
   }
 
   async fetchByParentId(id: string): Promise<IBuildingMaterialsInterface[]> {

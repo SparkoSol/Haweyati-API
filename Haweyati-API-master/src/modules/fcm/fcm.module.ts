@@ -1,11 +1,11 @@
-import { HttpModule, Module } from "@nestjs/common";
 import { FcmService } from './fcm.service';
 import { FcmController } from './fcm.controller';
 import { MongooseModule } from "@nestjs/mongoose";
+import { HttpModule, Module } from "@nestjs/common";
 import { FcmSchema } from "../../data/schemas/fcm.Schema";
-import { FcmMessagesSchema } from "../../data/schemas/fcmMessages.Schema";
+import { PersonsModule } from '../persons/persons.module';
 import { FcmPendingSchema } from "../../data/schemas/fcmPending.Schema";
-import { PersonsModule } from '../persons/persons.module'
+import { FcmMessagesSchema } from "../../data/schemas/fcmMessages.Schema";
 
 @Module({
   imports : [

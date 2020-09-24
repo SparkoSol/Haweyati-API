@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from "@nestjs/mongoose";
+import { MulterModule } from '@nestjs/platform-express';
 import { ScaffoldingsService } from './scaffoldings.service';
 import { ScaffoldingsController } from './scaffoldings.controller';
-import {MongooseModule} from "@nestjs/mongoose";
-import {ScaffoldingsSchema} from "../../data/schemas/scaffoldings.schema";
-import { MulterModule } from '@nestjs/platform-express';
+import { ScaffoldingsSchema } from "../../data/schemas/scaffoldings.schema";
 import { ShopRegistrationModule } from '../shop-registration/shop-registration.module';
 
 @Module({

@@ -1,13 +1,12 @@
-import { Injectable } from '@nestjs/common'
-import { SimpleService } from '../../common/lib/simple.service'
-import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { SimpleService } from '../../common/lib/simple.service'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
+import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
-import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Injectable()
 export class FinishingMaterialsService extends SimpleService<IFinishingMaterialsInterface> {
@@ -43,22 +42,6 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
       }
       return big
     }
-  }
-
-  async create(document: IFinishingMaterialsInterface): Promise<IFinishingMaterialsInterface> {
-    const fm = await super.create(document)
-    if (document.image){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+fm.image.path, process.cwd()+"\\..\\uploads\\"+fm.image.name, 20)
-    }
-    return fm
-  }
-
-  async change(document: IFinishingMaterialsInterface): Promise<IFinishingMaterialsInterface> {
-    const fm = await super.change(document)
-    if (document.image){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+fm.image.path, process.cwd()+"\\..\\uploads\\"+fm.image.name, 20)
-    }
-    return fm
   }
 
   fetchByParentId(id: string): Promise<IFinishingMaterialsInterface[]> {

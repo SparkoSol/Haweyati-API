@@ -1,19 +1,19 @@
 import {
-  Controller,
-  Post,
-  UseInterceptors,
-  Body,
   Get,
+  Post,
+  Body,
   Query,
   Param,
+  Patch,
   Delete,
+  Controller,
   UploadedFile,
-  Patch
+  UseInterceptors
 } from '@nestjs/common'
 import { DumpstersService } from './dumpsters.service'
-import { IDumpster } from '../../data/interfaces/dumpster.interface'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
+import { IDumpster } from '../../data/interfaces/dumpster.interface'
 
 @Controller('dumpsters')
 export class DumpstersController extends ImageController<IDumpster> {

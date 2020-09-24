@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { DriversService } from '../drivers/drivers.service'
-import { IDriversInterface } from '../../data/interfaces/drivers.interface'
-import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 import { OrdersService } from '../orders/orders.service'
+import { DriversService } from '../drivers/drivers.service'
 import { IOrders } from '../../data/interfaces/orders.interface'
 import { CustomersService } from '../customers/customers.service'
+import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
+import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
+import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 
 @Injectable()
 export class DashboardService {

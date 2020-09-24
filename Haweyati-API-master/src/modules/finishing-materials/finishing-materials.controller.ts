@@ -1,19 +1,19 @@
 import {
-  Body,
-  Controller,
-  Delete,
   Get,
+  Body,
+  Post,
   Param,
   Patch,
-  Post,
   Query,
+  Delete,
+  Controller,
   UploadedFile,
   UseInterceptors
 } from '@nestjs/common'
-import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
-import { FinishingMaterialsService } from './finishing-materials.service'
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
+import { FinishingMaterialsService } from './finishing-materials.service'
+import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
 
 @Controller('finishing-materials')
 export class FinishingMaterialsController extends ImageController<
@@ -111,15 +111,13 @@ export class FinishingMaterialsController extends ImageController<
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   post(@UploadedFile() file, @Body() finishingMaterial: any) {
-    finishingMaterial = this.parseData(finishingMaterial)
-    return super.post(file, finishingMaterial)
+    return super.post(file, this.parseData(finishingMaterial))
   }
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
   patch(@UploadedFile() file, @Body() finishingMaterial: any) {
-    finishingMaterial = this.parseData(finishingMaterial)
-    return super.patch(file, finishingMaterial)
+    return super.patch(file, this.parseData(finishingMaterial))
   }
 
   @Get('getbyparent/:id')

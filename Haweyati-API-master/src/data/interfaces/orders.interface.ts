@@ -6,7 +6,8 @@ export enum OrderStatus {
   Pending,
   Active,
   Closed,
-  Rejected
+  Rejected,
+  Dispatched
 }
 
 export interface IOrders extends Document {

@@ -1,8 +1,8 @@
+import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IScaffoldingsInterface } from '../../data/interfaces/scaffoldings.interface'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
 

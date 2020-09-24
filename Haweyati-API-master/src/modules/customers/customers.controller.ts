@@ -1,14 +1,14 @@
 import {
-  Body,
-  Controller,
   Get,
+  Body,
+  Patch,
+  Query,
   Param,
-  Patch, Post, Query, UploadedFile, UseInterceptors
+  Controller,
 } from '@nestjs/common'
-import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 import { CustomersService } from './customers.service'
-import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
+import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 
 @Controller('customers')
 export class CustomersController extends ImageController<ICustomerInterface> {
@@ -73,17 +73,5 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   @Get('blocked-search')
   async searchBlocked(@Query() query: any){
     return await this.service.searchBlocked(query)
-  }
-
-  @Post()
-  @UseInterceptors(FileInterceptor('image'))
-  async post(@UploadedFile() file, @Body() data: any): Promise<any> {
-    return await super.post(file, data);
-  }
-
-  @Patch()
-  @UseInterceptors(FileInterceptor('image'))
-  async patch(@UploadedFile() file, @Body() data: any): Promise<any> {
-    return await super.patch(file, data);
   }
 }

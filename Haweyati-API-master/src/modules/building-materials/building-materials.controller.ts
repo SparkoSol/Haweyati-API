@@ -1,19 +1,19 @@
 import {
-  Body,
-  Controller,
-  Delete,
   Get,
+  Body,
+  Post,
   Param,
   Patch,
-  Post,
   Query,
+  Delete,
+  Controller,
   UploadedFile,
   UseInterceptors
 } from '@nestjs/common'
-import { IBuildingMaterialsInterface } from '../../data/interfaces/buildingMaterials.interface'
-import { BuildingMaterialsService } from './building-materials.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
+import { BuildingMaterialsService } from './building-materials.service'
+import { IBuildingMaterialsInterface } from '../../data/interfaces/buildingMaterials.interface'
 
 @Controller('building-materials')
 export class BuildingMaterialsController extends ImageController<IBuildingMaterialsInterface> {
@@ -50,8 +50,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   post(@UploadedFile() file, @Body() buildingMaterial: any) {
-    buildingMaterial = this.parseData(buildingMaterial)
-    return super.post(file, buildingMaterial)
+    return super.post(file, this.parseData(buildingMaterial))
   }
 
   @Patch()
@@ -60,8 +59,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
     @UploadedFile() file,
     buildingMaterial: any
   ): Promise<IBuildingMaterialsInterface> {
-    buildingMaterial = this.parseData(buildingMaterial)
-    return super.patch(file, buildingMaterial)
+    return super.patch(file, this.parseData(buildingMaterial))
   }
 
   @Get('getbyparent/:id')

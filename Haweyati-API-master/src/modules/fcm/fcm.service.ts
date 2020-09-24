@@ -1,21 +1,25 @@
-import { HttpService } from '@nestjs/common'
-import { SimpleService } from '../../common/lib/simple.service'
-import { IFcm } from '../../data/interfaces/fcm.interface'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { IFcmMessages } from '../../data/interfaces/fcmMessages.interface'
-import { IFcmPending } from '../../data/interfaces/fcmPending.interface'
+import { HttpService } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { IFcm } from '../../data/interfaces/fcm.interface'
 import { PersonsService } from '../persons/persons.service'
+import { SimpleService } from '../../common/lib/simple.service'
+import { IFcmPending } from '../../data/interfaces/fcmPending.interface'
+import { IFcmMessages } from '../../data/interfaces/fcmMessages.interface'
 
 export class FcmService extends SimpleService<IFcm> {
   constructor(
     @InjectModel('fcm')
     protected readonly model: Model<IFcm>,
+
     @InjectModel('fcm-messages')
     protected readonly modelMessage: Model<IFcmMessages>,
+
     @InjectModel('fcm-pending')
     protected readonly modelPending: Model<IFcmPending>,
+
     private http: HttpService,
+
     private readonly personsService: PersonsService
   ) {
     super(model)

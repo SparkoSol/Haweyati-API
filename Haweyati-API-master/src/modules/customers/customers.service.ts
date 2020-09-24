@@ -1,10 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { SimpleService } from '../../common/lib/simple.service'
-import { ICustomerInterface } from '../../data/interfaces/customers.interface'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
+import { SimpleService } from '../../common/lib/simple.service'
 import { IPerson } from '../../data/interfaces/person.interface'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()

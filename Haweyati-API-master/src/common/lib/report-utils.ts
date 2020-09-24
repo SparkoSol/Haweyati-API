@@ -1,5 +1,6 @@
 import * as carbone from 'carbone'
 import { Readable } from "stream";
+
 export class ReportUtils {
    static readonly PATH = '../report_templates/';
 

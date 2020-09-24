@@ -1,7 +1,7 @@
+import { join } from 'path';
+import { AppModule } from "./app.module";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from "./app.module";
-import { join } from 'path';
 
 async function runApp() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
