@@ -1,97 +1,143 @@
 import { Model } from 'mongoose'
-import { HttpService } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { IFcm } from '../../data/interfaces/fcm.interface'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
-import { IFcmPending } from '../../data/interfaces/fcmPending.interface'
-import { IFcmMessages } from '../../data/interfaces/fcmMessages.interface'
+import { IPerson } from '../../data/interfaces/person.interface'
+import { IFcmAllHistory } from '../../data/interfaces/fcmAllHistory.interfce'
+import { FcmStatus, IFcmHistory } from '../../data/interfaces/fcmHistory.interface'
+import { HttpException, HttpService, HttpStatus, Injectable } from '@nestjs/common'
 
-export class FcmService extends SimpleService<IFcm> {
+@Injectable()
+export class FcmService extends SimpleService<IFcmHistory>{
   constructor(
-    @InjectModel('fcm')
-    protected readonly model: Model<IFcm>,
+    @InjectModel('fcmhistory')
+    protected readonly fcmHistoryModel: Model<IFcmHistory>,
+    @InjectModel('fcmall')
+    protected readonly fcmAllHistoryModel: Model<IFcmAllHistory>,
 
-    @InjectModel('fcm-messages')
-    protected readonly modelMessage: Model<IFcmMessages>,
-
-    @InjectModel('fcm-pending')
-    protected readonly modelPending: Model<IFcmPending>,
-
-    private http: HttpService,
-
-    private readonly personsService: PersonsService
+    protected readonly personService: PersonsService,
+    protected readonly http: HttpService
   ) {
-    super(model)
+    super(fcmHistoryModel);
   }
 
-  async getPersonHistory(id: string): Promise<IFcmMessages[]>{
-    return await this.modelMessage.find({person: id}).exec()
-  }
-
-  async getFcmHistory(): Promise<IFcmMessages[]>{
-    let all = await this.modelMessage.find().exec()
-    for (let i =0 ; i< all.length; ++i){
-      for (let j =0 ; j< all[i].person.length; ++j){
-        all[i].person[j] = await this.personsService.fetchAll(all[i].person[j].toString())
-      }
-    }
-    return all;
-  }
-
-  async notification(data: any) {
-    let all = []
-    if (Array.isArray(data.to)) {
-      for (const item of data.to) {
-        const one = await this.model.findById(item._id).exec()
-        if (one){
-          all.push(one)
-        } else {
-          const pending = await this.modelPending.findOne({person: item._id}).exec()
-          if (pending){
-            pending.messages.push({
-              title: data.title,
-              body : data.message
-            })
-            await this.modelPending.findByIdAndUpdate(pending._id, pending).exec()
-          } else{
-            await this.modelPending.create({
-              person : item._id,
-              messages : [{
-                title : data.title,
-                body : data.message
-              }]
-            })
+  async sendAll(data: any){
+    try {
+      await this.http.post(
+        "https://fcm.googleapis.com/fcm/send",
+        {
+          notification: {
+            title: data.title,
+            body: data.body
+          },
+          to: '/topics/news'
+        },
+        {
+          headers: {
+            "ContentType": "application/json",
+            "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
           }
+        }
+      ).subscribe(asd => console.log(asd));
+      return await this.fcmAllHistoryModel.create({
+        title: data.title,
+        body: data.body
+      })
+    } catch (e) {
+      throw new HttpException(
+        'Some Error Occurred!',
+        HttpStatus.NOT_ACCEPTABLE
+      )
+    }
+  }
+
+  async sendSingle(data: any){
+    let flag: boolean = false;
+
+    const person = (await this.personService.fetch(data.id)) as IPerson
+    if (person.token){
+      flag = true
+      await this.http.post(
+        "https://fcm.googleapis.com/fcm/send",
+        {
+          notification: {
+            title: data.title,
+            body: data.body
+          },
+          to: person.token
+        },
+        {
+          headers: {
+            "ContentType": "application/json",
+            "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+          }
+        }
+      ).subscribe(asd => console.log(asd));
+    }
+
+    if (flag){
+      return await this.fcmHistoryModel.create({
+        person: person,
+        title: data.title,
+        body: data.body,
+        status: FcmStatus.sent
+      })
+    }
+    else {
+      return await this.fcmHistoryModel.create({
+        person: person,
+        title: data.title,
+        body: data.body,
+        status: FcmStatus.pending
+      })
+    }
+  }
+
+  async sendPending(id: string){
+    const pending = await this.fcmHistoryModel.find({person: id, status: FcmStatus.pending}).exec()
+    if (pending.length > 0){
+      const person = (await this.personService.fetch(id)) as IPerson
+      if (person.token){
+        for (let item of pending){
+          await this.http.post(
+            "https://fcm.googleapis.com/fcm/send",
+            {
+              notification: {
+                title: item.title,
+                body: item.body
+              },
+              to: person.token
+            },
+            {
+              headers: {
+                "ContentType": "application/json",
+                "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+              }
+            }
+          ).subscribe(asd => console.log(asd));
+          await this.fcmHistoryModel.findByIdAndDelete(item._id).exec()
         }
       }
     }
-    for (const a of all) {
-      await this.http
-        .post(
-          'https://fcm.googleapis.com/fcm/send',
-          {
-            notification : {
-              ...data
-            },
-            to: a.token
-          },
-          {
-            headers: {
-              ContentType: 'application/json',
-              Authorization:
-                'key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_'
-            }
-          }
-        )
-        .subscribe(asd => console.log(asd))
-    }
-    await this.modelMessage.create({
-      person : data.to,
-      message : {
-        title: data.title,
-        body : data.message
+    return
+  }
+
+  async testing(data: any){
+    await this.http.post(
+      "https://fcm.googleapis.com/fcm/send",
+      {
+        notification: {
+          title: data.title,
+          body: data.body
+        },
+        to: 'c8YDRWmLRn2nSP6LNV-A4T:APA91bHFatGX8715wn3RupaJ_y6NVrHwddPDtwikha3alBwty_SpWz0ka2ugOS8CtTjmQhzcz_JNkk6AeppAn6RyqAhIpi8Fes3MXrYx5KVqU0nZCLuJeSN6R9nD92-gzRcR-25nmr-S'
+      },
+      {
+        headers: {
+          "ContentType": "application/json",
+          "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+        }
       }
-    })
+    ).subscribe(asd => console.log(asd));
   }
 }

@@ -17,14 +17,17 @@ export const OrdersSchema = new Schema(
       type: DropoffDetailsSchema
     },
     total: {
-      type: Number
+      type: Number,
+      default: 0
     },
     items: [
-      {
-        item: Object,
-        subtotal: String,
-        supplier: Object
-      }
+      new Schema(
+        {
+          item: Object,
+          subtotal: Number,
+          supplier: Object
+        }, {_id: false}
+      )
     ],
     driver: {
       type: Object,
@@ -64,6 +67,9 @@ export const OrdersSchema = new Schema(
     reason : {
       type: String,
       required: false
+    },
+    deliveryFee : {
+      type: Number
     }
   },
   { timestamps: true }

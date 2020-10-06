@@ -18,4 +18,5 @@ export const DropoffDetailsSchema = new Schema({
     type: String,
     required: false
   }
-})
+},
+  {_id: false})

@@ -7,6 +7,7 @@ import { IShopRegistrationInterface } from '../../data/interfaces/shop-registrat
 import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
+import { IOrders } from '../../data/interfaces/orders.interface'
 
 @Injectable()
 export class FinishingMaterialsService extends SimpleService<IFinishingMaterialsInterface> {
@@ -114,5 +115,16 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
       }
     }
     return big
+  }
+
+  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterialsInterface[]>{
+    return await this.model.find(
+      {
+        parent: id,
+        $or: [
+          {'name': { $regex: data.name, $options: "i" }}
+        ]
+      }
+      ).populate('parent').exec()
   }
 }

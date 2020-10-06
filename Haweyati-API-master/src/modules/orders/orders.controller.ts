@@ -28,6 +28,7 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.getByCustomerId(id);
   }
 
+  //deprecated
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   postOverride(
@@ -53,6 +54,44 @@ export class OrdersController extends SimpleController<IOrders> {
     }
     console.log(data)
     return super.post(data)
+  }
+
+  @Get('dummy')
+  async dummyGet(@Query() data: any): Promise<IOrders[]>{
+    if (data.name){
+      return await this.service.getSearchByCustomerId(data.customer, data.name);
+    }
+    else
+      return await this.service.getSearchByCustomerId(data.customer);
+  }
+
+  @Post('dummy')
+  async dummyPost(@Body() data: any): Promise<IOrders>{
+    data.dropoff = {
+      dropoffLocation: {
+        longitude: data.location.longitude,
+        latitude: data.location.latitude
+      },
+      dropoffAddress: data.location.dropoffAddress,
+      dropoffDate: data.location.dropoffDate,
+      dropoffTime: data.location.dropoffTime
+    }
+    // @ts-ignore
+    data.city = data.location.city
+    return await this.service.create(data);
+  }
+
+  @Patch('add-image')
+  @UseInterceptors(FileInterceptor('image'))
+  async addImage(@UploadedFile() file, @Body() data: any): Promise<IOrders>{
+    if (file) {
+      data.image = {
+        name: file.filename,
+        path: file.path,
+        sort: data.sort
+      }
+    }
+    return await this.service.addImage(data)
   }
 
   @Get('getpending')
@@ -119,5 +158,10 @@ export class OrdersController extends SimpleController<IOrders> {
   @Get('driver/:id')
   async getByDriverId(@Param('id') id: string): Promise<IOrders[]>{
     return await this.service.getByDriverId(id)
+  }
+
+  @Get('filter')
+  async filter(@Query() data: any): Promise<IOrders[]>{
+    return await this.service.filter(data);
   }
 }

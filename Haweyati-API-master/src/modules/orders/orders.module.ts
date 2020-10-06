@@ -7,6 +7,9 @@ import { PersonsModule } from '../persons/persons.module'
 import { OrdersSchema } from '../../data/schemas/orders.schema'
 import { CustomersModule } from '../customers/customers.module'
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { FcmModule } from '../fcm/fcm.module'
+import { DriversModule } from '../drivers/drivers.module'
+import { ShopRegistrationModule } from '../shop-registration/shop-registration.module'
 
 @Module({
   imports: [
@@ -14,9 +17,12 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
     MulterModule.register({
       dest: '../uploads',
     }),
+    FcmModule,
     PersonsModule,
-    AdminNotificationsModule,
-    CustomersModule
+    CustomersModule,
+    DriversModule,
+    ShopRegistrationModule,
+    AdminNotificationsModule
   ],
   providers: [OrdersService],
   controllers: [OrdersController],

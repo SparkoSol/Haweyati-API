@@ -34,4 +34,5 @@ export interface IOrders extends Document {
   note: string
   orderNo : string
   city: string
+  deliveryFee : Number
 }

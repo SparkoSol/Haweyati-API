@@ -7,4 +7,5 @@ export interface IPerson extends IUser {
   email: string
   image: IImage
   scope: [string]
+  token: string
 }

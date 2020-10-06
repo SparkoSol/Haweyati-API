@@ -1,30 +1,26 @@
 import { FcmService } from './fcm.service'
-import { IFcm } from '../../data/interfaces/fcm.interface'
 import { Body, Controller, Get, Param, Post } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
-import { IFcmMessages } from '../../data/interfaces/fcmMessages.interface'
+import { IFcmHistory } from '../../data/interfaces/fcmHistory.interface'
 
 @Controller('fcm')
-export class FcmController extends SimpleController<IFcm> {
-  constructor(
-    protected readonly service: FcmService
-  )
-  {
-    super(service)
+export class FcmController extends SimpleController<IFcmHistory>{
+  constructor(protected readonly service: FcmService) {
+    super(service);
   }
 
-  @Post('notification')
-  async notification(@Body() data: any) {
-    return await this.service.notification(data)
+  @Post('send-all')
+  async sendAll(@Body() data: any){
+    return await this.service.sendAll(data);
   }
 
-  @Get('get-history')
-  async getFcmHistory(): Promise<IFcmMessages[]>{
-    return await this.service.getFcmHistory();
+  @Get('send-pending/:id')
+  async sendPendingNotifications(@Param('id') id: string){
+    return await this.service.sendPending(id)
   }
 
-  @Get('person/:id')
-  async getPersonHistory(@Param('id') id: string): Promise<IFcmMessages[]>{
-    return await this.service.getPersonHistory(id)
+  @Post('test')
+  async testing(@Body() data: any){
+    return this.service.testing(data);
   }
 }

@@ -21,6 +21,7 @@ export class AuthController {
   @Post('sign-out')
   @UseGuards(AuthGuard('jwt'))
   signOut(@Request() request: any): Promise<any> {
+    this.service.logout(request.user)
     return request.logout()
   }
 }

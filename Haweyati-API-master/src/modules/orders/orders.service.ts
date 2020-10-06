@@ -1,6 +1,7 @@
 import * as moment from 'moment'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
+import { FcmService } from '../fcm/fcm.service'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { CustomersService } from '../customers/customers.service'
@@ -14,6 +15,8 @@ export class OrdersService extends SimpleService<IOrders> {
   constructor(
     @InjectModel('orders')
     protected readonly model: Model<IOrders>,
+
+    protected readonly fcmService: FcmService,
     protected readonly personsService: PersonsService,
     protected readonly customersService: CustomersService,
     protected readonly adminNotificationsService : AdminNotificationsService
@@ -22,8 +25,10 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async create(document: IOrders): Promise<IOrders> {
+    document.status = undefined
 
-    const customer = await this.customersService.fetch(document.customer.toString())
+    // @ts-ignore
+    const customer = await this.customersService.fetch(document.customer._id.toString())
     if (customer.status != 'Blocked'){
 
       document.orderNo = await NoGeneratorUtils.generateCode()
@@ -49,6 +54,19 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
+  async addImage(data: any): Promise<IOrders> {
+    let order = (await this.model.findById(data.id)) as IOrders
+    if (order.image)
+      order.image.push(data.image);
+    else {
+      // @ts-ignore
+      order.image = [data.image]
+    }
+
+    // @ts-ignore
+    return (await order.save()).image.name
+  }
+
   async getPerson(all: any): Promise<any> {
     if (Array.isArray(all)) {
       for (let data of all) {
@@ -65,7 +83,32 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async getByCustomerId(id: string): Promise<IOrders[]>{
-    return await this.model.find({customer: id}).exec()
+    return await this.model.find({customer: id}).sort({createdAt: -1}).exec()
+  }
+
+  async getSearchByCustomerId(id: string, name?: string): Promise<IOrders[]>{
+    let data: any;
+
+    if (name){
+     data = await this.model.find({
+        customer: id,
+        $or: [
+          {'service': { $regex: name, $options: "i" }},
+          {'orderNo': { $regex: name, $options: "i" }}
+        ]})
+        .populate('customer')
+        .sort({createdAt: -1}).exec()
+    }
+    else {
+      data = await this.model.find(
+        {
+          customer: id
+        })
+        .populate('customer')
+        .sort({createdAt: -1}).exec()
+
+    }
+    return this.getPerson(data)
   }
 
   async getByDriverId(id: string): Promise<IOrders[]>{
@@ -113,8 +156,40 @@ export class OrdersService extends SimpleService<IOrders> {
     return all
   }
 
-  updateStatus(id: string, status: OrderStatus) {
-    return this.model.findByIdAndUpdate(id, { status }).exec();
+  async updateStatus(id: string, status: OrderStatus) {
+    await this.model.findByIdAndUpdate(id, { status }).exec();
+    const order = await this.model.findById(id).exec()
+    const persons: string[] = []
+
+    // @ts-ignore
+    persons.push((await this.customersService.fetch(order.customer.toString())).profile._id.toString())
+    if (order.driver){
+      // @ts-ignore
+      persons.push(order.driver.profile._id.toString())
+    }
+    for (let item of order.items){
+      if (item.supplier){
+        // @ts-ignore
+        persons.push(item.supplier.person._id.toString())
+      }
+    }
+    for (let id of persons){
+      let notificationStatus: string;
+      switch (status) {
+        case OrderStatus.Active:
+          notificationStatus = 'Active'
+        case OrderStatus.Closed:
+          notificationStatus = 'Closed'
+        case OrderStatus.Dispatched:
+          notificationStatus = 'Dispatched'
+        case OrderStatus.Pending:
+          notificationStatus = 'Pending'
+        case OrderStatus.Rejected:
+          notificationStatus = 'Cancelled'
+      }
+      await this.fcmService.sendSingle({id: id, title: 'Order Status Update', body: 'Your Order Status has been changed to '+ notificationStatus})
+    }
+    return order
   }
 
   async search(query : any) {
@@ -363,5 +438,19 @@ export class OrdersService extends SimpleService<IOrders> {
     }
 
     return !!order.items[0].supplier
+  }
+
+  async filter(data: any): Promise<IOrders[]>{
+    let result = new Set<any>();
+    let orders = await this.model.find({city: data.city}).populate('customer').exec()
+    for (let order of orders){
+      // @ts-ignore
+      if (data.services.includes(order.service)){
+        // @ts-ignore
+        order.customer.profile = await this.personsService.fetch(order.customer.profile)
+        result.add(order)
+      }
+    }
+    return Array.from(result)
   }
 }

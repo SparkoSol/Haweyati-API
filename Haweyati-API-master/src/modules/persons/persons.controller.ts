@@ -5,7 +5,7 @@ import {
   Patch,
   Controller,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors, Param
 } from '@nestjs/common'
 import { PersonsService } from './persons.service'
 import { IPerson } from 'src/data/interfaces/person.interface'
@@ -24,9 +24,15 @@ export class PersonsController extends ImageController<IPerson> {
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
   async patch(@UploadedFile('image') file: any, @Body() document: any){
-    document.username = document.contact
+    if(document.contact)
+      document.username = document.contact
     document.isVerified = undefined
     return super.patch(file, document)
+  }
+
+  @Patch('token')
+  async updateToken(@Body() data: any): Promise<IPerson>{
+    return await this.service.updateToken(data);
   }
 
   @Post('forgotpassword')
@@ -52,5 +58,10 @@ export class PersonsController extends ImageController<IPerson> {
   @Get('persons-notification')
   async getExceptAdmin(): Promise<IPerson[]>{
     return await this.service.exceptAdmin();
+  }
+
+  @Get('contact/:contact')
+  async isContactExists(@Param('contact') contact: string): Promise<IPerson>{
+    return await this.service.isContactExists(contact)
   }
 }

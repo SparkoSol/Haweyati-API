@@ -13,6 +13,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { ShopRegistrationService } from './shop-registration.service'
 import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { IPerson } from '../../data/interfaces/person.interface'
 
 @Controller('suppliers')
 export class ShopRegistrationController extends ImageController<
@@ -72,48 +73,7 @@ export class ShopRegistrationController extends ImageController<
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
   async Patch(@UploadedFile() file, @Body() data: any) {
-    const pro = await this.service.fetchFromContact(data.contact)
-    let person
-    if (pro) {
-      if (pro._id == data.personID) {
-        person = {
-          _id: data.personID,
-          name: data.name,
-          email: data.email,
-          contact: data.contact,
-          username: data.contact
-        }
-        if (file) {
-          person.image = {
-            name: file.filename,
-            path: file.path
-          }
-        }
-      } else {
-        throw new HttpException(
-          'Contact Already Exists',
-          HttpStatus.NOT_ACCEPTABLE
-        )
-      }
-    } else {
-      person = {
-        _id: data.personID,
-        name: data.name,
-        email: data.email,
-        contact: data.contact,
-        username: data.contact,
-        isVerified: false
-      }
-      if (file) {
-        person.image = {
-          name: file.filename,
-          path: file.path
-        }
-      }
-    }
-
-    await this.service.updateProfile(person)
-    return this.service.change(data)
+    return await super.patch(file, data);
   }
 
   @Get('cities')

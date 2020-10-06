@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
@@ -35,59 +35,73 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     }
   }
 
-  async fetchFromContact(contact: string): Promise<IPerson> {
-    return await this.personService.fetchFromContact(contact)
-  }
-
   async create(document: any): Promise<IShopRegistrationInterface> {
-    document.username = document.contact
     document.scope = 'supplier'
-    const person = await this.personService.create(document)
-    let supplier = undefined
-
-    if (person){
-      document.person = person
-
-      document.location = {
-        latitude: document.latitude,
-        longitude: document.longitude,
-        address: await LocationUtils.getAddress(
-          document.latitude,
-          document.longitude
-        )
-      }
-
-      document.city = await LocationUtils.getCity(
+    document.location = {
+      latitude: document.latitude,
+      longitude: document.longitude,
+      address: await LocationUtils.getAddress(
         document.latitude,
         document.longitude
       )
+    }
+    document.city = await LocationUtils.getCity(
+      document.latitude,
+      document.longitude
+    )
 
-      supplier = super.create(document)
+    let supplier: any;
+    let person: any;
+
+    if (document.person){
+      await this.personService.addScope(document.person, document.scope)
+      supplier = await this.model.create(document)
+    }
+    else {
+      const personObject = {
+        scope: document.scope,
+        contact: document.contact,
+        email: document.email,
+        password: document.password,
+        image: document.image,
+        name: document.name,
+        username: document.contact
+      }
+
+      person = await this.personService.create(personObject)
+      if (person){
+        document.person = person
+        supplier = await this.model.create(document)
+      }
     }
 
     if (supplier){
-      if (typeof(person) != 'string'){
-        await this.personService.change(person)
+      const notification = {
+        type: 'Supplier',
+        title: 'New Supplier',
+        message: 'New Supplier SignUp with name : ' + document.name +'.'
       }
-      //notification for admin
-      if (document.status != "Active"){
-        const notification = {
-          type: 'Supplier',
-          title: 'New Supplier',
-          message: 'New Supplier SignUp with name : ' + document.name +'.'
-        }
-        this.adminNotificationsService.create(notification);
-      }
-    }else {
-      if (typeof(person) == 'string'){
-        await this.personService.delete(document.profile._id)
-      }
+      await this.adminNotificationsService.create(notification);
+    }
+    else {
+      await this.personService.delete(person)
+      throw new HttpException(
+        'Unable to sign up, Please contact admin support!',
+        HttpStatus.NOT_ACCEPTABLE
+      )
     }
 
     return supplier
   }
 
   async change(document: any): Promise<IShopRegistrationInterface> {
+
+    let person = (await this.personService.fetch(document.personId)) as IPerson
+    person.name = document.name
+    person.image = document.image
+
+    await this.personService.change(person)
+
     document.location = {
       latitude: document.latitude,
       longitude: document.longitude,

@@ -6,7 +6,7 @@ import { IFinishingMaterialCategory } from './finishingMaterialCategory.interfac
 export interface IFinishingMaterialsInterface extends Document {
   name: string
   description: string
-  parent: IFinishingMaterialCategory
+  parent: IFinishingMaterialCategory | string
   suppliers: IShopRegistrationInterface[]
   image: IImage
   price: number

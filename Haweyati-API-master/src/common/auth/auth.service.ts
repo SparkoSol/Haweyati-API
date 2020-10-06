@@ -34,4 +34,8 @@ export class AuthService {
       profile : await this.usersService.fetch(user.userId)
     }
   }
+
+  async logout(user: any){
+    return await this.usersService.logout(user.userId)
+  }
 }

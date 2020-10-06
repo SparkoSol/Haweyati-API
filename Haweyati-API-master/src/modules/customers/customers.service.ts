@@ -188,5 +188,4 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
       }
       return results
    }
-
 }

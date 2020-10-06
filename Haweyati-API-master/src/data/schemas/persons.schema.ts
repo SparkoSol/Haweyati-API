@@ -24,6 +24,9 @@ export const PersonsSchema = new Schema(
       type: String,
       unique: true,
       required: true
+    },
+    token: {
+      type: String
     }
   },
   { timestamps: true }

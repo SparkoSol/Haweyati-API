@@ -61,56 +61,58 @@ export class DriversService extends SimpleService<IDriversInterface> {
           )
       }
     }
-    let driver = undefined
-    document._id = undefined
-    document.scope = 'driver'
 
-    const personObject = {
-      scope: document.scope,
-      contact: document.contact,
-      email: document.email,
-      password: document.password,
-      image: document.image,
-      name: document.name,
-      username: document.username
+    document.location = {
+      latitude: document.latitude,
+      longitude: document.longitude,
+      address: document.address
     }
+    document.vehicle = {
+      name: document.vehicleName,
+      model: document.model,
+      identificationNo: document.identificationNo,
+      type: document.type
+    }
+    document.scope = 'driver'
+    let person: any;
+    let driver: any;
 
-    const person = await this.personsService.create(personObject)
-    if (person) {
-      document.profile = person
-
-      document.location = {
-        latitude: document.latitude,
-        longitude: document.longitude,
-        address: document.address
-      }
-      document.vehicle = {
-        name: document.vehicleName,
-        model: document.model,
-        identificationNo: document.identificationNo,
-        type: document.type
-      }
-
+    if (document.profile){
+      await this.personsService.addScope(document.profile, document.scope)
       driver = await super.create(document)
-      if (driver) {
-        // @ts-ignore
+      if (driver){
         await this.requestModel.create({
           driver: driver._id,
-          status: driver.status
+          status: driver.status,
+          message: ''
         })
       }
-    } else {
-      throw new HttpException(
-        'Driver unable to SignUp, Please contact Admin Support',
-        HttpStatus.NOT_ACCEPTABLE
-      )
+    }
+    else {
+      const personObject = {
+        scope: document.scope,
+        contact: document.contact,
+        email: document.email,
+        password: document.password,
+        image: document.image,
+        name: document.name,
+        username: document.contact
+      }
+
+      person = await this.personsService.create(personObject)
+      if (person){
+        document.profile = person
+
+        driver = await super.create(document)
+      }
     }
 
-    //notification for admin
     if (driver) {
-      if (typeof person != 'string') {
-        await this.personsService.change(person)
-      }
+      await this.requestModel.create({
+        driver: driver._id,
+        status: driver.status,
+        message: ''
+      })
       const notification = {
         type: 'Driver',
         title: 'New Driver',
@@ -125,10 +127,13 @@ export class DriversService extends SimpleService<IDriversInterface> {
           '.'
       }
       await this.adminNotificationsService.create(notification)
-    } else {
-      if (typeof person == 'string') {
-        await this.personsService.delete(person)
-      }
+    }
+    else {
+      await this.personsService.delete(person)
+      throw new HttpException(
+        'Unable to sign up, Please contact admin support!',
+        HttpStatus.NOT_ACCEPTABLE
+      )
     }
 
     return driver

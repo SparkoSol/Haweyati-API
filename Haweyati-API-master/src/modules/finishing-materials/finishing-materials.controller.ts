@@ -14,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { FinishingMaterialsService } from './finishing-materials.service'
 import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
+import { query } from 'express'
 
 @Controller('finishing-materials')
 export class FinishingMaterialsController extends ImageController<
@@ -24,6 +25,14 @@ export class FinishingMaterialsController extends ImageController<
   )
   {
     super(service)
+  }
+
+  @Get(':id')
+  getById(@Param('id') id: string, @Query() data: any): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface> {
+    if (data.name)
+      return this.service.fetchAndSearch(id , data)
+    else
+      return this.service.fetch(id)
   }
 
   protected parseData(finishingMaterial: any) {

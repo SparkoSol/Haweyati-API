@@ -25,44 +25,9 @@ export class PersonsService extends SimpleService<IPerson> {
   }
 
   async create(data: any): Promise<any> {
-    if (!await this.model.findOne({email: data.email}).exec()){
-      const profile = await this.fetchFromContact(data.contact)
-      data.username = data.contact
-      if (profile) {
-        if (Array.isArray(data.scope)) {
-          if (profile.scope.includes(data.scope[0])) {
-            throw new HttpException(
-              'Profile with this contact already exists!',
-              HttpStatus.NOT_ACCEPTABLE
-            )
-          } else {
-            profile.scope.push(data.scope[0])
-            return profile
-          }
-        } else {
-          if (profile.scope.includes(data.scope)) {
-            throw new HttpException(
-              'Profile with this contact already exists!',
-              HttpStatus.NOT_ACCEPTABLE
-            )
-          } else {
-            profile.scope.push(data.scope)
-            return profile
-          }
-        }
-      }
-      else {
-        const person = await super.create(data)
-        if (person.image){
-          await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
-        }
-        return person._id
-      }
-    } else {
-      throw new HttpException(
-        "Email Already Exists",
-        HttpStatus.NOT_ACCEPTABLE
-      )
+    const person = await super.create(data)
+    if (person.image){
+      await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
     }
   }
 
@@ -197,5 +162,25 @@ export class PersonsService extends SimpleService<IPerson> {
 
   async changePasswordWithContact(data: any): Promise<any> {
     return this.model.updateOne({ contact: data.contact }, { password: data.password }).exec()
+  }
+
+  async isContactExists(contact: string): Promise<IPerson>{
+    return await this.model.findOne({contact}).exec()
+  }
+
+  //for adding scope in existing person used in driver
+  async addScope(id: string, scope: string): Promise<IPerson>{
+    let person = await this.model.findById(id).exec()
+    person.scope.push(scope)
+    return await person.save()
+  }
+
+  //changing token on logout
+  async logout(id: string){
+    return await this.model.findByIdAndUpdate(id, {token: undefined}).exec()
+  }
+
+  async updateToken(data: any): Promise<IPerson>{
+    return await this.model.findByIdAndUpdate(data._id, {token: data.token}).exec()
   }
 }
