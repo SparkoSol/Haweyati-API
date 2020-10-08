@@ -1,7 +1,8 @@
 import { FcmService } from './fcm.service'
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { IFcmHistory } from '../../data/interfaces/fcmHistory.interface'
+import { IPerson } from '../../data/interfaces/person.interface'
 
 @Controller('fcm')
 export class FcmController extends SimpleController<IFcmHistory>{
@@ -19,8 +20,8 @@ export class FcmController extends SimpleController<IFcmHistory>{
     return await this.service.sendPending(id)
   }
 
-  @Post('test')
-  async testing(@Body() data: any){
-    return this.service.testing(data);
+  @Patch('token')
+  async updateToken(@Body() data: any): Promise<IPerson>{
+    return await this.service.updateToken(data);
   }
 }

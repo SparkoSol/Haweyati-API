@@ -30,6 +30,11 @@ export class FcmService extends SimpleService<IFcmHistory>{
             title: data.title,
             body: data.body
           },
+          data: {
+            type: "news",
+            createdAt: Date(),
+            click_action: 'FLUTTER_NOTIFICATION_CLICK'
+          },
           to: '/topics/news'
         },
         {
@@ -62,7 +67,11 @@ export class FcmService extends SimpleService<IFcmHistory>{
         {
           notification: {
             title: data.title,
-            body: data.body
+            body: data.body,
+          },
+          data: {
+            type: "order",
+            createdAt: Date()
           },
           to: person.token
         },
@@ -104,7 +113,12 @@ export class FcmService extends SimpleService<IFcmHistory>{
             {
               notification: {
                 title: item.title,
-                body: item.body
+                body: item.body,
+              },
+              data: {
+                type: "order",
+                // @ts-ignore
+                createdAt: item.createdAt
               },
               to: person.token
             },
@@ -122,22 +136,9 @@ export class FcmService extends SimpleService<IFcmHistory>{
     return
   }
 
-  async testing(data: any){
-    await this.http.post(
-      "https://fcm.googleapis.com/fcm/send",
-      {
-        notification: {
-          title: data.title,
-          body: data.body
-        },
-        to: 'c8YDRWmLRn2nSP6LNV-A4T:APA91bHFatGX8715wn3RupaJ_y6NVrHwddPDtwikha3alBwty_SpWz0ka2ugOS8CtTjmQhzcz_JNkk6AeppAn6RyqAhIpi8Fes3MXrYx5KVqU0nZCLuJeSN6R9nD92-gzRcR-25nmr-S'
-      },
-      {
-        headers: {
-          "ContentType": "application/json",
-          "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
-        }
-      }
-    ).subscribe(asd => console.log(asd));
+  async updateToken(data: any): Promise<IPerson>{
+    const person = await this.personService.updateToken(data._id, data.token)
+    this.sendPending(data._id)
+    return person
   }
 }

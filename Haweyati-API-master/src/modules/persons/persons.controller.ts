@@ -30,11 +30,6 @@ export class PersonsController extends ImageController<IPerson> {
     return super.patch(file, document)
   }
 
-  @Patch('token')
-  async updateToken(@Body() data: any): Promise<IPerson>{
-    return await this.service.updateToken(data);
-  }
-
   @Post('forgotpassword')
   async forgotPassword(@Body() data: any) {
     return await this.service.forgotPassword(data.email)

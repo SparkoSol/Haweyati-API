@@ -36,6 +36,7 @@ export class AuthService {
   }
 
   async logout(user: any){
+    console.log(user)
     return await this.usersService.logout(user.userId)
   }
 }

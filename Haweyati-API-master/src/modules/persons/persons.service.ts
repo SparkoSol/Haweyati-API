@@ -177,10 +177,12 @@ export class PersonsService extends SimpleService<IPerson> {
 
   //changing token on logout
   async logout(id: string){
+    console.log(id)
     return await this.model.findByIdAndUpdate(id, {token: undefined}).exec()
   }
 
-  async updateToken(data: any): Promise<IPerson>{
-    return await this.model.findByIdAndUpdate(data._id, {token: data.token}).exec()
+  //updating token on person login - not used in persons service because of circular dependency
+  async updateToken(id:string, token:string){
+    return await this.model.findByIdAndUpdate(id, {token}).exec()
   }
 }
