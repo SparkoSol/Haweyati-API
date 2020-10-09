@@ -17,7 +17,8 @@ export class FcmService extends SimpleService<IFcmHistory>{
 
     protected readonly personService: PersonsService,
     protected readonly http: HttpService
-  ) {
+  )
+  {
     super(fcmHistoryModel);
   }
 
