@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"haweyati--db.fcmalls"}],"uuid":"d394891667ab4e2bb6f8e5c7b6ff8e66"}

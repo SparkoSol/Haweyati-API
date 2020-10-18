@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"haweyati--db.finishingmaterialcategories"}],"uuid":"20227e3c8cb84915ae94c5e3f3e944d4"}
