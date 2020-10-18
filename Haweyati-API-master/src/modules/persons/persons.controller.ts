@@ -20,7 +20,7 @@ export class PersonsController extends ImageController<IPerson> {
   {
     super(service)
   }
-
+///just for again pulling
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
   async patch(@UploadedFile('image') file: any, @Body() document: any){
