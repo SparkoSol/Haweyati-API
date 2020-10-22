@@ -11,7 +11,9 @@ import { DumpstersModule } from './modules/dumpsters/dumpsters.module'
 import { CustomersModule } from './modules/customers/customers.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { TimeSlotsModule } from './modules/time-slots/time-slots.module'
+import { InvitationModule } from './modules/invitation/invitation.module'
 import { ScaffoldingsModule } from './modules/scaffoldings/scaffoldings.module'
+import { RewardPointsModule } from './modules/reward-points/reward-points.module'
 import { ServiceRequestsModule } from './modules/service-requests/service-requests.module'
 import { BuildingMaterialsModule } from './modules/building-materials/building-materials.module'
 import { FinishingMaterialsModule } from './modules/finishing-materials/finishing-materials.module'
@@ -32,7 +34,9 @@ import { FinishingMaterialCategoryModule } from './modules/finishing-material-ca
     TimeSlotsModule,
     DashboardModule,
     CustomersModule,
+    InvitationModule,
     ScaffoldingsModule,
+    RewardPointsModule,
     ServiceRequestsModule,
     BuildingMaterialsModule,
     AdminNotificationsModule,

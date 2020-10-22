@@ -2,19 +2,19 @@ import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
+import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { IBuildingMaterials } from '../../data/interfaces/buildingMaterials.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
-import { IBuildingMaterialsInterface } from '../../data/interfaces/buildingMaterials.interface'
 import { IBuildingMaterialCategory } from '../../data/interfaces/buildingMaterialCategory.interface'
 import { BuildingMaterialCategoryService } from '../building-material-category/building-material-category.service'
 
 @Injectable()
 export class BuildingMaterialsService extends SimpleService<
-  IBuildingMaterialsInterface
+  IBuildingMaterials
 > {
   constructor(
     @InjectModel('buildingmaterials')
-    protected readonly model: Model<IBuildingMaterialsInterface>,
+    protected readonly model: Model<IBuildingMaterials>,
     private readonly service: ShopRegistrationService,
     private readonly categoryService: BuildingMaterialCategoryService
   ) {
@@ -23,13 +23,13 @@ export class BuildingMaterialsService extends SimpleService<
 
   async fetch(
     id?: string
-  ): Promise<IBuildingMaterialsInterface[] | IBuildingMaterialsInterface> {
+  ): Promise<IBuildingMaterials[] | IBuildingMaterials> {
     if (id) {
       let data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
-        )) as IShopRegistrationInterface
+        )) as IShopRegistration
       }
       return data
     } else {
@@ -38,14 +38,14 @@ export class BuildingMaterialsService extends SimpleService<
         for (let i = 0; i < data.suppliers.length; ++i) {
           data.suppliers[i] = (await this.service.fetch(
             data.suppliers[i].toString()
-          )) as IShopRegistrationInterface
+          )) as IShopRegistration
         }
       }
       return big
     }
   }
 
-  async fetchByParentId(id: string): Promise<IBuildingMaterialsInterface[]> {
+  async fetchByParentId(id: string): Promise<IBuildingMaterials[]> {
     return await this.model
       .find({ status: 'Active' })
       .where('parent', id)
@@ -105,5 +105,10 @@ export class BuildingMaterialsService extends SimpleService<
       await this.remove(item._id)
     }
     return 'Category Deleted'
+  }
+
+  //used in reward points module
+  async getDataForRewardPoints(data: any): Promise<IBuildingMaterials[]>{
+    return await this.model.find({ _id: { $nin: data } }).exec()
   }
 }

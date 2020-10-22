@@ -24,4 +24,9 @@ export class FcmController extends SimpleController<IFcmHistory>{
   async updateToken(@Body() data: any): Promise<IPerson>{
     return await this.service.updateToken(data);
   }
+
+  @Post('single')
+  async sendSingle(@Body() data:any){
+    return await this.service.sendSing(data)
+  }
 }

@@ -28,29 +28,46 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
    }
 
    async create(document: any): Promise<any> {
-      let customer:any = undefined;
+      let person: any;
+      let customer: any;
+      document.scope = 'customer'
 
-      const profile = await this.personService.create(document)
-      if (profile){
-         document.location = {
-            longitude: document.longitude,
-            latitude: document.latitude,
-            address: document.address
-         }
-         document.profile = profile
+      document.location = {
+         longitude: document.longitude,
+         latitude: document.latitude,
+         address: document.address
+      }
+
+      if (document.profile){
+         document.profile = await this.personService.addScope(document.profile, document.scope)
          customer = await super.create(document)
       }
-      else
-         throw new HttpException(
-           'Profile unable to SignUp, Please contact Admin Support',
-           HttpStatus.NOT_ACCEPTABLE
-         )
+      else {
+         const personObject = {
+            scope: document.scope,
+            contact: document.contact,
+            email: document.email,
+            password: document.password,
+            image: document.image,
+            name: document.name,
+            username: document.contact
+         }
+
+         person = await this.personService.create(personObject)
+         if (person){
+            document.profile = person
+
+            customer = await super.create(document)
+         }
+         else
+            throw new HttpException(
+              'Unable to sign up! Try again later',
+              HttpStatus.NOT_ACCEPTABLE
+            )
+      }
 
       //notification for admin
       if (customer){
-         if (typeof(profile) != 'string'){
-            await this.personService.change(document.profile)
-         }
          const notification = {
             type: 'Customer',
             title: 'New Customer',
@@ -60,9 +77,6 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
          await this.adminNotificationsService.create(notification);
       }
       else {
-         if (typeof(profile) == 'string'){
-            await this.personService.delete(document.profile._id)
-         }
          throw new HttpException(
            'Profile unable to SignUp, Please contact Admin Support',
            HttpStatus.NOT_ACCEPTABLE
@@ -107,14 +121,17 @@ export class CustomersService extends SimpleService<ICustomerInterface>{
 
    async getProfile(contact: string): Promise<ICustomerInterface | string>{
       const person = await this.personService.fetchFromContact(contact);
-      if (person){
+      if (person?.scope.includes('customer') ){
          const customer = await this.model.findOne({profile: person._id}).populate('profile').exec()
          // @ts-ignore
-         customer.profile.password = ''
+         // customer.profile.password = ''
          return customer
       }
       else{
-         return "No Data"
+         throw new HttpException(
+           'No Customer Found',
+           HttpStatus.NOT_FOUND
+         )
       }
    }
 

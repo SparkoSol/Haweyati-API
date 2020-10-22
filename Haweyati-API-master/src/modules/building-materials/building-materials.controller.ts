@@ -13,10 +13,10 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { BuildingMaterialsService } from './building-materials.service'
-import { IBuildingMaterialsInterface } from '../../data/interfaces/buildingMaterials.interface'
+import { IBuildingMaterials } from '../../data/interfaces/buildingMaterials.interface'
 
 @Controller('building-materials')
-export class BuildingMaterialsController extends ImageController<IBuildingMaterialsInterface> {
+export class BuildingMaterialsController extends ImageController<IBuildingMaterials> {
   constructor(
     protected readonly service: BuildingMaterialsService
   )
@@ -58,14 +58,14 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   patch(
     @UploadedFile() file,
     buildingMaterial: any
-  ): Promise<IBuildingMaterialsInterface> {
+  ): Promise<IBuildingMaterials> {
     return super.patch(file, this.parseData(buildingMaterial))
   }
 
   @Get('getbyparent/:id')
   getByParentId(
     @Param('id') id: string
-  ): Promise<IBuildingMaterialsInterface[] | IBuildingMaterialsInterface> {
+  ): Promise<IBuildingMaterials[] | IBuildingMaterials> {
     return this.service.fetchByParentId(id)
   }
 

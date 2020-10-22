@@ -5,6 +5,7 @@ import { MulterModule } from '@nestjs/platform-express'
 import { PersonsController } from './persons.controller'
 import { PersonsSchema } from 'src/data/schemas/persons.schema'
 import { AdminForgotPasswordSchema } from '../../data/schemas/adminForgotPassword.schema'
+import { InvitationModule } from '../invitation/invitation.module'
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { AdminForgotPasswordSchema } from '../../data/schemas/adminForgotPasswor
     ]),
     MulterModule.register({
       dest: '../uploads'
-    })
+    }),
+    InvitationModule
   ],
   controllers: [PersonsController],
   providers: [PersonsService],

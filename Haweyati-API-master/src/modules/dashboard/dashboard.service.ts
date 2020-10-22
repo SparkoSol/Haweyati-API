@@ -6,7 +6,7 @@ import { CustomersService } from '../customers/customers.service'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 
 @Injectable()
 export class DashboardService {
@@ -19,7 +19,7 @@ export class DashboardService {
 
   async allData(): Promise<any>{
     const drivers = ((await this.driversService.fetch()) as IDriversInterface[]).length
-    const suppliers = ((await this.suppliersService.fetch()) as IShopRegistrationInterface[]).length
+    const suppliers = await this.suppliersService.totalSuppliers()
     const orders = ((await this.ordersService.fetch()) as IOrders[]).length
     const customers = ((await this.customersService.getAll()) as ICustomerInterface[]).length
 

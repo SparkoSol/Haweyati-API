@@ -1,8 +1,8 @@
 import {Document} from "mongoose";
-import { IShopRegistrationInterface } from './shop-registration.interface';
+import { IShopRegistration } from './shop-registration.interface';
 
 export interface IScaffoldingsInterface extends Document{
-   suppliers : IShopRegistrationInterface[],
+   suppliers : IShopRegistration[],
    description: string,
    type: string,
    pricing: [

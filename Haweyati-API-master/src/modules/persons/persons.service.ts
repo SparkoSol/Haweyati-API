@@ -8,6 +8,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
+import { InvitationService } from '../invitation/invitation.service'
 
 @Injectable()
 export class PersonsService extends SimpleService<IPerson> {
@@ -15,7 +16,9 @@ export class PersonsService extends SimpleService<IPerson> {
     @InjectModel('persons')
     protected readonly model: Model<IPerson>,
     @InjectModel('forgotpassword')
-    protected readonly forgotPasswordModel: Model<IAdminForgotPassword>
+    protected readonly forgotPasswordModel: Model<IAdminForgotPassword>,
+
+    protected readonly invitationService: InvitationService
   ) {
     super(model)
   }
@@ -26,21 +29,11 @@ export class PersonsService extends SimpleService<IPerson> {
 
   async create(data: any): Promise<any> {
     const person = await super.create(data)
+    await this.invitationService.create(person)
     if (person.image){
       await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
     }
-  }
-
-  async fetch(id?: string): Promise<IPerson[] | IPerson> {
-    if (id) {
-      return await this.model.findById(id).exec()
-    } else {
-      return await this.model.find().exec()
-    }
-  }
-
-  async fetchAll(id: string): Promise<IPerson>{
-    return (await this.fetch(id)) as IPerson
+    return person
   }
 
   async fetchByUsername(name: string): Promise<IPerson> {
@@ -66,9 +59,9 @@ export class PersonsService extends SimpleService<IPerson> {
     else {
       person = await super.change(document)
     }
-    if (person.image){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
-    }
+    // if (person.image){
+    //   await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
+    // }
     return person
   }
 
@@ -177,7 +170,6 @@ export class PersonsService extends SimpleService<IPerson> {
 
   //changing token on logout
   async logout(id: string){
-    console.log(id)
     return await this.model.findByIdAndUpdate(id, {token: undefined}).exec()
   }
 

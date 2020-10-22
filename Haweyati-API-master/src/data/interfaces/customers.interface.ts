@@ -6,5 +6,6 @@ export interface ICustomerInterface extends Document{
    profile: IPerson | string,
    location: ILocation,
    status: string,
+   points: number
    message : string
 }

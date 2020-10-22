@@ -442,7 +442,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async filter(data: any): Promise<IOrders[]>{
     let result = new Set<any>();
-    let orders = await this.model.find({city: data.city}).populate('customer').exec()
+    let orders = await this.model.find({city: data.city}).populate('customer').sort({createdAt: -1}).exec()
     for (let order of orders){
       // @ts-ignore
       if (data.services.includes(order.service)){

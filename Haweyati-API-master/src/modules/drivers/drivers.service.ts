@@ -24,15 +24,15 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async fetch(id?: string): Promise<IDriversInterface[] | IDriversInterface> {
     if (id) {
-      const data = await this.model
+      let data = await (await this.model
         .findOne({ _id: id })
         .populate('profile')
-        .exec()
-      ;(data.profile as IPerson).password = ''
+        .exec());
+      (data.profile as IPerson).password = ''
       return data
     } else {
       const all = await this.model
-        .find({ supplier: null })
+        .find()
         .populate('profile')
         .exec()
 
@@ -80,13 +80,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
     if (document.profile){
       await this.personsService.addScope(document.profile, document.scope)
       driver = await super.create(document)
-      if (driver){
-        await this.requestModel.create({
-          driver: driver._id,
-          status: driver.status,
-          message: ''
-        })
-      }
     }
     else {
       const personObject = {
@@ -141,6 +134,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async change(document: any): Promise<IDriversInterface> {
     const allDrivers = await this.model.find({ status: { $nin: ['Rejected'] } }).exec()
+
     for (let driver of allDrivers){
       if (document.identificationNo == driver.vehicle.identificationNo){
         if (document._id != driver._id)
@@ -162,20 +156,20 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
     if (document.image){
       personObject = {
-        _id: document.person,
-        image: document.image,
-        name: document.name,
+        _id: document.profile,
+        image: document.profile.image,
+        name: document.profile.name,
       }
     }else {
       personObject = {
-        _id: document.person,
-        name: document.name,
+        _id: document.profile,
+        name: document.profile.name,
       }
     }
-
     const person = await this.personsService.change(personObject)
+
     if (person) {
-      document.profile = document.person
+      document.profile = person
 
       document.location = {
         latitude: document.latitude,
@@ -215,32 +209,23 @@ export class DriversService extends SimpleService<IDriversInterface> {
     return driver
   }
 
-  async getRequests(): Promise<IDriverRequest[]> {
-    // eslint-disable-next-line prefer-const
-    let requests = await this.requestModel.find({ status: 'Pending' }).exec()
-
-    for (let i = 0; i < requests.length; i++) {
-      requests[i].driver = (await this.fetch(
-        requests[i].driver.toString()
-      )) as IDriversInterface
-    }
-
-    return requests
-  }
-
   async getByStatus(status: string): Promise<IDriversInterface[]> {
     return await this.model
-      .find({ status, supplier: null })
+      .find({ status })
       .populate('profile')
       .exec()
   }
 
   async updateByStatus(id: string, status: string): Promise<any> {
     const request = await this.requestModel.findById(id).exec()
-    await this.model.findByIdAndUpdate(request.driver._id, { status }).exec()
-    await this.requestModel.findByIdAndDelete(id)
-    return {
-      message: 'Request Approved'
+    if (request && status == 'Active'){
+      await this.model.findByIdAndUpdate(request.driver._id, { status }).exec()
+      await this.requestModel.findByIdAndDelete(id)
+      return { message: 'Status Changed Successfully!' }
+    }
+    else {
+      await this.model.findByIdAndUpdate(id, { status }).exec()
+      return { message: 'Status Changed Successfully!' }
     }
   }
 

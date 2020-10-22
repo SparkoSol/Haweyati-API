@@ -5,14 +5,14 @@ import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
 import { IPerson } from '../../data/interfaces/person.interface'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
-export class ShopRegistrationService extends SimpleService<IShopRegistrationInterface> {
+export class ShopRegistrationService extends SimpleService<IShopRegistration> {
   constructor(
     @InjectModel('shopregistration')
-    protected readonly model: Model<IShopRegistrationInterface>,
+    protected readonly model: Model<IShopRegistration>,
     protected readonly personService: PersonsService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
@@ -21,7 +21,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
 
   async fetch(
     id?: string
-  ): Promise<IShopRegistrationInterface[] | IShopRegistrationInterface> {
+  ): Promise<IShopRegistration[] | IShopRegistration> {
     if (id)
       return await this.model
         .findById(id)
@@ -29,13 +29,13 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
         .exec()
     else {
       return await this.model
-        .find({ parent: null })
+        .find()
         .populate('person')
         .exec()
     }
   }
 
-  async create(document: any): Promise<IShopRegistrationInterface> {
+  async create(document: any): Promise<IShopRegistration> {
     document.scope = 'supplier'
     document.location = {
       latitude: document.latitude,
@@ -94,7 +94,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     return supplier
   }
 
-  async change(document: any): Promise<IShopRegistrationInterface> {
+  async change(document: any): Promise<IShopRegistration> {
 
     let person = (await this.personService.fetch(document.personId)) as IPerson
     person.name = document.name
@@ -118,13 +118,9 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     return super.change(document)
   }
 
-  async updateProfile(data: any) {
-    return await this.personService.change(data)
-  }
-
   async fetchAll(): Promise<any> {
     return await this.model
-      .find({ status: 'Active' })
+      .find({ status: 'Active' , parent: null})
       .populate('person')
       .exec()
   }
@@ -198,7 +194,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     return Array.from(newSet)
   }
 
-  async getByProfile(id: string): Promise<IShopRegistrationInterface>{
+  async getByProfile(id: string): Promise<IShopRegistration>{
     return await this.model.findOne({person: id}).populate('person').exec()
   }
 
@@ -211,7 +207,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistrationInte
     return Array.from(result)
   }
 
-  async getSupplierByPerson(id: string): Promise<any>{
-    return await this.model.findOne({person: id}).populate('person').exec()
+  async totalSuppliers(): Promise<number>{
+    return await this.model.find().countDocuments().exec()
   }
 }

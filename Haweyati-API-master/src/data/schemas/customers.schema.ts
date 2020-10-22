@@ -17,6 +17,11 @@ export const CustomersSchema = new Schema(
       required: false,
       default: 'Active'
     },
+    points: {
+      type: Number,
+      required: false,
+      default: 0
+    },
     message: {
       type: String,
       required: false,

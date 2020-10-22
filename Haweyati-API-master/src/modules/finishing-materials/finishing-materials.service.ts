@@ -3,17 +3,16 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
-import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
+import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { IFinishingMaterials } from '../../data/interfaces/finishingMaterials.interface'
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
-import { IOrders } from '../../data/interfaces/orders.interface'
 
 @Injectable()
-export class FinishingMaterialsService extends SimpleService<IFinishingMaterialsInterface> {
+export class FinishingMaterialsService extends SimpleService<IFinishingMaterials> {
   constructor(
     @InjectModel('finishingmaterials')
-    protected readonly model: Model<IFinishingMaterialsInterface>,
+    protected readonly model: Model<IFinishingMaterials>,
     private readonly service: ShopRegistrationService,
     private readonly categoryService: FinishingMaterialCategoryService
   )
@@ -23,13 +22,13 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
 
   async fetch(
     id?: string
-  ): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface> {
+  ): Promise<IFinishingMaterials[] | IFinishingMaterials> {
     if (id) {
       let data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
-        )) as IShopRegistrationInterface
+        )) as IShopRegistration
       }
       return data
     } else {
@@ -38,14 +37,14 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
         for (let i = 0; i < data.suppliers.length; ++i) {
           data.suppliers[i] = (await this.service.fetch(
             data.suppliers[i].toString()
-          )) as IShopRegistrationInterface
+          )) as IShopRegistration
         }
       }
       return big
     }
   }
 
-  fetchByParentId(id: string): Promise<IFinishingMaterialsInterface[]> {
+  fetchByParentId(id: string): Promise<IFinishingMaterials[]> {
     return this.model
       .find({ status: 'Active' })
       .where('parent', id)
@@ -105,19 +104,19 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
     return 'Category Deleted'
   }
 
-  async search(name: string): Promise<IFinishingMaterialsInterface[]>{
+  async search(name: string): Promise<IFinishingMaterials[]>{
     let big = await this.model.find({ status: 'Active', 'name': { $regex: name, $options: "i" }}).exec()
     for (let data of big) {
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
-        )) as IShopRegistrationInterface
+        )) as IShopRegistration
       }
     }
     return big
   }
 
-  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterialsInterface[]>{
+  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterials[]>{
     return await this.model.find(
       {
         parent: id,
@@ -126,5 +125,10 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
         ]
       }
       ).populate('parent').exec()
+  }
+
+  //used in reward points module
+  async getDataForRewardPoints(data: any): Promise<IFinishingMaterials[]>{
+    return await this.model.find({ _id: { $nin: data } }).exec()
   }
 }

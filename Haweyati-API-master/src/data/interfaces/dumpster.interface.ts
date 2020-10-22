@@ -1,10 +1,10 @@
 import { Document } from 'mongoose';
 import { IImage } from './image.interface';
-import { IShopRegistrationInterface } from './shop-registration.interface';
+import { IShopRegistration } from './shop-registration.interface';
 
 export interface IDumpster extends Document {
   size: string,
-  suppliers : IShopRegistrationInterface[],
+  suppliers : IShopRegistration[],
   image: IImage,
   description: string,
   pricing: [

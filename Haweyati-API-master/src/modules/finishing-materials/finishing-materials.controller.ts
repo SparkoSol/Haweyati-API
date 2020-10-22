@@ -13,12 +13,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { FinishingMaterialsService } from './finishing-materials.service'
-import { IFinishingMaterialsInterface } from '../../data/interfaces/finishingMaterials.interface'
-import { query } from 'express'
+import { IFinishingMaterials } from '../../data/interfaces/finishingMaterials.interface'
 
 @Controller('finishing-materials')
 export class FinishingMaterialsController extends ImageController<
-  IFinishingMaterialsInterface
+  IFinishingMaterials
 > {
   constructor(
     protected readonly service: FinishingMaterialsService
@@ -27,8 +26,13 @@ export class FinishingMaterialsController extends ImageController<
     super(service)
   }
 
+  @Get('available')
+  async Get(@Query() data): Promise<any> {
+    return await this.service.getByCity(data.city, data.parent)
+  }
+
   @Get(':id')
-  getById(@Param('id') id: string, @Query() data: any): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface> {
+  getById(@Param('id') id: string, @Query() data: any): Promise<IFinishingMaterials[] | IFinishingMaterials> {
     if (data.name)
       return this.service.fetchAndSearch(id , data)
     else
@@ -132,13 +136,8 @@ export class FinishingMaterialsController extends ImageController<
   @Get('getbyparent/:id')
   getByParentId(
     @Param('id') id: string
-  ): Promise<IFinishingMaterialsInterface[] | IFinishingMaterialsInterface> {
+  ): Promise<IFinishingMaterials[] | IFinishingMaterials> {
     return this.service.fetchByParentId(id)
-  }
-
-  @Get('available')
-  async Get(@Query() data): Promise<any> {
-    return await this.service.getByCity(data.city, data.parent)
   }
 
   //Admin Panel
@@ -154,7 +153,7 @@ export class FinishingMaterialsController extends ImageController<
   }
 
   @Get('search')
-  async search(@Query() query: any): Promise<IFinishingMaterialsInterface[]>{
+  async search(@Query() query: any): Promise<IFinishingMaterials[]>{
     return await this.service.search(query.name)
   }
 }

@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IScaffoldingsInterface } from '../../data/interfaces/scaffoldings.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 
 @Injectable()
 export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
@@ -24,7 +24,7 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
-        )) as IShopRegistrationInterface
+        )) as IShopRegistration
       }
       return data
     } else {
@@ -33,7 +33,7 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
         for (let i = 0; i < data.suppliers.length; ++i) {
           data.suppliers[i] = (await this.service.fetch(
             data.suppliers[i].toString()
-          )) as IShopRegistrationInterface
+          )) as IShopRegistration
         }
       }
       return all

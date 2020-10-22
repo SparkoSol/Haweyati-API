@@ -9,7 +9,6 @@ import {
 import { DriversService } from './drivers.service'
 import { ImageController } from '../../common/lib/image.controller'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
-import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 
 @Controller('drivers')
 export class DriversController extends ImageController<IDriversInterface> {
@@ -18,8 +17,8 @@ export class DriversController extends ImageController<IDriversInterface> {
   }
 
   @Get('getrequests')
-  async getRequests(): Promise<IDriverRequest[]> {
-    return this.service.getRequests()
+  async getRequests(): Promise<IDriversInterface[]> {
+    return await this.service.getByStatus('Pending')
   }
 
   @Get('getverified')
@@ -27,24 +26,27 @@ export class DriversController extends ImageController<IDriversInterface> {
     return await this.service.getByStatus('Active')
   }
 
-  @Patch('getverified/:id')
-  async getVerified(@Param('id') id: string): Promise<any> {
-    return await this.service.updateByStatus(id, 'Active')
-  }
-
   @Get('getrejected')
   async getRejectedDrivers(): Promise<IDriversInterface[]> {
     return await this.service.getByStatus('Rejected')
   }
 
-  @Patch('getrejected/:id')
-  async getRejected(@Param('id') id: string, @Body() data: any): Promise<any> {
-    return await this.service.getRejected(id, data)
-  }
-
   @Get('getblocked')
   async getBlockedDrivers(): Promise<IDriversInterface[]> {
     return await this.service.getByStatus('Blocked')
+  }
+
+
+
+
+  @Patch('getverified/:id')
+  async getVerified(@Param('id') id: string): Promise<any> {
+    return await this.service.updateByStatus(id, 'Active')
+  }
+
+  @Patch('getrejected/:id')
+  async getRejected(@Param('id') id: string, @Body() data: any): Promise<any> {
+    return await this.service.getRejected(id, data)
   }
 
   @Patch('getblocked/:id')
@@ -56,6 +58,9 @@ export class DriversController extends ImageController<IDriversInterface> {
   async getUnblocked(@Param('id') id: string): Promise<any> {
     return await this.service.updateByStatus(id, 'Approved')
   }
+
+
+
 
   @Get('supplier/:id')
   async getCompanyDrivers(@Param('id') id: string): Promise<any> {

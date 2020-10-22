@@ -6,9 +6,7 @@ import { SimpleService } from '../../common/lib/simple.service'
 import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
 
 @Injectable()
-export class AdminNotificationsService extends SimpleService<
-  IAdminNotification
-> {
+export class AdminNotificationsService extends SimpleService<IAdminNotification> {
   static staticModel
 
   constructor(

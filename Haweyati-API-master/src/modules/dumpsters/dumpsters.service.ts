@@ -4,7 +4,7 @@ import { Model } from 'mongoose'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IShopRegistrationInterface } from '../../data/interfaces/shop-registration.interface'
+import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 
 @Injectable()
 export class DumpstersService extends SimpleService<IDumpster> {
@@ -23,7 +23,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
-        )) as IShopRegistrationInterface
+        )) as IShopRegistration
       }
       return data
     } else {
@@ -32,7 +32,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
         for (let i = 0; i < data.suppliers.length; ++i) {
           data.suppliers[i] = (await this.service.fetch(
             data.suppliers[i].toString()
-          )) as IShopRegistrationInterface
+          )) as IShopRegistration
         }
       }
       return big
