@@ -23,7 +23,7 @@ export class PersonsController extends ImageController<IPerson> {
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  async patch(@UploadedFile('image') file: any, @Body() document: any){
+  async patch(@UploadedFile() file: any, @Body() document: any){
     if(document.contact)
       document.username = document.contact
     document.isVerified = undefined

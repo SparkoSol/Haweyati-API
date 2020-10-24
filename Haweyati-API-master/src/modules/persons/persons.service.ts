@@ -59,9 +59,6 @@ export class PersonsService extends SimpleService<IPerson> {
     else {
       person = await super.change(document)
     }
-    // if (person.image){
-    //   await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
-    // }
     return person
   }
 

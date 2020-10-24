@@ -109,6 +109,11 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.updateStatus(id, OrderStatus.Active)
   }
 
+  @Get('dispatched-driver/:id')
+  async getDispatched(@Param('id') id: string): Promise<IOrders[]>{
+    return await this.service.getDispatched(id)
+  }
+
   @Get('getrejected')
   async getRejectedOrders(): Promise<IOrders[]> {
     return await this.service.getByStatus(OrderStatus.Rejected)
@@ -150,14 +155,24 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.AddDriver(data)
   }
 
-  @Get('supplier/:id')
+  @Get('selected-supplier/:id')
   async getBySupplierId(@Param('id') id: string): Promise<any>{
     return await this.service.getBySupplierId(id)
+  }
+
+  @Get('completed-supplier/:id')
+  async completedSupplierId(@Param('id') id: string): Promise<any>{
+    return await this.service.completedSupplierId(id)
   }
 
   @Get('driver/:id')
   async getByDriverId(@Param('id') id: string): Promise<IOrders[]>{
     return await this.service.getByDriverId(id)
+  }
+
+  @Get('completed-driver/:id')
+  async completedDriverId(@Param('id') id: string): Promise<IOrders[]>{
+    return await this.service.completedDriverId(id)
   }
 
   @Get('filter')

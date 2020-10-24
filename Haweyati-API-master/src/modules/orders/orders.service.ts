@@ -112,12 +112,34 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async getByDriverId(id: string): Promise<IOrders[]>{
-    return this.model.find({ 'driver._id': id }).exec()
+    return this.getPerson(await this.model.find({ 'driver._id': id }).populate('customer').sort({'createdAt': -1}).exec())
+  }
+
+  async getDispatched(id: string): Promise<IOrders[]>{
+    return this.getPerson(await this.model.find({ 'driver._id': id, status: OrderStatus.Dispatched }).populate('customer').sort({'createdAt': -1}).exec())
+  }
+
+  async completedDriverId(id: string): Promise<IOrders[]>{
+    return this.getPerson(await this.model.find({ 'driver._id': id , status: OrderStatus.Closed}).populate('customer').sort({'createdAt': -1}).exec())
   }
 
   async getBySupplierId(id: string): Promise<any>{
     let result = new Set()
     const orders = (await this.fetch()) as IOrders[]
+    for (let order of orders){
+      for (let one of order.items){
+        // @ts-ignore
+        if (one.supplier?._id == id){
+          result.add(order)
+        }
+      }
+    }
+    return Array.from(result)
+  }
+
+  async completedSupplierId(id: string): Promise<any>{
+    let result = new Set()
+    const orders = (await this.model.find({status: OrderStatus.Closed}).populate('customer').sort({'createdAt': -1}).exec()) as IOrders[]
     for (let order of orders){
       for (let one of order.items){
         // @ts-ignore
@@ -140,6 +162,7 @@ export class OrdersService extends SimpleService<IOrders> {
       let all = await this.model
         .find()
         .populate('customer')
+        .sort({'createdAt': -1})
         .exec()
       all = await this.getPerson(all)
       return all
@@ -151,6 +174,7 @@ export class OrdersService extends SimpleService<IOrders> {
     let all = await this.model
       .find({ status })
       .populate('customer')
+      .sort({'createdAt': -1})
       .exec()
     all = await this.getPerson(all)
     return all
@@ -199,14 +223,17 @@ export class OrdersService extends SimpleService<IOrders> {
         {'orderNo': { $regex: query.name, $options: "i" }}
       ],
       status: OrderStatus.Pending
-    }).populate('customer').exec();
+    })
+      .populate('customer')
+      .sort({'createdAt': -1})
+      .exec();
 
     return this.getPerson(data)
   }
 
   async viewOrders(data: any): Promise<any>{
     let results = new Set()
-    const orders = await this.model.find({city: data.city}).exec()
+    const orders = await this.model.find({city: data.city}).sort({'createdAt': -1}).exec()
     for (const index of orders){
       for (const item of data.services){
         if (index.service == item){
