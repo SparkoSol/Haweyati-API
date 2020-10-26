@@ -7,6 +7,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { LocationUtils } from '../../common/lib/location-utils'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriversInterface> {
@@ -44,6 +45,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async create(document: any): Promise<IDriversInterface> {
+    console.log(document)
     const allDrivers = await this.model.find().exec()
     for (let driver of allDrivers){
       if (document.identificationNo == driver.vehicle.identificationNo){
@@ -76,6 +78,8 @@ export class DriversService extends SimpleService<IDriversInterface> {
     document.scope = 'driver'
     let person: any;
     let driver: any;
+
+    console.log(document)
 
     if (document.profile){
       await this.personsService.addScope(document.profile, document.scope)
@@ -171,6 +175,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
     if (person) {
       document.profile = person
 
+      document.city = LocationUtils.getCity(document.latitude, document.longitude)
       document.location = {
         latitude: document.latitude,
         longitude: document.longitude,

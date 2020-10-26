@@ -139,7 +139,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async completedSupplierId(id: string): Promise<any>{
     let result = new Set()
-    const orders = (await this.model.find({status: OrderStatus.Closed}).populate('customer').sort({'createdAt': -1}).exec()) as IOrders[]
+    const orders = (await this.getPerson(await this.model.find({status: OrderStatus.Closed}).populate('customer').sort({'createdAt': -1}).exec())) as IOrders[]
     for (let order of orders){
       for (let one of order.items){
         // @ts-ignore
