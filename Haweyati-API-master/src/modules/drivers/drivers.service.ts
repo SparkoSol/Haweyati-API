@@ -45,7 +45,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async create(document: any): Promise<IDriversInterface> {
-    console.log(document)
     const allDrivers = await this.model.find().exec()
     for (let driver of allDrivers){
       if (document.identificationNo == driver.vehicle.identificationNo){
@@ -78,8 +77,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
     document.scope = 'driver'
     let person: any;
     let driver: any;
-
-    console.log(document)
 
     if (document.profile){
       await this.personsService.addScope(document.profile, document.scope)

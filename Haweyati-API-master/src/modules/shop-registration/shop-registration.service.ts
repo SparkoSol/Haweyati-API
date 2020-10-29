@@ -1,10 +1,10 @@
 import { Model } from 'mongoose'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
 import { IPerson } from '../../data/interfaces/person.interface'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
@@ -61,7 +61,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       const personObject = {
         scope: document.scope,
         contact: document.contact,
-        email: document.email,
+        email: document.email == "" ? null : document.email,
         password: document.password,
         image: document.image,
         name: document.name,
@@ -95,10 +95,11 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
   }
 
   async change(document: any): Promise<IShopRegistration> {
-
     let person = (await this.personService.fetch(document.personId)) as IPerson
     person.name = document.name
-    person.image = document.image
+    person.email = document.email == "" ? null : document.email
+    if (document.image)
+      person.image = document.image
 
     await this.personService.change(person)
 
@@ -114,7 +115,6 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       document.latitude,
       document.longitude
     )
-
     return super.change(document)
   }
 
@@ -157,7 +157,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
 
   async getSubSuppliers(id: string): Promise<any> {
     return this.model
-      .find({ parent: id, status: 'Active' })
+      .find({ parent: id })
       .populate('person')
       .exec()
   }
@@ -169,11 +169,32 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       .exec()
   }
 
+  async getBlockedSuppliersWithoutParent() {
+    return this.model
+      .find({ status: 'Blocked' , parent: null})
+      .populate('person')
+      .exec()
+  }
+
   async changeSupplierStatus(id: string, status: string, message?:string): Promise<any> {
     if (message)
       return await this.model.findByIdAndUpdate(id, { status , message}).exec()
-    else
-      return await this.model.findByIdAndUpdate(id, { status }).exec()
+    else{
+      await this.model.findByIdAndUpdate(id, { status }).exec()
+      if (status == 'Blocked'){
+        const subSuppliers = await this.getSubSuppliers(id)
+        for (let child of subSuppliers){
+            await this.model.findByIdAndUpdate(child._id, { status }).where('status', 'Active').exec()
+        }
+      }
+      else if (status == 'Active'){
+          const subSuppliers = await this.model.find({ parent: id, status: 'Blocked' }).exec()
+          for (let child of subSuppliers){
+              await this.model.findByIdAndUpdate(child._id, { status }).exec()
+          }
+        }
+      }
+    return 'Supplier and its child are Blocked'
   }
 
   async getAvailableServices(city: string): Promise<any> {
@@ -209,5 +230,14 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
 
   async totalSuppliers(): Promise<number>{
     return await this.model.find().countDocuments().exec()
+  }
+
+  async suppliersCities(): Promise<string[]>{
+    const suppliers = await this.model.find().exec()
+    const cities: string[] = []
+    for (const supplier of suppliers) {
+      cities.push(supplier.city)
+    }
+    return cities
   }
 }

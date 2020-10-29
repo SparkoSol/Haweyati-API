@@ -52,7 +52,6 @@ export class OrdersController extends SimpleController<IOrders> {
         sort: 'delivery location'
       })
     }
-    console.log(data)
     return super.post(data)
   }
 

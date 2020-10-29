@@ -103,47 +103,6 @@ export class FcmService extends SimpleService<IFcmHistory>{
     }
   }
 
-  async sendSing(data: any){
-    let flag: boolean = false;
-
-    const person = (await this.personService.fetch(data.id)) as IPerson
-    if (person.token){
-      flag = true
-      await this.http.post(
-        "https://onesignal.com/api/v1/notifications",
-        {
-          // app_id: "myappid",
-          contents: { "en": 'hua receive?' },
-          include_player_ids: [],
-          data: { "title": data.title, "body": data.body }
-        },
-        {
-          headers: {
-            "ContentType": "application/json",
-            "Authorization": "Basic MGU2NmJiMjgtYmIwMC00ZDU3LTg1ZTMtYzE5MmY4YTczNjg0"
-          }
-        }
-      ).subscribe(asd => console.log(asd));
-    }
-
-    if (flag){
-      return await this.fcmHistoryModel.create({
-        person: person,
-        title: data.title,
-        body: data.body,
-        status: FcmStatus.sent
-      })
-    }
-    else {
-      return await this.fcmHistoryModel.create({
-        person: person,
-        title: data.title,
-        body: data.body,
-        status: FcmStatus.pending
-      })
-    }
-  }
-
   async sendPending(id: string){
     const pending = await this.fcmHistoryModel.find({person: id, status: FcmStatus.pending}).exec()
     if (pending.length > 0){
@@ -182,5 +141,9 @@ export class FcmService extends SimpleService<IFcmHistory>{
     const person = await this.personService.updateToken(data._id, data.token)
     this.sendPending(data._id)
     return person
+  }
+
+  async history(): Promise<IFcmAllHistory[]>{
+    return await this.fcmAllHistoryModel.find().sort({createdAt: -1}).exec()
   }
 }

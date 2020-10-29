@@ -32,7 +32,7 @@ export class ReportsService {
     let total = 0;
     for (let order of orders){
       order.orderDate = moment(order.updatedAt).format('MM-DD-YYYY')
-      total += +order.details.netTotal
+      total += +order.total
     }
     const dateTo = data.dateTo? ' - '+data.dateTo: ''
     const date = data.date? data.date: ''

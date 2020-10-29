@@ -13,7 +13,6 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { ShopRegistrationService } from './shop-registration.service'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
-import { IPerson } from '../../data/interfaces/person.interface'
 
 @Controller('suppliers')
 export class ShopRegistrationController extends ImageController<
@@ -79,5 +78,20 @@ export class ShopRegistrationController extends ImageController<
   @Get('cities')
   async getSupplierCities(): Promise<any> {
     return await this.service.getSupplierCities()
+  }
+
+  @Get('block')
+  async blockedSuppliers(): Promise<IShopRegistration[]>{
+    return await this.service.getBlockedSuppliersWithoutParent()
+  }
+
+  @Patch('block/:id')
+  async blockSupplier(@Param('id') id: string): Promise<any>{
+    return await this.service.changeSupplierStatus(id, 'Blocked')
+  }
+
+  @Get('cities')
+  async getCities(): Promise<string[]>{
+    return await this.service.suppliersCities()
   }
 }

@@ -4,11 +4,11 @@ import { InjectModel } from '@nestjs/mongoose'
 import { EmailUtils } from '../../common/lib/email-utils'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IPerson } from 'src/data/interfaces/person.interface'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { InvitationService } from '../invitation/invitation.service'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
-import { InvitationService } from '../invitation/invitation.service'
 
 @Injectable()
 export class PersonsService extends SimpleService<IPerson> {
@@ -57,7 +57,13 @@ export class PersonsService extends SimpleService<IPerson> {
       }
     }
     else {
-      person = await super.change(document)
+      if ((await this.model.find({email: document.email, _id: {$ne: document._id}}).countDocuments().exec()) == 0)
+        person = await super.change(document)
+      else
+        throw new HttpException(
+          'This email already exists!',
+          HttpStatus.NOT_ACCEPTABLE
+        )
     }
     return person
   }

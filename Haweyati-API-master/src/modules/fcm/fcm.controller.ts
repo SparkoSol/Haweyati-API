@@ -3,6 +3,7 @@ import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { IFcmHistory } from '../../data/interfaces/fcmHistory.interface'
 import { IPerson } from '../../data/interfaces/person.interface'
+import { IFcmAllHistory } from '../../data/interfaces/fcmAllHistory.interfce'
 
 @Controller('fcm')
 export class FcmController extends SimpleController<IFcmHistory>{
@@ -25,8 +26,8 @@ export class FcmController extends SimpleController<IFcmHistory>{
     return await this.service.updateToken(data);
   }
 
-  @Post('single')
-  async sendSingle(@Body() data:any){
-    return await this.service.sendSing(data)
+  @Get('get-history')
+  async history(): Promise<IFcmAllHistory[]>{
+    return await this.service.history()
   }
 }
