@@ -4,6 +4,6 @@ import { Controller, Get } from "@nestjs/common";
 export class AppController {
     @Get()
     ping(): string {
-        return "Server is Working"
+        return "Server is Working Fine"
     }
 }
