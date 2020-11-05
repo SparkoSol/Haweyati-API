@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
-import { IPerson } from '../../data/interfaces/person.interface'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
@@ -19,9 +18,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     super(model)
   }
 
-  async fetch(
-    id?: string
-  ): Promise<IShopRegistration[] | IShopRegistration> {
+  async fetch(id?: string): Promise<IShopRegistration[] | IShopRegistration> {
     if (id)
       return await this.model
         .findById(id)
@@ -50,18 +47,17 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       document.longitude
     )
 
-    let supplier: any;
-    let person: any;
+    let supplier: any
+    let person: any
 
-    if (document.person){
+    if (document.person) {
       await this.personService.addScope(document.person, document.scope)
       supplier = await this.model.create(document)
-    }
-    else {
+    } else {
       const personObject = {
         scope: document.scope,
         contact: document.contact,
-        email: document.email == "" ? null : document.email,
+        email: document.email == '' ? undefined : document.email,
         password: document.password,
         image: document.image,
         name: document.name,
@@ -69,21 +65,20 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       }
 
       person = await this.personService.create(personObject)
-      if (person){
+      if (person) {
         document.person = person
         supplier = await this.model.create(document)
       }
     }
 
-    if (supplier){
+    if (supplier) {
       const notification = {
         type: 'Supplier',
         title: 'New Supplier',
-        message: 'New Supplier SignUp with name : ' + document.name +'.'
+        message: 'New Supplier SignUp with name : ' + document.name + '.'
       }
-      await this.adminNotificationsService.create(notification);
-    }
-    else {
+      await this.adminNotificationsService.create(notification)
+    } else {
       await this.personService.delete(person)
       throw new HttpException(
         'Unable to sign up, Please contact admin support!',
@@ -95,13 +90,22 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
   }
 
   async change(document: any): Promise<IShopRegistration> {
-    let person = (await this.personService.fetch(document.personId)) as IPerson
-    person.name = document.name
-    person.email = document.email == "" ? null : document.email
+    let personUpdate;
     if (document.image)
-      person.image = document.image
+      personUpdate = {
+        _id : document.personId,
+        image: document.image,
+        name : document.name,
+        email : document.email
+      }
+    else
+      personUpdate = {
+        _id : document.personId,
+        name : document.name,
+        email : document.email
+      }
 
-    await this.personService.change(person)
+    document.person = await this.personService.change(personUpdate)
 
     document.location = {
       latitude: document.latitude,
@@ -115,12 +119,12 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       document.latitude,
       document.longitude
     )
-    return super.change(document)
+    return await super.change(document)
   }
 
   async fetchAll(): Promise<any> {
     return await this.model
-      .find({ status: 'Active' , parent: null})
+      .find({ status: 'Active', parent: null })
       .populate('person')
       .exec()
   }
@@ -171,29 +175,37 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
 
   async getBlockedSuppliersWithoutParent() {
     return this.model
-      .find({ status: 'Blocked' , parent: null})
+      .find({ status: 'Blocked', parent: null })
       .populate('person')
       .exec()
   }
 
-  async changeSupplierStatus(id: string, status: string, message?:string): Promise<any> {
+  async changeSupplierStatus(
+    id: string,
+    status: string,
+    message?: string
+  ): Promise<any> {
     if (message)
-      return await this.model.findByIdAndUpdate(id, { status , message}).exec()
-    else{
+      return await this.model.findByIdAndUpdate(id, { status, message }).exec()
+    else {
       await this.model.findByIdAndUpdate(id, { status }).exec()
-      if (status == 'Blocked'){
+      if (status == 'Blocked') {
         const subSuppliers = await this.getSubSuppliers(id)
-        for (let child of subSuppliers){
-            await this.model.findByIdAndUpdate(child._id, { status }).where('status', 'Active').exec()
+        for (let child of subSuppliers) {
+          await this.model
+            .findByIdAndUpdate(child._id, { status })
+            .where('status', 'Active')
+            .exec()
+        }
+      } else if (status == 'Active') {
+        const subSuppliers = await this.model
+          .find({ parent: id, status: 'Blocked' })
+          .exec()
+        for (let child of subSuppliers) {
+          await this.model.findByIdAndUpdate(child._id, { status }).exec()
         }
       }
-      else if (status == 'Active'){
-          const subSuppliers = await this.model.find({ parent: id, status: 'Blocked' }).exec()
-          for (let child of subSuppliers){
-              await this.model.findByIdAndUpdate(child._id, { status }).exec()
-          }
-        }
-      }
+    }
     return 'Supplier and its child are Blocked'
   }
 
@@ -215,24 +227,30 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return Array.from(newSet)
   }
 
-  async getByProfile(id: string): Promise<IShopRegistration>{
-    return await this.model.findOne({person: id}).populate('person').exec()
+  async getByProfile(id: string): Promise<IShopRegistration> {
+    return await this.model
+      .findOne({ person: id })
+      .populate('person')
+      .exec()
   }
 
-  async getSupplierCities(): Promise<any>{
+  async getSupplierCities(): Promise<any> {
     const suppliers = await this.model.find().exec()
     let result = new Set()
-    for (let item of suppliers){
+    for (let item of suppliers) {
       result.add(item.city)
     }
     return Array.from(result)
   }
 
-  async totalSuppliers(): Promise<number>{
-    return await this.model.find().countDocuments().exec()
+  async totalSuppliers(): Promise<number> {
+    return await this.model
+      .find({ status: 'Active' })
+      .countDocuments()
+      .exec()
   }
 
-  async suppliersCities(): Promise<string[]>{
+  async suppliersCities(): Promise<string[]> {
     const suppliers = await this.model.find().exec()
     const cities: string[] = []
     for (const supplier of suppliers) {

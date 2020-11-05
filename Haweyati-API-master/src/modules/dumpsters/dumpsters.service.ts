@@ -12,8 +12,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
     @InjectModel('dumpsters')
     protected readonly model: Model<IDumpster>,
     private readonly service: ShopRegistrationService
-  )
-  {
+  ) {
     super(model)
   }
 
@@ -61,16 +60,16 @@ export class DumpstersService extends SimpleService<IDumpster> {
         'Construction Dumpster'
       )
       const dump = await this.model.find().exec()
-      const result = []
+      let result = new Set()
 
       for (const item of dump) {
         for (const supplier of data) {
           if (item.suppliers.includes(supplier)) {
-            result.push(item)
+            result.add(item)
           }
         }
       }
-      return result
+      return Array.from(result)
     }
   }
 

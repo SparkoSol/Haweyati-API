@@ -21,9 +21,7 @@ export class BuildingMaterialsService extends SimpleService<
     super(model)
   }
 
-  async fetch(
-    id?: string
-  ): Promise<IBuildingMaterials[] | IBuildingMaterials> {
+  async fetch(id?: string): Promise<IBuildingMaterials[] | IBuildingMaterials> {
     if (id) {
       let data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
@@ -63,16 +61,16 @@ export class BuildingMaterialsService extends SimpleService<
         .where('parent', parent)
         .exec()
 
-      const result = []
+      const result = new Set()
 
       for (const item of dump) {
         for (const supplier of data) {
           if (item.suppliers.includes(supplier)) {
-            result.push(item)
+            result.add(item)
           }
         }
       }
-      return result
+      return Array.from(result)
     }
   }
 
@@ -108,7 +106,7 @@ export class BuildingMaterialsService extends SimpleService<
   }
 
   //used in reward points module
-  async getDataForRewardPoints(data: any): Promise<IBuildingMaterials[]>{
+  async getDataForRewardPoints(data: any): Promise<IBuildingMaterials[]> {
     return await this.model.find({ _id: { $nin: data } }).exec()
   }
 }

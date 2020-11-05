@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"haweyati--db.orders"},{"v":{"$numberInt":"2"},"unique":true,"key":{"orderNo":{"$numberInt":"1"}},"name":"orderNo_1","ns":"haweyati--db.orders","background":true}],"uuid":"ed91a4cb49c644e7bb97469218c003c7"}

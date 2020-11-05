@@ -9,6 +9,7 @@ import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
+import { withLatestFrom } from 'rxjs/operators'
 
 @Injectable()
 export class PersonsService extends SimpleService<IPerson> {
@@ -45,11 +46,11 @@ export class PersonsService extends SimpleService<IPerson> {
 
   async change(document: any): Promise<any> {
     let person: IPerson
-    if (document.old){
+    if (document.old) {
       person = await this.model.findOneAndUpdate({_id: document._id, password: document.old}, document).exec()
       if (person){
         return person
-      }else {
+      } else {
         throw new HttpException(
           'Old Password Not Matched!',
           HttpStatus.NOT_ACCEPTABLE
@@ -57,13 +58,17 @@ export class PersonsService extends SimpleService<IPerson> {
       }
     }
     else {
-      if ((await this.model.find({email: document.email, _id: {$ne: document._id}}).countDocuments().exec()) == 0)
-        person = await super.change(document)
+      if (!document.email) {
+        console.log('in person update else')
+        document.email = undefined
+        await this.model.updateOne({ _id: document._id }, {$unset : {email: 1}}).exec()
+        delete document.email
+      }
+      if (document.image)
+        person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email, image: document.image}).exec()
       else
-        throw new HttpException(
-          'This email already exists!',
-          HttpStatus.NOT_ACCEPTABLE
-        )
+        person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email}).exec()
+
     }
     return person
   }

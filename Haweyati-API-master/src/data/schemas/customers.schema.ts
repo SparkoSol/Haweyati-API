@@ -22,6 +22,10 @@ export const CustomersSchema = new Schema(
       required: false,
       default: 0
     },
+    rating: {
+      type: Number,
+      required: false
+    },
     message: {
       type: String,
       required: false,

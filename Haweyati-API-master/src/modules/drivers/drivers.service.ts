@@ -25,11 +25,11 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async fetch(id?: string): Promise<IDriversInterface[] | IDriversInterface> {
     if (id) {
-      let data = await (await this.model
+      let data = await await this.model
         .findOne({ _id: id })
         .populate('profile')
-        .exec());
-      (data.profile as IPerson).password = ''
+        .exec()
+      ;(data.profile as IPerson).password = ''
       return data
     } else {
       const all = await this.model
@@ -46,15 +46,15 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async create(document: any): Promise<IDriversInterface> {
     const allDrivers = await this.model.find().exec()
-    for (let driver of allDrivers){
-      if (document.identificationNo == driver.vehicle.identificationNo){
+    for (let driver of allDrivers) {
+      if (document.identificationNo == driver.vehicle.identificationNo) {
         if (document._id != driver._id)
           throw new HttpException(
             'Vehicle with this Identification No already exists!',
             HttpStatus.NOT_ACCEPTABLE
           )
       }
-      if (document.license == driver.license){
+      if (document.license == driver.license) {
         if (document._id != driver._id)
           throw new HttpException(
             'Driver with this license already exists!',
@@ -75,14 +75,13 @@ export class DriversService extends SimpleService<IDriversInterface> {
       type: document.type
     }
     document.scope = 'driver'
-    let person: any;
-    let driver: any;
+    let person: any
+    let driver: any
 
-    if (document.profile){
+    if (document.profile) {
       await this.personsService.addScope(document.profile, document.scope)
       driver = await super.create(document)
-    }
-    else {
+    } else {
       const personObject = {
         scope: document.scope,
         contact: document.contact,
@@ -94,7 +93,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
       }
 
       person = await this.personsService.create(personObject)
-      if (person){
+      if (person) {
         document.profile = person
 
         driver = await super.create(document)
@@ -121,8 +120,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
           '.'
       }
       await this.adminNotificationsService.create(notification)
-    }
-    else {
+    } else {
       await this.personsService.delete(person)
       throw new HttpException(
         'Unable to sign up, Please contact admin support!',
@@ -134,17 +132,20 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async change(document: any): Promise<IDriversInterface> {
-    const allDrivers = await this.model.find({ status: { $nin: ['Rejected'] } }).exec()
+    console.log(document)
+    const allDrivers = await this.model
+      .find({ status: { $nin: ['Rejected'] } })
+      .exec()
 
-    for (let driver of allDrivers){
-      if (document.identificationNo == driver.vehicle.identificationNo){
+    for (let driver of allDrivers) {
+      if (document.identificationNo == driver.vehicle.identificationNo) {
         if (document._id != driver._id)
           throw new HttpException(
             'Vehicle with this Identification No already exists!',
             HttpStatus.NOT_ACCEPTABLE
           )
       }
-      if (document.license == driver.license){
+      if (document.license == driver.license) {
         if (document._id != driver._id)
           throw new HttpException(
             'Driver with this license already exists!',
@@ -153,32 +154,42 @@ export class DriversService extends SimpleService<IDriversInterface> {
       }
     }
 
-    let driver, personObject = undefined
+    let driver,
+      personObject = undefined
 
-    if (document.image){
+    if (document.image) {
       personObject = {
         _id: document.profile,
-        image: document.profile.image,
-        name: document.profile.name,
+        image: document.image,
+        name: document.name,
+        email: document.email
       }
-    }else {
+    } else {
       personObject = {
         _id: document.profile,
-        name: document.profile.name,
+        name: document.name,
+        email: document.email
       }
     }
-    const person = await this.personsService.change(personObject)
-
+    document.profile = await this.personsService.change(personObject)
+    const person = document.profile
+      console.log('after person upadte')
+    console.log(person)
     if (person) {
-      document.profile = person
+      // document.profile = person
 
-      document.city = LocationUtils.getCity(document.latitude, document.longitude)
+      document.city = await LocationUtils.getCity(
+        document.latitude,
+        document.longitude
+      )
       document.location = {
         latitude: document.latitude,
         longitude: document.longitude,
         address: document.address
       }
-      if (document.isVehicleInfoChanged == true || document.isVehicleInfoChanged == 'true'){
+      if (
+        document.isVehicleInfoChanged == true
+      ) {
         document.vehicle = {
           name: document.vehicleName,
           model: document.model,
@@ -188,10 +199,13 @@ export class DriversService extends SimpleService<IDriversInterface> {
         document.status = 'Pending'
       }
     }
-    driver = await super.change(document)
+    console.log(document._id)
 
+    driver = await this.model.findByIdAndUpdate(document._id, document).exec()
+
+    console.log(driver)
     if (driver) {
-      if (!await this.requestModel.findOne({driver: driver._id}).exec()){
+      if (!(await this.requestModel.findOne({ driver: driver._id }).exec())) {
         // @ts-ignore
         await this.requestModel.create({
           driver: driver._id,
@@ -202,13 +216,12 @@ export class DriversService extends SimpleService<IDriversInterface> {
       const notification = {
         type: 'Driver',
         title: 'Driver Updated',
-        message:
-          'Driver Updated with name : ' +
-          document.name + '.'
+        message: 'Driver Updated with name : ' + document.name + '.'
       }
       await this.adminNotificationsService.create(notification)
     }
-    return driver
+
+    return await this.model.findById(driver._id).populate('profile').exec()
   }
 
   async getByStatus(status: string): Promise<IDriversInterface[]> {
@@ -220,23 +233,27 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async updateByStatus(id: string, status: string): Promise<any> {
     const request = await this.requestModel.findById(id).exec()
-    if (request && status == 'Active'){
+    if (request && status == 'Active') {
       await this.model.findByIdAndUpdate(request.driver._id, { status }).exec()
       await this.requestModel.findByIdAndDelete(id)
       return { message: 'Status Changed Successfully!' }
-    }
-    else {
+    } else {
       await this.model.findByIdAndUpdate(id, { status }).exec()
       return { message: 'Status Changed Successfully!' }
     }
   }
 
   async getRejected(id: string, data?: any): Promise<any> {
-    const request = await this.requestModel.findById(id).exec()
+    // @ts-ignore
+    const request = await this.requestModel.findOne({ driver: id }).exec()
     await this.model
-      .findByIdAndUpdate(request.driver._id, { status: 'Rejected' })
+      .findByIdAndUpdate(request.driver, { status: 'Rejected' })
       .exec()
-    await this.requestModel.findByIdAndUpdate(id, { status: 'Rejected' })
+    await this.requestModel.findOneAndUpdate(
+      // @ts-ignore
+      { driver: id },
+      { status: 'Rejected' }
+    )
     return {
       message: 'Request Rejected'
     }

@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"haweyati--db.customers"}],"uuid":"c512d0280e0e4b35a8ba9d81908e26d3"}

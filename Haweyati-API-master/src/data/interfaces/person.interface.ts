@@ -8,4 +8,7 @@ export interface IPerson extends IUser {
   image: IImage
   scope: [string]
   token: string
+  guest: boolean
+  points: number
+  rating
 }

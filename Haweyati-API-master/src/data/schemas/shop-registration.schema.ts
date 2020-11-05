@@ -20,6 +20,10 @@ export const ShopRegistrationSchema = new Schema(
       required: false,
       default: 'Pending'
     },
+    rating: {
+      type: Number,
+      required: false
+    },
     message: {
       type: String,
       required: false,

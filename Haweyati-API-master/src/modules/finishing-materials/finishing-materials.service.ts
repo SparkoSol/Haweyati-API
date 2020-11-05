@@ -9,14 +9,15 @@ import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMater
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
 
 @Injectable()
-export class FinishingMaterialsService extends SimpleService<IFinishingMaterials> {
+export class FinishingMaterialsService extends SimpleService<
+  IFinishingMaterials
+> {
   constructor(
     @InjectModel('finishingmaterials')
     protected readonly model: Model<IFinishingMaterials>,
     private readonly service: ShopRegistrationService,
     private readonly categoryService: FinishingMaterialCategoryService
-  )
-  {
+  ) {
     super(model)
   }
 
@@ -61,17 +62,17 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
       .where('parent', parent)
       .exec()
 
-    const result = []
+    let result = new Set()
 
     for (const item of dump) {
       for (const supplier of data) {
         if (item.suppliers.includes(supplier)) {
-          result.push(item)
+          result.add(item)
         }
       }
     }
 
-    return result
+    return Array.from(result)
   }
 
   async getSuppliers(id: string): Promise<any> {
@@ -104,8 +105,10 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
     return 'Category Deleted'
   }
 
-  async search(name: string): Promise<IFinishingMaterials[]>{
-    let big = await this.model.find({ status: 'Active', 'name': { $regex: name, $options: "i" }}).exec()
+  async search(name: string): Promise<IFinishingMaterials[]> {
+    let big = await this.model
+      .find({ status: 'Active', name: { $regex: name, $options: 'i' } })
+      .exec()
     for (let data of big) {
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
@@ -116,19 +119,18 @@ export class FinishingMaterialsService extends SimpleService<IFinishingMaterials
     return big
   }
 
-  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterials[]>{
-    return await this.model.find(
-      {
+  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterials[]> {
+    return await this.model
+      .find({
         parent: id,
-        $or: [
-          {'name': { $regex: data.name, $options: "i" }}
-        ]
-      }
-      ).populate('parent').exec()
+        $or: [{ name: { $regex: data.name, $options: 'i' } }]
+      })
+      .populate('parent')
+      .exec()
   }
 
   //used in reward points module
-  async getDataForRewardPoints(data: any): Promise<IFinishingMaterials[]>{
+  async getDataForRewardPoints(data: any): Promise<IFinishingMaterials[]> {
     return await this.model.find({ _id: { $nin: data } }).exec()
   }
 }

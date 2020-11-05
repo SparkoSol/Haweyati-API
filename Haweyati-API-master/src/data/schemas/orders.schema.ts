@@ -9,10 +9,12 @@ export const OrdersSchema = new Schema(
       type: String,
       required: false
     },
-    image: [{
+    image: [
+      {
         ...ImagesSchema,
         sort: String
-    }],
+      }
+    ],
     dropoff: {
       type: DropoffDetailsSchema
     },
@@ -25,8 +27,11 @@ export const OrdersSchema = new Schema(
         {
           item: Object,
           subtotal: Number,
-          supplier: Object
-        }, {_id: false}
+          supplier: Object,
+          reason: Object,
+          dispatched: Boolean
+        },
+        { _id: false }
       )
     ],
     driver: {
@@ -64,11 +69,11 @@ export const OrdersSchema = new Schema(
       type: String,
       required: true
     },
-    reason : {
+    reason: {
       type: String,
       required: false
     },
-    deliveryFee : {
+    deliveryFee: {
       type: Number
     }
   },

@@ -25,6 +25,10 @@ export const DriversSchema = new Schema(
     },
     city: String,
     vehicle: VehiclesSchema,
+    rating: {
+      type: Number,
+      required: false
+    },
     status: {
       type: String,
       required: false,

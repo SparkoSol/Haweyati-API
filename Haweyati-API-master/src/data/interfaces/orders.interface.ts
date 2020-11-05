@@ -4,35 +4,42 @@ import { IDropoffDetails } from './dropoffDetails.interface'
 
 export enum OrderStatus {
   Pending,
-  Active,
-  Closed,
+  Approved,
+  Accepted,
+  Preparing,
+  Dispatched,
+  Delivered,
   Rejected,
-  Dispatched
+  Cancelled
 }
 
 export interface IOrders extends Document {
   service: string
   dropoff: IDropoffDetails
-  image: [{
-    name: string,
-    path: string,
-    sort: string
-  }]
+  image: [
+    {
+      name: string
+      path: string
+      sort: string
+    }
+  ]
   total: number
   items: [
     {
-      item: Object,
-      subtotal: String,
+      item: Object
+      subtotal: String
       supplier: Object
+      reason: Object
+      dispatched: boolean
     }
-  ],
+  ]
   driver: Object
   customer: ICustomerInterface | string
   status: OrderStatus
   paymentType: string
   paymentIntentId: string
   note: string
-  orderNo : string
+  orderNo: string
   city: string
-  deliveryFee : Number
+  deliveryFee: Number
 }

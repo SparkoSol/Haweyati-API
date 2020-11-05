@@ -17,11 +17,13 @@ import { IDumpster } from '../../data/interfaces/dumpster.interface'
 
 @Controller('dumpsters')
 export class DumpstersController extends ImageController<IDumpster> {
-  constructor(
-    protected readonly service: DumpstersService
-  )
-  {
+  constructor(protected readonly service: DumpstersService) {
     super(service)
+  }
+
+  @Get('available')
+  async Get(@Query() data): Promise<any> {
+    return await this.service.getByCity(data.city)
   }
 
   protected parseData(dumpster: any): any {
@@ -62,11 +64,6 @@ export class DumpstersController extends ImageController<IDumpster> {
   @UseInterceptors(FileInterceptor('image'))
   patch(@UploadedFile() file, @Body() dumpster: any) {
     return super.patch(file, this.parseData(dumpster))
-  }
-
-  @Get('available')
-  async Get(@Query() data): Promise<any> {
-    return await this.service.getByCity(data.city)
   }
 
   @Get('fromsuppliers/:id')

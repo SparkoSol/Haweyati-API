@@ -6,7 +6,9 @@ import { SimpleService } from '../../common/lib/simple.service'
 import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
 
 @Injectable()
-export class AdminNotificationsService extends SimpleService<IAdminNotification> {
+export class AdminNotificationsService extends SimpleService<
+  IAdminNotification
+> {
   static staticModel
 
   constructor(
@@ -31,6 +33,7 @@ export class AdminNotificationsService extends SimpleService<IAdminNotification>
   async create(document: any): Promise<IAdminNotification> {
     const note = await super.create(document)
     if (note) {
+      console.log(AppGateway.socket)
       if (AppGateway.socket) {
         this.appGateway.handleMessage(AppGateway.socket, note)
       }

@@ -7,5 +7,6 @@ export interface ICustomerInterface extends Document{
    location: ILocation,
    status: string,
    points: number
+   rating: number
    message : string
 }

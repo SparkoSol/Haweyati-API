@@ -1,11 +1,4 @@
-import {
-  Get,
-  Body,
-  Post,
-  Patch,
-  Param,
-  Controller,
-} from '@nestjs/common'
+import { Get, Body, Post, Patch, Param, Controller } from '@nestjs/common'
 import { DriversService } from './drivers.service'
 import { ImageController } from '../../common/lib/image.controller'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
@@ -36,9 +29,6 @@ export class DriversController extends ImageController<IDriversInterface> {
     return await this.service.getByStatus('Blocked')
   }
 
-
-
-
   @Patch('getverified/:id')
   async getVerified(@Param('id') id: string): Promise<any> {
     return await this.service.updateByStatus(id, 'Active')
@@ -56,11 +46,8 @@ export class DriversController extends ImageController<IDriversInterface> {
 
   @Patch('getunblocked/:id')
   async getUnblocked(@Param('id') id: string): Promise<any> {
-    return await this.service.updateByStatus(id, 'Approved')
+    return await this.service.updateByStatus(id, 'Active')
   }
-
-
-
 
   @Get('supplier/:id')
   async getCompanyDrivers(@Param('id') id: string): Promise<any> {

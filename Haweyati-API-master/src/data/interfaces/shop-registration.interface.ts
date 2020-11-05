@@ -9,6 +9,7 @@ export interface IShopRegistration extends Document{
    parent: string
    city: string,
    services : [string]
+   rating: number
    status: string,
    message: string
 }

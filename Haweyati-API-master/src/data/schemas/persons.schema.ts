@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
-import { UsersSchema } from 'src/common/auth/users/users.schema'
 import { ImagesSchema } from './images.schema'
+import { UsersSchema } from 'src/common/auth/users/users.schema'
 
 export const PersonsSchema = new Schema(
   {
@@ -28,6 +28,11 @@ export const PersonsSchema = new Schema(
     },
     token: {
       type: String
+    },
+    guest: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   { timestamps: true }

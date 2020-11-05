@@ -59,4 +59,9 @@ export class PersonsController extends ImageController<IPerson> {
   async isContactExists(@Param('contact') contact: string): Promise<IPerson>{
     return await this.service.isContactExists(contact)
   }
+
+  @Patch('update-token')
+  async updateToken(@Body() data: any): Promise<any>{
+    return await this.service.updateToken(data._id, data.token)
+  }
 }

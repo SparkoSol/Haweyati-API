@@ -1,10 +1,11 @@
 import {
   Get,
+  Post,
   Body,
   Patch,
   Query,
   Param,
-  Controller,
+  Controller
 } from '@nestjs/common'
 import { CustomersService } from './customers.service'
 import { ImageController } from '../../common/lib/image.controller'
@@ -12,10 +13,7 @@ import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 
 @Controller('customers')
 export class CustomersController extends ImageController<ICustomerInterface> {
-  constructor(
-    protected readonly service: CustomersService
-  )
-  {
+  constructor(protected readonly service: CustomersService) {
     super(service)
   }
 
@@ -34,7 +32,7 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   }
 
   @Get('active-search')
-  async search(@Query() query: any){
+  async search(@Query() query: any) {
     return await this.service.searchActive(query)
   }
 
@@ -51,8 +49,13 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   }
 
   @Get('blocked-search')
-  async searchBlocked(@Query() query: any){
+  async searchBlocked(@Query() query: any) {
     return await this.service.searchBlocked(query)
+  }
+
+  @Post('guest-sign-up')
+  async guestSignUp(@Body() data: any): Promise<ICustomerInterface> {
+    return await this.service.guestSignUp(data)
   }
 
   @Patch('getunblocked/:id')
@@ -61,8 +64,8 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   }
 
   @Get('getall')
-  async getAll(): Promise<ICustomerInterface[] | ICustomerInterface>{
-    return await this.service.getAll();
+  async getAll(): Promise<ICustomerInterface[] | ICustomerInterface> {
+    return await this.service.getAll()
   }
 
   @Get('getactive/:id')
@@ -71,7 +74,9 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   }
 
   @Get('getall/:id')
-  async getById(@Param('id') id: string): Promise<ICustomerInterface[] | ICustomerInterface>{
-    return await this.service.getAll(id);
+  async getById(
+    @Param('id') id: string
+  ): Promise<ICustomerInterface[] | ICustomerInterface> {
+    return await this.service.getAll(id)
   }
 }
