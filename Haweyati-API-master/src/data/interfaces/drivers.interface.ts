@@ -2,7 +2,6 @@ import { Document } from 'mongoose'
 import { IPerson } from './person.interface'
 import { IVehicles } from './vehicles.interface'
 import { IShopRegistration } from './shop-registration.interface'
-import { ILocation } from './location.interface'
 
 export interface IDriversInterface extends Document {
   profile: IPerson | string

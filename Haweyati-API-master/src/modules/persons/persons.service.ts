@@ -64,10 +64,14 @@ export class PersonsService extends SimpleService<IPerson> {
         await this.model.updateOne({ _id: document._id }, {$unset : {email: 1}}).exec()
         delete document.email
       }
-      if (document.image)
+      if (document.image && document.email)
         person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email, image: document.image}).exec()
-      else
+      else if(document.image)
+        person = await this.model.findByIdAndUpdate(document._id, {name: document.name, image: document.image}).exec()
+      else if(document.email)
         person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email}).exec()
+      else
+        person = await this.model.findByIdAndUpdate(document._id, {name: document.name}).exec()
 
     }
     return person

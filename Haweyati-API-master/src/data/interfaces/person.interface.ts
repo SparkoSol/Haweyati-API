@@ -10,5 +10,4 @@ export interface IPerson extends IUser {
   token: string
   guest: boolean
   points: number
-  rating
 }

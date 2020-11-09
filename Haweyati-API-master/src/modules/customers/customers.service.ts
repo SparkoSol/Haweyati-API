@@ -99,6 +99,8 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       )
     } else {
       document.username = document.contact
+      if (document.email == '')
+        delete document.email
       document.profile = await this.personService.create(document)
     }
 

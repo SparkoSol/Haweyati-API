@@ -1,13 +1,13 @@
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
+import { LocationUtils } from '../../common/lib/location-utils'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IPerson } from '../../data/interfaces/person.interface'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
-import { LocationUtils } from '../../common/lib/location-utils'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriversInterface> {
@@ -132,7 +132,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async change(document: any): Promise<IDriversInterface> {
-    console.log(document)
     const allDrivers = await this.model
       .find({ status: { $nin: ['Rejected'] } })
       .exec()
@@ -173,22 +172,20 @@ export class DriversService extends SimpleService<IDriversInterface> {
     }
     document.profile = await this.personsService.change(personObject)
     const person = document.profile
-      console.log('after person upadte')
-    console.log(person)
     if (person) {
-      // document.profile = person
-
-      document.city = await LocationUtils.getCity(
-        document.latitude,
-        document.longitude
-      )
-      document.location = {
-        latitude: document.latitude,
-        longitude: document.longitude,
-        address: document.address
+      if (document.latitude){
+        document.city = await LocationUtils.getCity(
+          document.latitude,
+          document.longitude
+        )
+        document.location = {
+          latitude: document.latitude,
+          longitude: document.longitude,
+          address: document.address
+        }
       }
       if (
-        document.isVehicleInfoChanged == true
+        document.isVehicleInfoChanged == true || document.isVehicleInfoChanged == 'true'
       ) {
         document.vehicle = {
           name: document.vehicleName,
@@ -196,14 +193,12 @@ export class DriversService extends SimpleService<IDriversInterface> {
           identificationNo: document.identificationNo,
           type: document.type
         }
-        document.status = 'Pending'
+        if (!document.isAdmin)
+          document.status = 'Pending'
       }
     }
-    console.log(document._id)
-
     driver = await this.model.findByIdAndUpdate(document._id, document).exec()
 
-    console.log(driver)
     if (driver) {
       if (!(await this.requestModel.findOne({ driver: driver._id }).exec())) {
         // @ts-ignore
@@ -213,12 +208,14 @@ export class DriversService extends SimpleService<IDriversInterface> {
         })
       }
 
-      const notification = {
-        type: 'Driver',
-        title: 'Driver Updated',
-        message: 'Driver Updated with name : ' + document.name + '.'
+      if (!document.isAdmin){
+        const notification = {
+          type: 'Driver',
+          title: 'Driver Updated',
+          message: 'Driver Updated with name : ' + document.name + '.'
+        }
+        await this.adminNotificationsService.create(notification)
       }
-      await this.adminNotificationsService.create(notification)
     }
 
     return await this.model.findById(driver._id).populate('profile').exec()
