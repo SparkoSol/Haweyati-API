@@ -4,6 +4,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { PersonsModule } from "../persons/persons.module";
 import { ShopRegistrationService } from './shop-registration.service';
 import { ShopRegistrationController } from './shop-registration.controller';
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 import {ShopRegistrationSchema} from "../../data/schemas/shop-registration.schema";
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
 
@@ -14,7 +15,7 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
     ]),
     PersonsModule,
     MulterModule.register({
-      dest : '../uploads'
+      dest : ImageConversionUtils.imagePath
     }),
     AdminNotificationsModule
   ],

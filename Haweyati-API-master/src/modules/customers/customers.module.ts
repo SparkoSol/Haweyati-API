@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
-import {MongooseModule} from "@nestjs/mongoose";
+import { MongooseModule } from "@nestjs/mongoose";
+import { CustomersService } from './customers.service'
 import { MulterModule } from '@nestjs/platform-express'
-import { CustomersService } from './customers.service';
-import { PersonsModule } from '../persons/persons.module';
-import { CustomersController } from './customers.controller';
-import {CustomersSchema} from "../../data/schemas/customers.schema";
+import { PersonsModule } from '../persons/persons.module'
+import { CustomersController } from './customers.controller'
+import { CustomersSchema } from "../../data/schemas/customers.schema"
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Module({
   imports: [
     MongooseModule.forFeature([{name:'customers', schema: CustomersSchema}]),
     MulterModule.register({
-      dest: '../uploads',
+      dest: ImageConversionUtils.imagePath
     }),
     PersonsModule,
     AdminNotificationsModule

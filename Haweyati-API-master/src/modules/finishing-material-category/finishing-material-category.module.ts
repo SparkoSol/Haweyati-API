@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 import { FinishingMaterialCategoryService } from './finishing-material-category.service';
 import { FinishingMaterialCategoryController } from './finishing-material-category.controller';
 import { FinishingMaterialCategorySchema } from '../../data/schemas/finishingMaterialCategory.schema';
@@ -9,7 +10,7 @@ import { FinishingMaterialCategorySchema } from '../../data/schemas/finishingMat
   imports: [
     MongooseModule.forFeature([{name:'finishingmaterialcategory', schema: FinishingMaterialCategorySchema}]),
     MulterModule.register({
-      dest: '../uploads',
+      dest: ImageConversionUtils.imagePath
     })
   ],
   providers: [FinishingMaterialCategoryService],

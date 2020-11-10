@@ -6,6 +6,7 @@ import { ServiceRequestsService } from './service-requests.service';
 import { ServiceRequestsController } from './service-requests.controller';
 import { ServicesRequestsSchema } from "../../data/schemas/serviceRequests.schema";
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
       {name: 'servicerequests', schema : ServicesRequestsSchema}
       ]),
     MulterModule.register({
-      dest: '../uploads'
+      dest: ImageConversionUtils.imagePath
     }),
     PersonsModule,
     AdminNotificationsModule

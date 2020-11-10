@@ -4,8 +4,9 @@ import { PersonsService } from './persons.service'
 import { MulterModule } from '@nestjs/platform-express'
 import { PersonsController } from './persons.controller'
 import { PersonsSchema } from 'src/data/schemas/persons.schema'
-import { AdminForgotPasswordSchema } from '../../data/schemas/adminForgotPassword.schema'
 import { InvitationModule } from '../invitation/invitation.module'
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
+import { AdminForgotPasswordSchema } from '../../data/schemas/adminForgotPassword.schema'
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { InvitationModule } from '../invitation/invitation.module'
       }
     ]),
     MulterModule.register({
-      dest: '../uploads'
+      dest: ImageConversionUtils.imagePath
     }),
     InvitationModule
   ],
