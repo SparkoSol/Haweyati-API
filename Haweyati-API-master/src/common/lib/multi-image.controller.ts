@@ -52,19 +52,6 @@ export abstract class MultiImageController<T extends Document> {
          }
       }
       return data;
-      //
-      //
-      // // @ts-ignore
-      // for (let i=0; i<ext.images.length; ++i){
-      //    // @ts-ignore
-      //    if (ext.images[i].name == data.image){
-      //       // @ts-ignore
-      //       ext.images.splice(i, 1);
-      //       // @ts-ignore
-      //       fs.unlinkSync(ext.images[i].path)
-      //    }
-      // }
-      // return this.service.change(data);
 
    }
 

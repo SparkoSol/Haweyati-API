@@ -42,7 +42,7 @@ export abstract class ImageController<T extends Document> {
 
     const item = await this.service.create(data)
     if (file){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+data.image.path, process.cwd()+"\\..\\uploads\\"+data.image.name, 20)
+      await ImageConversionUtils.toWebp(process.cwd()+"\/"+data.image.path, process.cwd()+"\/..\/uploads\/"+data.image.name, 20)
     }
     return item
   }
@@ -60,7 +60,7 @@ export abstract class ImageController<T extends Document> {
     }
     const item = await this.service.change(data)
     if (file){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+data.image.path, process.cwd()+"\\..\\uploads\\"+data.image.name, 20)
+      await ImageConversionUtils.toWebp(process.cwd()+"\/"+data.image.path, process.cwd()+"\/..\/uploads\/"+data.image.name, 20)
     }
     return item
   }
