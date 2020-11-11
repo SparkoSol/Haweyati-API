@@ -23,7 +23,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async create(document: IOrders): Promise<IOrders> {
-    document.status = undefined
+    console.log(document)
 
     const customer = await this.customersService.fetch(
       // @ts-ignore
@@ -49,7 +49,7 @@ export class OrdersService extends SimpleService<IOrders> {
         ).slice(-4)
 
       //order generation
-      const orderCreated = super.create(document)
+      const orderCreated = await super.create(document)
 
       //notification for admin
       if (orderCreated) {
@@ -60,6 +60,8 @@ export class OrdersService extends SimpleService<IOrders> {
         }
         await this.adminNotificationsService.create(notification)
       }
+      orderCreated.customer = customer
+      // @ts-ignore
       return orderCreated
     } else {
       throw new HttpException(

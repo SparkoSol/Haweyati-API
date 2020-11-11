@@ -33,7 +33,6 @@ export class AdminNotificationsService extends SimpleService<
   async create(document: any): Promise<IAdminNotification> {
     const note = await super.create(document)
     if (note) {
-      console.log(AppGateway.socket)
       if (AppGateway.socket) {
         this.appGateway.handleMessage(AppGateway.socket, note)
       }

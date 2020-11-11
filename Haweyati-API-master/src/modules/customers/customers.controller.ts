@@ -17,6 +17,31 @@ export class CustomersController extends ImageController<ICustomerInterface> {
     super(service)
   }
 
+  @Post()
+  async post(@Body() data: any): Promise<ICustomerInterface> {
+    return await this.service.create(data)
+  }
+
+  @Get('guest')
+  async getGuest(): Promise<ICustomerInterface> {
+    return await this.service.getGuest()
+  }
+
+  @Post('guest')
+  async postGuest(@Body() data: any): Promise<ICustomerInterface> {
+    return await this.service.guestNew(data)
+  }
+
+  @Post('new')
+  async createCustomer(@Body() data: any): Promise<ICustomerInterface> {
+    return await this.service.new(data)
+  }
+
+  @Post('convert-guest')
+  async convertFromGuest(@Body() data: any): Promise<ICustomerInterface>{
+    return await this.service.convertFromGuest(data)
+  }
+
   @Patch('getblocked/:id')
   async getBlocked(
     @Param('id') id: string,
@@ -28,7 +53,7 @@ export class CustomersController extends ImageController<ICustomerInterface> {
 
   @Get('getactive')
   async getActive(): Promise<any> {
-    return await this.service.fetch()
+    return await this.service.getWithScopeCustomer('Active')
   }
 
   @Get('active-search')
@@ -51,6 +76,11 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   @Get('blocked-search')
   async searchBlocked(@Query() query: any) {
     return await this.service.searchBlocked(query)
+  }
+
+  @Get('guest-search')
+  async searchGuest(@Query() query: any) {
+    return await this.service.searchGuest(query)
   }
 
   @Post('guest-sign-up')

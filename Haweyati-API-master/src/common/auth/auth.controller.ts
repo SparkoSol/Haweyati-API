@@ -9,6 +9,7 @@ export class AuthController {
   @Post('sign-in')
   @UseGuards(AuthGuard('local'))
   signIn(@Request() request: any): Promise<any> {
+    console.log(request.user)
     return this.service.signIn(request.user)
   }
 

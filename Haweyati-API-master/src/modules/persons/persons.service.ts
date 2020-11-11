@@ -7,9 +7,7 @@ import { IPerson } from 'src/data/interfaces/person.interface'
 import { InvitationService } from '../invitation/invitation.service'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
-import { withLatestFrom } from 'rxjs/operators'
 
 @Injectable()
 export class PersonsService extends SimpleService<IPerson> {
@@ -31,9 +29,6 @@ export class PersonsService extends SimpleService<IPerson> {
   async create(data: any): Promise<any> {
     const person = await super.create(data)
     await this.invitationService.create(person)
-    if (person.image){
-      await ImageConversionUtils.toWebp(process.cwd()+"\\"+person.image.path, process.cwd()+"\\..\\uploads\\"+person.image.name, 20)
-    }
     return person
   }
 
@@ -59,7 +54,6 @@ export class PersonsService extends SimpleService<IPerson> {
     }
     else {
       if (!document.email) {
-        console.log('in person update else')
         document.email = undefined
         await this.model.updateOne({ _id: document._id }, {$unset : {email: 1}}).exec()
         delete document.email
@@ -75,6 +69,20 @@ export class PersonsService extends SimpleService<IPerson> {
 
     }
     return person
+  }
+
+  async scopeConversion(document: any): Promise<IPerson>{
+    let person = (await this.model.findOne({contact: document.contact}).exec()) as IPerson
+    person.scope.push('customer')
+    for (let i=0; i<person.scope.length; ++i){
+      if (person.scope[i] == 'guest'){
+        person.scope.splice(i, 1)
+        break
+      }
+    }
+    person.name = document.name
+    person.password = document.password
+    return await person.save()
   }
 
   async exceptAdmin(): Promise<IPerson[]> {

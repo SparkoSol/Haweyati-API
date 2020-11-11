@@ -58,17 +58,7 @@ export class OrdersController extends SimpleController<IOrders> {
 
   @Post('dummy')
   async dummyPost(@Body() data: any): Promise<IOrders> {
-    data.dropoff = {
-      dropoffLocation: {
-        longitude: data.location.longitude,
-        latitude: data.location.latitude
-      },
-      dropoffAddress: data.location.dropoffAddress,
-      dropoffDate: data.location.dropoffDate,
-      dropoffTime: data.location.dropoffTime
-    }
-    // @ts-ignore
-    data.city = data.location.city
+    data.city = data.dropoff.city
     return await this.service.create(data)
   }
 

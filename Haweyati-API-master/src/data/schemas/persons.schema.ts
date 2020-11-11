@@ -28,11 +28,6 @@ export const PersonsSchema = new Schema(
     },
     token: {
       type: String
-    },
-    guest: {
-      type: Boolean,
-      required: false,
-      default: false
     }
   },
   { timestamps: true }
