@@ -119,15 +119,13 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async new(document: any): Promise<any> {
-    let person: any
-    let customer: any
     document.profile.scope = 'customer'
 
     document.profile.username = document.profile.contact
     if (document.profile.email == '')
       delete document.profile.email
 
-    return await this.createCustomer(document.profile)
+    return await this.createCustomer(document)
   }
 
   async getGuest(): Promise<any>{

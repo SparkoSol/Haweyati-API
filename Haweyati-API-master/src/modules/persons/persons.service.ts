@@ -27,6 +27,7 @@ export class PersonsService extends SimpleService<IPerson> {
   }
 
   async create(data: any): Promise<any> {
+    console.log(data)
     const person = await super.create(data)
     await this.invitationService.create(person)
     return person

@@ -11,6 +11,7 @@ export class InvitationService extends SimpleService<IInvitationCode>{
   }
 
   create(document: any): Promise<IInvitationCode> {
+    console.log(document)
     let obj: any = {
       person: document._id,
       code: document._id.toString().slice(-5),

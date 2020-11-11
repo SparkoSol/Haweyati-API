@@ -171,6 +171,11 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.updateStatus(id, OrderStatus.Approved)
   }
 
+  @Patch('cancel/:id')
+  async cancel_order(@Param('id') id: string): Promise<any> {
+    return await this.service.updateStatus(id, OrderStatus.Cancelled)
+  }
+
   //-------------------- Completed routes ----------------------
 
   @Get('completed-supplier/:id')
