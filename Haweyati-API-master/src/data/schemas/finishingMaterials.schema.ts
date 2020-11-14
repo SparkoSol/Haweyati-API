@@ -31,6 +31,14 @@ export const FinishingMaterialsSchema = new Schema(
       type: Number,
       required: false
     },
+    volume: {
+      type: Number,
+      required: false
+    },
+    weight: {
+      type: Number,
+      required: false
+    },
     options: [
       {
         optionName: String,

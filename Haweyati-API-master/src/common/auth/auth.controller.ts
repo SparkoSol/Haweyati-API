@@ -9,7 +9,6 @@ export class AuthController {
   @Post('sign-in')
   @UseGuards(AuthGuard('local'))
   signIn(@Request() request: any): Promise<any> {
-    console.log(request.user)
     return this.service.signIn(request.user)
   }
 
@@ -22,7 +21,6 @@ export class AuthController {
   @Post('sign-out')
   @UseGuards(AuthGuard('jwt'))
   signOut(@Request() request: any): Promise<any> {
-    console.log(request.user)
     this.service.logout(request.user)
     return request.logout()
   }

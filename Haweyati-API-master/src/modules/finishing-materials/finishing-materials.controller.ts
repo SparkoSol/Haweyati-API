@@ -84,6 +84,8 @@ export class FinishingMaterialsController extends ImageController<
           }
 
           pricingObj['price'] = finishingMaterial.varientPrice[i]
+          pricingObj['volume'] = finishingMaterial.varientVolume[i]
+          pricingObj['weight'] = finishingMaterial.varientWeight[i]
           pricing.push(pricingObj)
         }
       }
@@ -100,7 +102,8 @@ export class FinishingMaterialsController extends ImageController<
           } else {
             priceObj[finishingMaterial.optionName] = data
           }
-        }else {
+        }
+        else {
           if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++)
               priceObj[finishingMaterial.optionName] = data[j]
@@ -110,6 +113,8 @@ export class FinishingMaterialsController extends ImageController<
         }
 
         priceObj['price'] = finishingMaterial.varientPrice
+        priceObj['volume'] = finishingMaterial.varientVolume
+        priceObj['weight'] = finishingMaterial.varientWeight
         pricing.push(priceObj)
       }
 
@@ -117,6 +122,10 @@ export class FinishingMaterialsController extends ImageController<
     } else {
       finishingMaterial.varient = []
       finishingMaterial.options = []
+    }
+    if (finishingMaterial.price == 0){
+      finishingMaterial.volume = undefined
+      finishingMaterial.webassembly = undefined
     }
     return finishingMaterial
   }

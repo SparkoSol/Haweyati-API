@@ -10,6 +10,8 @@ export interface IFinishingMaterials extends Document {
   suppliers: IShopRegistration[]
   image: IImage
   price: number
+  volume: number
+  weight: number
   options: [
     {
       optionName: string
