@@ -27,7 +27,11 @@ export class PersonsService extends SimpleService<IPerson> {
   }
 
   async create(data: any): Promise<any> {
-    console.log(data)
+    if (!data.email) {
+      data.email = undefined
+      await this.model.updateOne({ _id: data._id }, {$unset : {email: 1}}).exec()
+      delete data.email
+    }
     const person = await super.create(data)
     await this.invitationService.create(person)
     return person
