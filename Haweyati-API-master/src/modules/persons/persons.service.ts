@@ -58,20 +58,26 @@ export class PersonsService extends SimpleService<IPerson> {
       }
     }
     else {
-      if (!document.email) {
-        document.email = undefined
-        await this.model.updateOne({ _id: document._id }, {$unset : {email: 1}}).exec()
-        delete document.email
+      try {
+        if (!document.email) {
+          document.email = undefined
+          await this.model.updateOne({ _id: document._id }, {$unset : {email: 1}}).exec()
+          delete document.email
+        }
+        if (document.image && document.email)
+          person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email, image: document.image}).exec()
+        else if(document.image)
+          person = await this.model.findByIdAndUpdate(document._id, {name: document.name, image: document.image}).exec()
+        else if(document.email)
+          person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email}).exec()
+        else
+          person = await this.model.findByIdAndUpdate(document._id, {name: document.name}).exec()
+      } catch {
+        throw new HttpException(
+          'Email Already Exists!',
+          HttpStatus.NOT_ACCEPTABLE
+        )
       }
-      if (document.image && document.email)
-        person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email, image: document.image}).exec()
-      else if(document.image)
-        person = await this.model.findByIdAndUpdate(document._id, {name: document.name, image: document.image}).exec()
-      else if(document.email)
-        person = await this.model.findByIdAndUpdate(document._id, {name: document.name, email: document.email}).exec()
-      else
-        person = await this.model.findByIdAndUpdate(document._id, {name: document.name}).exec()
-
     }
     return person
   }

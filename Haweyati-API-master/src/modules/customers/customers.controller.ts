@@ -5,11 +5,12 @@ import {
   Patch,
   Query,
   Param,
-  Controller
+  Controller, UseInterceptors, UploadedFile
 } from '@nestjs/common'
 import { CustomersService } from './customers.service'
 import { ImageController } from '../../common/lib/image.controller'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('customers')
 export class CustomersController extends ImageController<ICustomerInterface> {
@@ -35,6 +36,17 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   @Post('new')
   async createCustomer(@Body() data: any): Promise<ICustomerInterface> {
     return await this.service.new(data)
+  }
+
+  @Post('new-admin')
+  @UseInterceptors(FileInterceptor('image'))
+  async createAdmin(@UploadedFile() file, @Body() data: any): Promise<ICustomerInterface>{
+    if (file)
+      data.image = {
+        name: file.filename,
+        path: file.path
+      }
+    return await this.service.createAdmin(data)
   }
 
   @Post('convert-guest')

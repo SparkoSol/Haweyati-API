@@ -93,6 +93,35 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     }
   }
 
+  async createAdmin(document: any): Promise<ICustomerInterface>{
+    console.log(document)
+    let customer: any
+    document.scope = 'customer'
+
+    if (document.profile) {
+      document.profile = await this.personService.addScope(
+        document.profile._id,
+        document.scope
+      )
+    } else {
+      document.email = document.email == '' ? undefined : document.email
+      document.username = document.contact
+      document.profile = await this.personService.create(document)
+    }
+    document.location = {
+      longitude: document.longitude,
+      latitude: document.latitude,
+      address: document.address ?? await LocationUtils.getAddress(document.latitude, document.longitude)
+    }
+    customer = await super.create(document)
+    await this.sendAdminNotification(customer.profile)
+
+    return await this.model
+      .findById(customer._id)
+      .populate('profile')
+      .exec()
+  }
+
   async create(document: any): Promise<any> {
     let customer: any
     document.scope = 'customer'
@@ -119,6 +148,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async new(document: any): Promise<any> {
+    console.log(document)
     document.profile.scope = 'customer'
 
     document.profile.username = document.profile.contact
