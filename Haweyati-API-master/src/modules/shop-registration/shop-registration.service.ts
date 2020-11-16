@@ -33,6 +33,8 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
   }
 
   async create(document: any): Promise<IShopRegistration> {
+
+    console.log(document)
     document.scope = 'supplier'
     document.location = {
       latitude: document.latitude,
