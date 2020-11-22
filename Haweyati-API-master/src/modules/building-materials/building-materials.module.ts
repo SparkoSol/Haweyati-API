@@ -7,6 +7,7 @@ import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 import { BuildingMaterialsSchema } from "../../data/schemas/buildingMaterials.schema"
 import { ShopRegistrationModule } from '../shop-registration/shop-registration.module'
 import { BuildingMaterialCategoryModule } from "../building-material-category/building-material-category.module"
+import { BuildingMaterialSubCategoryModule } from '../building-material-sub-category/building-material-sub-category.module'
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { BuildingMaterialCategoryModule } from "../building-material-category/bu
       dest: ImageConversionUtils.imagePath
     }),
     ShopRegistrationModule,
-    BuildingMaterialCategoryModule
+    BuildingMaterialCategoryModule,
+    BuildingMaterialSubCategoryModule
   ],
   controllers: [BuildingMaterialsController],
   providers: [BuildingMaterialsService],

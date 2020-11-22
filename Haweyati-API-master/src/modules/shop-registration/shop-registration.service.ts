@@ -39,11 +39,14 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     document.location = {
       latitude: document.latitude,
       longitude: document.longitude,
+      // address: "7402 Al-Matt'haf Ln, Al Balad District, Jeddah 22236 3012, Saudi Arabia"
       address: await LocationUtils.getAddress(
         document.latitude,
         document.longitude
       )
     }
+
+    // document.city = "Jeddah"
     document.city = await LocationUtils.getCity(
       document.latitude,
       document.longitude

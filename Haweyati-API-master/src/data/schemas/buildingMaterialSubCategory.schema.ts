@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose'
 import { ImagesSchema } from './images.schema'
 
-export const BuildingMaterialCategorySchema = new Schema(
+export const BuildingMaterialSubCategorySchema = new Schema(
   {
     name: {
       type: String,
@@ -13,6 +13,11 @@ export const BuildingMaterialCategorySchema = new Schema(
     },
     image: {
       type: ImagesSchema,
+      required: true
+    },
+    parent: {
+      type: Schema.Types.ObjectId,
+      ref: 'buildingmaterialcategory',
       required: true
     },
     status: {

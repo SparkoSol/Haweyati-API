@@ -20,6 +20,7 @@ import { FinishingMaterialsModule } from './modules/finishing-materials/finishin
 import { AdminNotificationsModule } from './modules/admin-notifications/admin-notifications.module'
 import { BuildingMaterialCategoryModule } from './modules/building-material-category/building-material-category.module'
 import { FinishingMaterialCategoryModule } from './modules/finishing-material-category/finishing-material-category.module'
+import { BuildingMaterialSubCategoryModule } from './modules/building-material-sub-category/building-material-sub-category.module'
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { FinishingMaterialCategoryModule } from './modules/finishing-material-ca
     FinishingMaterialsModule,
     BuildingMaterialCategoryModule,
     FinishingMaterialCategoryModule,
+    BuildingMaterialSubCategoryModule,
   ],
   controllers: [AppController]
 })

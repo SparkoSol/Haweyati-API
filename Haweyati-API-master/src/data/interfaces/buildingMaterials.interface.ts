@@ -1,12 +1,12 @@
 import { Document } from 'mongoose'
-import { IShopRegistration } from './shop-registration.interface'
 import { IImage } from './image.interface'
-import { IBuildingMaterialCategory } from './buildingMaterialCategory.interface'
+import { IShopRegistration } from './shop-registration.interface'
+import { IBuildingMaterialSubCategory } from './buildingMaterialSubCategory.interface'
 
 export interface IBuildingMaterials extends Document {
   name: string
   description: string
-  parent: IBuildingMaterialCategory
+  parent: IBuildingMaterialSubCategory
   suppliers: IShopRegistration[]
   image: IImage
   price12yard: number[]
