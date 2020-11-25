@@ -6,6 +6,7 @@ import { IShopRegistration } from '../../data/interfaces/shop-registration.inter
 import { IBuildingMaterials } from '../../data/interfaces/buildingMaterials.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { IBuildingMaterialSubCategory } from 'src/data/interfaces/buildingMaterialSubCategory.interface'
+import { BuildingMaterialCategoryService } from '../building-material-category/building-material-category.service'
 import { BuildingMaterialSubCategoryService } from '../building-material-sub-category/building-material-sub-category.service'
 
 @Injectable()
@@ -16,7 +17,8 @@ export class BuildingMaterialsService extends SimpleService<
     @InjectModel('buildingmaterials')
     protected readonly model: Model<IBuildingMaterials>,
     private readonly service: ShopRegistrationService,
-    private readonly subCategoryService: BuildingMaterialSubCategoryService
+    private readonly categoryService: BuildingMaterialCategoryService,
+  private readonly subCategoryService: BuildingMaterialSubCategoryService,
   ) {
     super(model)
   }
@@ -95,15 +97,23 @@ export class BuildingMaterialsService extends SimpleService<
     return this.model.findByIdAndUpdate(id, { status: 'Inactive' })
   }
 
-  ///TODO///
   //deleting building material category
   async deleteCategory(id: string): Promise<any> {
+    await this.categoryService.remove(id)
+    const subCategories = await this.subCategoryService.fetchByParentId(id)
+    for (const sc of subCategories){
+      await this.deleteSubCategory(sc._id)
+    }
+    return 'Category Deleted'
+  }
+
+  async deleteSubCategory(id: string): Promise<any> {
     await this.subCategoryService.remove(id)
     const data = await this.fetchByParentId(id)
     for (const item of data) {
       await this.remove(item._id)
     }
-    return 'Category Deleted'
+    return 'Sub Category Deleted'
   }
 
   //used in reward points module

@@ -81,8 +81,13 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   }
 
   //Deleting Building Material Category here because circular dependencies are not allowed
-  @Delete('deletecategory/:id')
+  @Delete('delete-category/:id')
   async deleteCategory(@Param('id') id: string): Promise<any> {
     return await this.service.deleteCategory(id)
+  }
+
+  @Delete('delete-sub-category/:id')
+  async deleteSubCategory(@Param('id') id: string): Promise<any> {
+    return await this.service.deleteSubCategory(id)
   }
 }
