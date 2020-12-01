@@ -58,7 +58,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
   }
 
   async sendSingle(data: any){
-    let flag: boolean = false;
+    let flag = false;
 
     const person = (await this.personService.fetch(data.id)) as IPerson
     if (person.token){
@@ -90,6 +90,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
         person: person,
         title: data.title,
         body: data.body,
+        seen: false,
         status: FcmStatus.sent
       })
     }
@@ -98,6 +99,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
         person: person,
         title: data.title,
         body: data.body,
+        seen: false,
         status: FcmStatus.pending
       })
     }
@@ -108,7 +110,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
     if (pending.length > 0){
       const person = (await this.personService.fetch(id)) as IPerson
       if (person.token){
-        for (let item of pending){
+        for (const item of pending){
           await this.http.post(
             "https://fcm.googleapis.com/fcm/send",
             {
@@ -118,6 +120,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
               },
               data: {
                 type: "order",
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 createdAt: item.createdAt
               },
@@ -130,7 +133,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
               }
             }
           ).subscribe(asd => console.log(asd));
-          await this.fcmHistoryModel.findByIdAndDelete(item._id).exec()
+          await this.fcmHistoryModel.findByIdAndUpdate(item._id, {status: FcmStatus.sent}).exec()
         }
       }
     }
@@ -146,4 +149,14 @@ export class FcmService extends SimpleService<IFcmHistory>{
   async history(): Promise<IFcmAllHistory[]>{
     return await this.fcmAllHistoryModel.find().sort({createdAt: -1}).exec()
   }
+
+  async personHistory(id: string): Promise<IFcmHistory[]>{
+    return await this.fcmHistoryModel.find({person: id}).sort({createdAt: -1}).exec()
+  }
+
+  async personUnseenHistory(id: string): Promise<IFcmHistory[]>{
+    return await this.fcmHistoryModel.find({person: id, seen: false}).sort({createdAt: -1}).exec()
+  }
+
+
 }

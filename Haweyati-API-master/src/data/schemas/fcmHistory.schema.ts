@@ -13,6 +13,10 @@ export const FcmHistory = new Schema({
     type: String,
     required: true
   },
+  seen: {
+    type: Boolean,
+    default: false
+  },
   status : {
     type: Number,
     required: true

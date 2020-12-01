@@ -5,6 +5,7 @@ export interface IFcmHistory extends Document{
   person: IPerson | string
   title: string
   body: string
+  seen: boolean
   status: number
 }
 
