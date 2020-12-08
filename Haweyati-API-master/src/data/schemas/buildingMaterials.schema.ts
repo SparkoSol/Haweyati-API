@@ -27,19 +27,15 @@ export const BuildingMaterialsSchema = new Schema(
       type: ImagesSchema,
       required: true
     },
-    price12yard: [{
-      type: Number,
-      required: true
-    }],
-    price20yard: [{
-      type: Number,
-      required: true
-    }],
     pricing: [
       {
         city: String,
-        price12yard: Number,
-        price20yard: Number
+        price: [
+          {
+            price: Number,
+            unit: String
+          }
+        ]
       }
     ],
     status: {

@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
-import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 
 @Injectable()
 export class DumpstersService extends SimpleService<IDumpster> {
@@ -18,7 +18,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
 
   async fetch(id?: string): Promise<IDumpster[] | IDumpster> {
     if (id) {
-      let data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
+      const data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
@@ -26,8 +26,8 @@ export class DumpstersService extends SimpleService<IDumpster> {
       }
       return data
     } else {
-      let big = await this.model.find({ status: 'Active' }).exec()
-      for (let data of big) {
+      const big = await this.model.find({ status: 'Active' }).exec()
+      for (const data of big) {
         for (let i = 0; i < data.suppliers.length; ++i) {
           data.suppliers[i] = (await this.service.fetch(
             data.suppliers[i].toString()
@@ -36,6 +36,47 @@ export class DumpstersService extends SimpleService<IDumpster> {
       }
       return big
     }
+  }
+
+  async create(document: IDumpster): Promise<IDumpster> {
+    const objArr = []
+    if (Array.isArray(document.suppliers)){
+      for (let supplier of document.suppliers){
+        supplier = (await this.service.fetch(supplier.toString())) as IShopRegistration
+        let flag = false
+        for (const price of document.pricing){
+          // @ts-ignore
+          if (price.city == supplier.city){
+            flag = true
+            break
+          }
+        }
+        if (!flag){
+          objArr.push(supplier.city)
+        }
+      }
+    }else {
+      const supplier = (await this.service.fetch(document.suppliers)) as IShopRegistration
+      let flag = false
+      for (const price of document.pricing){
+        // @ts-ignore
+        if (price.city == supplier.city){
+          flag = true
+          break
+        }
+      }
+      if (!flag){
+        objArr.push(supplier.city)
+      }
+    }
+
+    if (objArr.length > 0)
+      throw new HttpException(
+        "Pricing required for these cities -> " + objArr.join(', '),
+        HttpStatus.NOT_ACCEPTABLE
+      )
+
+    return super.create(document);
   }
 
   async fromSuppliers(id: string): Promise<IDumpster[]> {
@@ -60,7 +101,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
         'Construction Dumpster'
       )
       const dump = await this.model.find().exec()
-      let result = new Set()
+      const result = new Set()
 
       for (const item of dump) {
         for (const supplier of data) {

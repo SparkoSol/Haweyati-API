@@ -21,7 +21,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async searchActive(query: any) {
-    let results = []
+    const results = []
 
     const persons = await this.personService.search(query)
     const activeCustomers = await this.getWithScopeCustomer('Active')
@@ -40,7 +40,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async searchGuest(query: any) {
-    let results = []
+    const results = []
 
     const persons = await this.personService.search(query)
     const activeCustomers = await this.getGuest()
@@ -61,7 +61,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   async searchBlocked(query: any) {
     const persons = await this.personService.search(query)
     const activeCustomers = await this.getWithScopeCustomer('Blocked')
-    let results = []
+    const results = []
 
     if (activeCustomers) {
       for (const item of persons) {
@@ -94,8 +94,6 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async createAdmin(document: any): Promise<ICustomerInterface>{
-    console.log(document)
-    let customer: any
     document.scope = 'customer'
 
     if (document.profile) {
@@ -113,7 +111,8 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       latitude: document.latitude,
       address: document.address ?? await LocationUtils.getAddress(document.latitude, document.longitude)
     }
-    customer = await super.create(document)
+
+    const customer: any = await super.create(document)
     await this.sendAdminNotification(customer.profile)
 
     return await this.model
@@ -123,6 +122,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async create(document: any): Promise<any> {
+    console.log(document)
     let customer: any
     document.scope = 'customer'
 
@@ -159,9 +159,9 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async getGuest(): Promise<any>{
-    let result = new Set()
+    const result = new Set()
     const persons = (await this.personService.fetch()) as IPerson[]
-    for (let person of persons){
+    for (const person of persons){
       if (person.scope.includes('guest')){
         result.add(await this.model.findOne({profile : person._id}).populate('profile').exec())
       }
@@ -175,13 +175,16 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
 
     document.profile.username = document.profile.contact
 
+    if (!document.profile._id)
+      document.profile._id = undefined
+
     return await this.createCustomer(document)
   }
 
   private async createCustomer(document: any): Promise<any>{
+    console.log(document)
     let customer: any
-    let person: any
-    person = await this.personService.create(document.profile)
+    const person = await this.personService.create(document.profile)
 
     if (person) {
       document.profile = person
@@ -228,7 +231,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     const _id = document._id
     document._id = document.personId
 
-    let person = await this.personService.change(document)
+    const person = await this.personService.change(document)
 
     document.personId = document._id
     document._id = _id
@@ -269,7 +272,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       activeOnes = (await this.fetch()) as ICustomerInterface[]
 
     const result = new Set()
-    for (let activeOne of activeOnes) {
+    for (const activeOne of activeOnes) {
       // @ts-ignore
       if (activeOne.profile.scope.includes('customer'))
         result.add(activeOne)

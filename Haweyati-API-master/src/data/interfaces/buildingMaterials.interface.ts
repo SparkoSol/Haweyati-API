@@ -9,14 +9,16 @@ export interface IBuildingMaterials extends Document {
   parent: IBuildingMaterialSubCategory
   suppliers: IShopRegistration[]
   image: IImage
-  price12yard: number[]
-  price20yard: number[]
   pricing: [
     {
-      city: string
-      price12yard: number
-      price20yard: number
+      city: string,
+      price: [
+        {
+          price: number,
+          unit: string
+        }
+      ]
     }
-  ]
+  ],
   status: string
 }

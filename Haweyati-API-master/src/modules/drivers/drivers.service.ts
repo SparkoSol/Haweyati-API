@@ -1,13 +1,15 @@
-import { Model } from 'mongoose'
-import { InjectModel } from '@nestjs/mongoose'
-import { PersonsService } from '../persons/persons.service'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
+import { IDriversInterface } from '../../data/interfaces/drivers.interface'
+import { IVehicleType } from "../../data/interfaces/vehicleType.interface"
+import { VehicleTypeService } from "../vehicle-type/vehicle-type.service"
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { IPerson } from '../../data/interfaces/person.interface'
 import { LocationUtils } from '../../common/lib/location-utils'
 import { SimpleService } from '../../common/lib/simple.service'
-import { IPerson } from '../../data/interfaces/person.interface'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { IDriversInterface } from '../../data/interfaces/drivers.interface'
-import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
-import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { PersonsService } from '../persons/persons.service'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriversInterface> {
@@ -17,6 +19,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
     @InjectModel('driverRequest')
     protected readonly requestModel: Model<IDriverRequest>,
 
+    protected readonly vehicleTypeService: VehicleTypeService,
     protected readonly personsService: PersonsService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
@@ -25,11 +28,12 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async fetch(id?: string): Promise<IDriversInterface[] | IDriversInterface> {
     if (id) {
-      let data = await await this.model
+      const data = await this.model
         .findOne({ _id: id })
         .populate('profile')
         .exec()
       ;(data.profile as IPerson).password = ''
+      data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
       return data
     } else {
       const all = await this.model
@@ -39,6 +43,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
       for (const data of all) {
         ;(data.profile as IPerson).password = ''
+        data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
       }
       return all
     }
@@ -46,7 +51,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
 
   async create(document: any): Promise<IDriversInterface> {
     const allDrivers = await this.model.find().exec()
-    for (let driver of allDrivers) {
+    for (const driver of allDrivers) {
       if (document.identificationNo == driver.vehicle.identificationNo) {
         if (document._id != driver._id)
           throw new HttpException(
@@ -66,7 +71,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
     document.location = {
       latitude: document.latitude,
       longitude: document.longitude,
-      address: document.address
+      address: await LocationUtils.getCity(document.latitude, document.longitude)
     }
     document.vehicle = {
       name: document.vehicleName,
@@ -96,6 +101,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
       if (person) {
         document.profile = person
 
+        document.city = await LocationUtils.getCity(document.latitude, document.longitude)
         driver = await super.create(document)
       }
     }
@@ -128,6 +134,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
       )
     }
 
+    driver.vehicle.type = await this.vehicleTypeService.fetch(driver.vehicle.type)
     return driver
   }
 
@@ -136,7 +143,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
       .find({ status: { $nin: ['Rejected'] } })
       .exec()
 
-    for (let driver of allDrivers) {
+    for (const driver of allDrivers) {
       if (document.identificationNo == driver.vehicle.identificationNo) {
         if (document._id != driver._id)
           throw new HttpException(
@@ -144,17 +151,17 @@ export class DriversService extends SimpleService<IDriversInterface> {
             HttpStatus.NOT_ACCEPTABLE
           )
       }
-      if (document.license == driver.license) {
+      else if (document.license == driver.license) {
         if (document._id != driver._id)
           throw new HttpException(
             'Driver with this license already exists!',
             HttpStatus.NOT_ACCEPTABLE
           )
       }
+
     }
 
-    let driver,
-      personObject = undefined
+    let personObject = undefined
 
     if (document.image) {
       personObject = {
@@ -181,7 +188,10 @@ export class DriversService extends SimpleService<IDriversInterface> {
         document.location = {
           latitude: document.latitude,
           longitude: document.longitude,
-          address: document.address
+          address: await LocationUtils.getAddress(
+            document.latitude,
+            document.longitude
+          )
         }
       }
       if (
@@ -197,7 +207,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
           document.status = 'Pending'
       }
     }
-    driver = await this.model.findByIdAndUpdate(document._id, document).exec()
+    let driver = await this.model.findByIdAndUpdate(document._id, document).exec()
 
     if (driver) {
       if (!(await this.requestModel.findOne({ driver: driver._id }).exec())) {
@@ -218,7 +228,9 @@ export class DriversService extends SimpleService<IDriversInterface> {
       }
     }
 
-    return await this.model.findById(driver._id).populate('profile').exec()
+    driver = await this.model.findById(driver._id).populate('profile').exec()
+    driver.vehicle.type = (await this.vehicleTypeService.fetch(driver.vehicle.type.toString())) as IVehicleType
+    return driver
   }
 
   async getByStatus(status: string): Promise<IDriversInterface[]> {

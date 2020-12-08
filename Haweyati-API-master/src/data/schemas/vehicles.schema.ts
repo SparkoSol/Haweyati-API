@@ -1,3 +1,5 @@
+import { Schema } from 'mongoose'
+
 export const VehiclesSchema = {
    name: {
       type: String,
@@ -13,7 +15,8 @@ export const VehiclesSchema = {
       required: true
    },
    type : {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: 'vehicletype',
       required : true,
    }
 }

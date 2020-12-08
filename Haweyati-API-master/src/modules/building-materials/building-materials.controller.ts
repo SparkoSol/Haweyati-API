@@ -8,7 +8,7 @@ import {
   Delete,
   Controller,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors, HttpException, HttpStatus
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
@@ -27,22 +27,53 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   protected parseData(buildingMaterial: any) {
     if (Array.isArray(buildingMaterial.city)) {
       const list = []
+      let startingPoint = 0;
       for (let i = 0; i < buildingMaterial.city.length; ++i) {
+        const priceList = []
+        const endPoint = startingPoint + (+buildingMaterial.count)
+        for (let j = startingPoint; j < endPoint; ++j){
+          priceList.push({
+            price: buildingMaterial.price[j],
+            unit: buildingMaterial.unit[j]
+          })
+          startingPoint = j + 1;
+        }
         list.push({
           city: buildingMaterial.city[i],
-          price12yard: buildingMaterial.price12yard[i],
-          price20yard: buildingMaterial.price20yard[i]
+          price: priceList
         })
       }
       buildingMaterial.pricing = list
-    } else {
-      buildingMaterial.pricing = [
-        {
-          city: buildingMaterial.city,
-          price12yard: buildingMaterial.price12yard,
-          price20yard: buildingMaterial.price20yard
+    }
+    else {
+      if (Array.isArray(buildingMaterial.price)){
+        const priceList = []
+        for (let i = 0; i< buildingMaterial.price.length; ++i){
+          priceList.push({
+            price: buildingMaterial.price[i],
+            unit: buildingMaterial.price[i]
+          })
         }
-      ]
+        buildingMaterial.pricing = [
+          {
+            city: buildingMaterial.city,
+            price: priceList
+          }
+        ]
+      }
+      else {
+        buildingMaterial.pricing = [
+          {
+            city: buildingMaterial.city,
+            price: [
+              {
+                price: buildingMaterial.price,
+                unit: buildingMaterial.unit
+              }
+            ]
+          }
+        ]
+      }
     }
     return buildingMaterial
   }
@@ -50,6 +81,12 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   post(@UploadedFile() file, @Body() buildingMaterial: any) {
+    if (!file)
+      throw new HttpException(
+        'Image is Required!',
+        HttpStatus.NOT_ACCEPTABLE
+      );
+    console.log(buildingMaterial)
     return super.post(file, this.parseData(buildingMaterial))
   }
 

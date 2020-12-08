@@ -1,7 +1,7 @@
-import { Get, Body, Post, Patch, Param, Controller } from '@nestjs/common'
-import { DriversService } from './drivers.service'
-import { ImageController } from '../../common/lib/image.controller'
 import { IDriversInterface } from '../../data/interfaces/drivers.interface'
+import { Get, Body, Patch, Param, Controller } from '@nestjs/common'
+import { ImageController } from '../../common/lib/image.controller'
+import { DriversService } from './drivers.service'
 
 @Controller('drivers')
 export class DriversController extends ImageController<IDriversInterface> {

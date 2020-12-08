@@ -8,7 +8,7 @@ import {
   Delete,
   Controller,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors, HttpException, HttpStatus
 } from '@nestjs/common'
 import { DumpstersService } from './dumpsters.service'
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -57,6 +57,11 @@ export class DumpstersController extends ImageController<IDumpster> {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   postOverride(@UploadedFile() file, @Body() dumpster: any) {
+    if (!file)
+      throw new HttpException(
+        'Image is Required!',
+        HttpStatus.NOT_ACCEPTABLE
+      );
     return super.post(file, this.parseData(dumpster))
   }
 

@@ -8,7 +8,7 @@ import {
   Delete,
   Controller,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors, HttpException, HttpStatus
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
@@ -133,6 +133,11 @@ export class FinishingMaterialsController extends ImageController<
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   post(@UploadedFile() file, @Body() finishingMaterial: any) {
+    if (!file)
+      throw new HttpException(
+        'Image is Required!',
+        HttpStatus.NOT_ACCEPTABLE
+      );
     return super.post(file, this.parseData(finishingMaterial))
   }
 

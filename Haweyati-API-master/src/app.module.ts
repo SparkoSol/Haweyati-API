@@ -3,6 +3,7 @@ import { AppController } from './app.controller'
 import { DbModule } from './common/db/db.module'
 import { FcmModule } from './modules/fcm/fcm.module'
 import { AuthModule } from './common/auth/auth.module'
+import { UnitModule } from './modules/unit/unit.module'
 import { OrdersModule } from './modules/orders/orders.module'
 import { PersonsModule } from './modules/persons/persons.module'
 import { DriversModule } from './modules/drivers/drivers.module'
@@ -12,6 +13,7 @@ import { CustomersModule } from './modules/customers/customers.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { TimeSlotsModule } from './modules/time-slots/time-slots.module'
 import { InvitationModule } from './modules/invitation/invitation.module'
+import { VehicleTypeModule } from './modules/vehicle-type/vehicle-type.module'
 import { ScaffoldingsModule } from './modules/scaffoldings/scaffoldings.module'
 import { RewardPointsModule } from './modules/reward-points/reward-points.module'
 import { ServiceRequestsModule } from './modules/service-requests/service-requests.module'
@@ -21,12 +23,14 @@ import { AdminNotificationsModule } from './modules/admin-notifications/admin-no
 import { BuildingMaterialCategoryModule } from './modules/building-material-category/building-material-category.module'
 import { FinishingMaterialCategoryModule } from './modules/finishing-material-category/finishing-material-category.module'
 import { BuildingMaterialSubCategoryModule } from './modules/building-material-sub-category/building-material-sub-category.module'
+import { CityModule } from './modules/city/city.module';
 
 @Module({
   imports: [
     DbModule,
     FcmModule,
     AuthModule,
+    UnitModule,
     OrdersModule,
     ReportsModule,
     PersonsModule,
@@ -36,6 +40,7 @@ import { BuildingMaterialSubCategoryModule } from './modules/building-material-s
     DashboardModule,
     CustomersModule,
     InvitationModule,
+    VehicleTypeModule,
     ScaffoldingsModule,
     RewardPointsModule,
     ServiceRequestsModule,
@@ -45,6 +50,7 @@ import { BuildingMaterialSubCategoryModule } from './modules/building-material-s
     BuildingMaterialCategoryModule,
     FinishingMaterialCategoryModule,
     BuildingMaterialSubCategoryModule,
+    CityModule
   ],
   controllers: [AppController]
 })

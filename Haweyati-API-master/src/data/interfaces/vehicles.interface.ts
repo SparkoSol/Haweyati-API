@@ -1,6 +1,8 @@
+import { IVehicleType } from './vehicleType.interface'
+
 export interface IVehicles {
    name: string,
    model: string,
    identificationNo : string,
-   type: string
+   type: IVehicleType | string
 }

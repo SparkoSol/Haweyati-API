@@ -22,7 +22,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@googlemaps/google-maps-services-js": "^3.1.2",
+    "@googlemaps/google-maps-services-js": "^3.1.13",
     "@nestjs/common": "^7.0.0",
     "@nestjs/core": "^7.0.0",
     "@nestjs/jwt": "^7.0.0",
@@ -37,6 +37,7 @@
     "carbone": "^2.0.1",
     "dotenv": "^8.2.0",
     "mongoose": "^5.9.18",
+    "node-geocoder": "^3.27.0",
     "nodemailer": "^6.4.11",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
