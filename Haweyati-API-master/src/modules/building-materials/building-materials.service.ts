@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { Injectable } from '@nestjs/common'
+import { Injectable } from "@nestjs/common"
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
@@ -18,14 +18,16 @@ export class BuildingMaterialsService extends SimpleService<
     protected readonly model: Model<IBuildingMaterials>,
     private readonly service: ShopRegistrationService,
     private readonly categoryService: BuildingMaterialCategoryService,
-  private readonly subCategoryService: BuildingMaterialSubCategoryService,
+    private readonly subCategoryService: BuildingMaterialSubCategoryService
   ) {
     super(model)
   }
 
   async fetch(id?: string): Promise<IBuildingMaterials[] | IBuildingMaterials> {
     if (id) {
-      const data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
+      const data = await this.model
+        .findOne({ _id: id, status: 'Active' })
+        .exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
@@ -50,6 +52,11 @@ export class BuildingMaterialsService extends SimpleService<
       .find({ status: 'Active' })
       .where('parent', id)
       .exec()
+  }
+
+  async create(document: IBuildingMaterials): Promise<IBuildingMaterials> {
+    await this.service.checkPricingAccordingToSuppliers(document)
+    return super.create(document)
   }
 
   async getByCity(city: string, parent: string): Promise<any> {
@@ -101,7 +108,7 @@ export class BuildingMaterialsService extends SimpleService<
   async deleteCategory(id: string): Promise<any> {
     await this.categoryService.remove(id)
     const subCategories = await this.subCategoryService.fetchByParentId(id)
-    for (const sc of subCategories){
+    for (const sc of subCategories) {
       await this.deleteSubCategory(sc._id)
     }
     return 'Category Deleted'

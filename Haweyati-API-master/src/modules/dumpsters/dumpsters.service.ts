@@ -1,8 +1,8 @@
 import { Model } from 'mongoose'
+import { Injectable } from "@nestjs/common"
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 
@@ -39,43 +39,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
   }
 
   async create(document: IDumpster): Promise<IDumpster> {
-    const objArr = []
-    if (Array.isArray(document.suppliers)){
-      for (let supplier of document.suppliers){
-        supplier = (await this.service.fetch(supplier.toString())) as IShopRegistration
-        let flag = false
-        for (const price of document.pricing){
-          // @ts-ignore
-          if (price.city == supplier.city){
-            flag = true
-            break
-          }
-        }
-        if (!flag){
-          objArr.push(supplier.city)
-        }
-      }
-    }else {
-      const supplier = (await this.service.fetch(document.suppliers)) as IShopRegistration
-      let flag = false
-      for (const price of document.pricing){
-        // @ts-ignore
-        if (price.city == supplier.city){
-          flag = true
-          break
-        }
-      }
-      if (!flag){
-        objArr.push(supplier.city)
-      }
-    }
-
-    if (objArr.length > 0)
-      throw new HttpException(
-        "Pricing required for these cities -> " + objArr.join(', '),
-        HttpStatus.NOT_ACCEPTABLE
-      )
-
+    await this.service.checkPricingAccordingToSuppliers(document)
     return super.create(document);
   }
 

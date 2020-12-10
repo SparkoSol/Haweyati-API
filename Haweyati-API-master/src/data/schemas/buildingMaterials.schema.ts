@@ -28,15 +28,21 @@ export const BuildingMaterialsSchema = new Schema(
       required: true
     },
     pricing: [
-      {
-        city: String,
-        price: [
-          {
-            price: Number,
-            unit: String
-          }
-        ]
-      }
+      new Schema(
+        {
+          city: String,
+          price: [
+            new Schema(
+              {
+                price: Number,
+                unit: String
+              },
+              {_id: false}
+            )
+          ]
+        },
+        {_id: false}
+      )
     ],
     status: {
       type: String,

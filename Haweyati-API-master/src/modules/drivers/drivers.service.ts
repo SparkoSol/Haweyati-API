@@ -31,8 +31,8 @@ export class DriversService extends SimpleService<IDriversInterface> {
       const data = await this.model
         .findOne({ _id: id })
         .populate('profile')
-        .exec()
-      ;(data.profile as IPerson).password = ''
+        .exec();
+      (data.profile as IPerson).password = ''
       data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
       return data
     } else {
@@ -42,7 +42,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
         .exec()
 
       for (const data of all) {
-        ;(data.profile as IPerson).password = ''
+        (data.profile as IPerson).password = ''
         data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
       }
       return all
@@ -269,11 +269,17 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async getCompanyDrivers(id: string): Promise<IDriversInterface[]> {
-    return await this.model
+    const all =  await this.model
       .find()
       .where('supplier', id)
       .populate('profile')
       .exec()
+
+    for (const data of all) {
+      (data.profile as IPerson).password = ''
+      data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
+    }
+    return all
   }
 
   async getByPersonId(id: string) {

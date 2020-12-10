@@ -6,6 +6,8 @@ import { LocationUtils } from '../../common/lib/location-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { IBuildingMaterials } from "../../data/interfaces/buildingMaterials.interface";
+import { IDumpster } from "../../data/interfaces/dumpster.interface";
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<IShopRegistration> {
@@ -258,5 +260,48 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       cities.push(supplier.city)
     }
     return cities
+  }
+
+
+  //used in BuildingMaterial and Dumpster, creating here for code re-usability
+  async checkPricingAccordingToSuppliers(document: IBuildingMaterials | IDumpster): Promise<IDumpster | IBuildingMaterials>{
+    const objArr = []
+    if (Array.isArray(document.suppliers)){
+      for (let supplier of document.suppliers){
+        supplier = (await this.fetch(supplier.toString())) as IShopRegistration
+        let flag = false
+        for (const price of document.pricing){
+          // @ts-ignore
+          if (price.city == supplier.city){
+            flag = true
+            break
+          }
+        }
+        if (!flag){
+          objArr.push(supplier.city)
+        }
+      }
+    }else {
+      const supplier = (await this.fetch(document.suppliers)) as IShopRegistration
+      let flag = false
+      for (const price of document.pricing){
+        // @ts-ignore
+        if (price.city == supplier.city){
+          flag = true
+          break
+        }
+      }
+      if (!flag){
+        objArr.push(supplier.city)
+      }
+    }
+
+    if (objArr.length > 0)
+      throw new HttpException(
+        "Pricing required for these cities -> " + objArr.join(', '),
+        HttpStatus.NOT_ACCEPTABLE
+      )
+    else
+      return document
   }
 }

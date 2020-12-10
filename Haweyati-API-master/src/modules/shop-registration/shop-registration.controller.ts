@@ -3,12 +3,10 @@ import {
   Body,
   Patch,
   Param,
-  HttpStatus,
   Controller,
   UploadedFile,
-  HttpException,
   UseInterceptors
-} from '@nestjs/common'
+} from "@nestjs/common";
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { ShopRegistrationService } from './shop-registration.service'
