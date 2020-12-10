@@ -283,9 +283,12 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async getByPersonId(id: string) {
-    return await this.model
+    const data = await this.model
       .findOne({ profile: id })
       .populate('profile')
-      .exec()
+      .exec();
+    (data.profile as IPerson).password = ''
+    data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
+    return data
   }
 }
