@@ -125,11 +125,19 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return await super.change(document)
   }
 
-  async fetchAll(): Promise<any> {
-    return await this.model
+  async fetchAll(): Promise<IShopRegistration[]> {
+    const data = await this.model
       .find({ status: 'Active', parent: null })
       .populate('person')
       .exec()
+    return await this.insertSubSupplierCount(data)
+  }
+
+  async insertSubSupplierCount(data: IShopRegistration[]): Promise<IShopRegistration[]>{
+    for (const supplier of data){
+      supplier.__v = ((await this.getSubSuppliers(supplier._id)) as []).length
+    }
+    return data
   }
 
   async getDataFromCityName(city: string, service: string): Promise<any> {
@@ -162,25 +170,27 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return Array.from(newSet)
   }
 
-  async getSubSuppliers(id: string): Promise<any> {
-    return this.model
+  async getSubSuppliers(id: string): Promise<IShopRegistration[]> {
+    return await this.model
       .find({ parent: id })
       .populate('person')
       .exec()
   }
 
   async getSuppliersByStatus(status: string) {
-    return this.model
+    const data = await this.model
       .find({ status })
       .populate('person')
       .exec()
+    return await this.insertSubSupplierCount(data)
   }
 
   async getBlockedSuppliersWithoutParent() {
-    return this.model
+    const data = await this.model
       .find({ status: 'Blocked', parent: null })
       .populate('person')
       .exec()
+    return await this.insertSubSupplierCount(data)
   }
 
   async changeSupplierStatus(
@@ -194,7 +204,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       await this.model.findByIdAndUpdate(id, { status }).exec()
       if (status == 'Blocked') {
         const subSuppliers = await this.getSubSuppliers(id)
-        for (let child of subSuppliers) {
+        for (const child of subSuppliers) {
           await this.model
             .findByIdAndUpdate(child._id, { status })
             .where('status', 'Active')
@@ -204,7 +214,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         const subSuppliers = await this.model
           .find({ parent: id, status: 'Blocked' })
           .exec()
-        for (let child of subSuppliers) {
+        for (const child of subSuppliers) {
           await this.model.findByIdAndUpdate(child._id, { status }).exec()
         }
       }
@@ -239,8 +249,8 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
 
   async getSupplierCities(): Promise<any> {
     const suppliers = await this.model.find().exec()
-    let result = new Set()
-    for (let item of suppliers) {
+    const result = new Set()
+    for (const item of suppliers) {
       result.add(item.city)
     }
     return Array.from(result)

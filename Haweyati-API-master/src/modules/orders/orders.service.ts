@@ -23,8 +23,6 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async create(document: IOrders): Promise<IOrders> {
-    console.log(document)
-
     const customer = await this.customersService.fetch(
       // @ts-ignore
       document.customer._id.toString()
@@ -72,7 +70,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async addImage(data: any): Promise<IOrders> {
-    let order = (await this.model.findById(data.id)) as IOrders
+    const order = (await this.model.findById(data.id)) as IOrders
     if (order.image) order.image.push(data.image)
     else {
       // @ts-ignore
@@ -85,7 +83,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async getPerson(all: any): Promise<any> {
     if (Array.isArray(all)) {
-      for (let data of all) {
+      for (const data of all) {
         data.customer.profile = await this.personsService.fetch(
           data.customer.profile
         )
@@ -153,10 +151,10 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async getBySupplierId(id: string): Promise<any> {
-    let result = new Set()
+    const result = new Set()
     const orders = (await this.fetch()) as IOrders[]
-    for (let order of orders) {
-      for (let one of order.items) {
+    for (const order of orders) {
+      for (const one of order.items) {
         // @ts-ignore
         if (one.supplier?._id == id && (order.status == OrderStatus.Accepted || order.status == OrderStatus.Preparing)) {
           result.add(order)
@@ -167,7 +165,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async completedSupplierId(id: string): Promise<any> {
-    let result = new Set()
+    const result = new Set()
     const orders = (await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Delivered })
@@ -175,8 +173,8 @@ export class OrdersService extends SimpleService<IOrders> {
         .sort({ createdAt: -1 })
         .exec()
     )) as IOrders[]
-    for (let order of orders) {
-      for (let one of order.items) {
+    for (const order of orders) {
+      for (const one of order.items) {
         // @ts-ignore
         if (one.supplier?._id == id) {
           result.add(order)
@@ -187,7 +185,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async dispatchedSupplier(id: string): Promise<any> {
-    let result = new Set()
+    const result = new Set()
     const orders = (await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Dispatched })
@@ -195,8 +193,8 @@ export class OrdersService extends SimpleService<IOrders> {
         .sort({ createdAt: -1 })
         .exec()
     )) as IOrders[]
-    for (let order of orders) {
-      for (let one of order.items) {
+    for (const order of orders) {
+      for (const one of order.items) {
         // @ts-ignore
         if (one.supplier?._id == id) {
           result.add(order)
@@ -228,7 +226,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async fetch(id?: string): Promise<IOrders[] | IOrders> {
     if (id) {
-      let data = await this.model
+      const data = await this.model
         .findById(id)
         .populate('customer')
         .exec()
@@ -255,8 +253,8 @@ export class OrdersService extends SimpleService<IOrders> {
     return all
   }
 
-  async updateStatus(id: string, status: OrderStatus) {
-    await this.model.findByIdAndUpdate(id, { status }).exec()
+  async updateStatus(id: string, status: OrderStatus, message?: string) {
+    await this.model.findByIdAndUpdate(id, { status, reason: message }).exec()
     const order = await this.model.findById(id).exec()
     const persons: string[] = []
 
@@ -270,7 +268,7 @@ export class OrdersService extends SimpleService<IOrders> {
       // @ts-ignore
       persons.push(order.driver.profile._id.toString())
     }
-    for (let item of order.items) {
+    for (const item of order.items) {
       if (item.supplier) {
         // @ts-ignore
         persons.push(item.supplier.person._id.toString())
@@ -291,13 +289,11 @@ export class OrdersService extends SimpleService<IOrders> {
         notificationStatus = 'Preparing'
       case OrderStatus.Cancelled:
         notificationStatus = 'Cancelled'
-      case OrderStatus.Approved:
-        notificationStatus = 'Approved'
       case OrderStatus.Rejected:
         notificationStatus = 'Rejected'
     }
 
-    for (let id of persons) {
+    for (const id of persons) {
       await this.fcmService.sendSingle({
         id: id,
         title: 'Order Status Update',
@@ -308,7 +304,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async search(query: any) {
-    let data = await this.model
+    const data = await this.model
       .find({
         $or: [
           { service: { $regex: query.name, $options: 'i' } },
@@ -324,7 +320,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async viewOrders(data: any): Promise<any> {
-    let results = new Set()
+    const results = new Set()
     const orders = await this.model
       .find({ city: data.city })
       .sort({ createdAt: -1 })
@@ -340,9 +336,9 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async getByDate(date: string): Promise<any[]> {
-    let orders = await this.getByStatus(OrderStatus.Delivered)
-    let result = []
-    for (let order of orders) {
+    const orders = await this.getByStatus(OrderStatus.Delivered)
+    const result = []
+    for (const order of orders) {
       // @ts-ignore
       const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
       if (convertedDate == date) {
@@ -352,9 +348,9 @@ export class OrdersService extends SimpleService<IOrders> {
     return result
   }
   async getByWeek(date: number): Promise<any[]> {
-    let orders = await this.getByStatus(OrderStatus.Delivered)
-    let result = []
-    for (let order of orders) {
+    const orders = await this.getByStatus(OrderStatus.Delivered)
+    const result = []
+    for (const order of orders) {
       // @ts-ignore
       const convertedDate = moment(order.updatedAt).week()
       if (date == convertedDate) {
@@ -364,9 +360,9 @@ export class OrdersService extends SimpleService<IOrders> {
     return result
   }
   async getByMonth(date: number): Promise<any[]> {
-    let orders = await this.getByStatus(OrderStatus.Delivered)
-    let result = []
-    for (let order of orders) {
+    const orders = await this.getByStatus(OrderStatus.Delivered)
+    const result = []
+    for (const order of orders) {
       // @ts-ignore
       const convertedDate = moment(order.updatedAt).month() + 1
       if (date == convertedDate) {
@@ -376,9 +372,9 @@ export class OrdersService extends SimpleService<IOrders> {
     return result
   }
   async getByYear(date: number): Promise<any[]> {
-    let orders = await this.getByStatus(OrderStatus.Delivered)
-    let result = []
-    for (let order of orders) {
+    const orders = await this.getByStatus(OrderStatus.Delivered)
+    const result = []
+    for (const order of orders) {
       // @ts-ignore
       const convertedDate = moment(order.updatedAt).year()
       if (date == convertedDate) {
@@ -388,9 +384,9 @@ export class OrdersService extends SimpleService<IOrders> {
     return result
   }
   async getCustom(date: string, dateTo: string): Promise<any[]> {
-    let orders = await this.getByStatus(OrderStatus.Delivered)
-    let result = []
-    for (let order of orders) {
+    const orders = await this.getByStatus(OrderStatus.Delivered)
+    const result = []
+    for (const order of orders) {
       // @ts-ignore
       const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
       if (convertedDate >= date && convertedDate <= dateTo) {
@@ -539,7 +535,7 @@ export class OrdersService extends SimpleService<IOrders> {
     if (this.shouldActivateOrder(order)) {
       order.status = OrderStatus.Accepted
     } else {
-      order.status = OrderStatus.Approved
+      order.status = OrderStatus.Pending
     }
 
     return order.save()
@@ -582,13 +578,13 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async filter(data: any): Promise<IOrders[]> {
-    let result = new Set<any>()
-    let orders = await this.model
-      .find({ city: data.city, status: OrderStatus.Approved })
+    const result = new Set<any>()
+    const orders = await this.model
+      .find({ city: data.city, status: OrderStatus.Pending })
       .populate('customer')
       .sort({ createdAt: -1 })
       .exec()
-    for (let order of orders) {
+    for (const order of orders) {
       if (data.services.includes(order.service)) {
         // @ts-ignore
         order.customer.profile = await this.personsService.fetch(
@@ -603,7 +599,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async pickupUpdate(data: any): Promise<any> {
     let order = (await this.model.findById(data._id).exec()) as IOrders
-    for (let item of order.items) {
+    for (const item of order.items) {
       // @ts-ignore
       if (item.supplier._id == data.supplierId) {
         item.dispatched = true
@@ -612,7 +608,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
 
     order = await order.save()
-    for (let item of order.items) {
+    for (const item of order.items) {
       if (item.dispatched != true) return order
     }
     return await this.model

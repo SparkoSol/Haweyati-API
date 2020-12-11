@@ -19,8 +19,8 @@ export class DriversService extends SimpleService<IDriversInterface> {
     @InjectModel('driverRequest')
     protected readonly requestModel: Model<IDriverRequest>,
 
-    protected readonly vehicleTypeService: VehicleTypeService,
     protected readonly personsService: PersonsService,
+    protected readonly vehicleTypeService: VehicleTypeService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
     super(model)
@@ -32,20 +32,15 @@ export class DriversService extends SimpleService<IDriversInterface> {
         .findOne({ _id: id })
         .populate('profile')
         .exec();
-      (data.profile as IPerson).password = ''
-      data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
-      return data
+
+      return await this.populateVehicleType(data)
     } else {
       const all = await this.model
         .find()
         .populate('profile')
         .exec()
 
-      for (const data of all) {
-        (data.profile as IPerson).password = ''
-        data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
-      }
-      return all
+      return await this.populateVehicleType(all)
     }
   }
 
@@ -134,8 +129,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
       )
     }
 
-    driver.vehicle.type = await this.vehicleTypeService.fetch(driver.vehicle.type)
-    return driver
+    return await this.populateVehicleType(driver) as IDriversInterface
   }
 
   async change(document: any): Promise<IDriversInterface> {
@@ -158,7 +152,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
             HttpStatus.NOT_ACCEPTABLE
           )
       }
-
     }
 
     let personObject = undefined
@@ -207,14 +200,14 @@ export class DriversService extends SimpleService<IDriversInterface> {
           document.status = 'Pending'
       }
     }
-    let driver = await this.model.findByIdAndUpdate(document._id, document).exec()
+    let driver = await this.model.findByIdAndUpdate(document._id, document).exec() as IDriversInterface
 
     if (driver) {
       if (!(await this.requestModel.findOne({ driver: driver._id }).exec())) {
-        // @ts-ignore
         await this.requestModel.create({
           driver: driver._id,
-          status: driver.status
+          status: driver.status,
+          message: undefined
         })
       }
 
@@ -229,8 +222,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
     }
 
     driver = await this.model.findById(driver._id).populate('profile').exec()
-    driver.vehicle.type = (await this.vehicleTypeService.fetch(driver.vehicle.type.toString())) as IVehicleType
-    return driver
+    return await this.populateVehicleType(driver) as IDriversInterface
   }
 
   async getByStatus(status: string): Promise<IDriversInterface[]> {
@@ -243,7 +235,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
   async updateByStatus(id: string, status: string): Promise<any> {
     const request = await this.requestModel.findById(id).exec()
     if (request && status == 'Active') {
-      await this.model.findByIdAndUpdate(request.driver._id, { status }).exec()
+      await this.model.findByIdAndUpdate(request.driver, { status }).exec()
       await this.requestModel.findByIdAndDelete(id)
       return { message: 'Status Changed Successfully!' }
     } else {
@@ -253,13 +245,11 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async getRejected(id: string, data?: any): Promise<any> {
-    // @ts-ignore
     const request = await this.requestModel.findOne({ driver: id }).exec()
     await this.model
       .findByIdAndUpdate(request.driver, { status: 'Rejected' })
       .exec()
     await this.requestModel.findOneAndUpdate(
-      // @ts-ignore
       { driver: id },
       { status: 'Rejected' }
     )
@@ -275,20 +265,29 @@ export class DriversService extends SimpleService<IDriversInterface> {
       .populate('profile')
       .exec()
 
-    for (const data of all) {
-      (data.profile as IPerson).password = ''
-      data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
-    }
-    return all
+    return (await this.populateVehicleType(all)) as IDriversInterface[]
   }
 
-  async getByPersonId(id: string) {
+  async getByPersonId(id: string): Promise<IDriversInterface>{
     const data = await this.model
       .findOne({ profile: id })
       .populate('profile')
       .exec();
-    (data.profile as IPerson).password = ''
-    data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
-    return data
+    return (await this.populateVehicleType(data)) as IDriversInterface
+  }
+
+  async populateVehicleType(all: IDriversInterface | IDriversInterface[]): Promise<IDriversInterface | IDriversInterface[]>{
+    if (Array.isArray(all)){
+      for (const data of all) {
+        (data.profile as IPerson).password = ''
+        data.vehicle.type = (await this.vehicleTypeService.fetch(data.vehicle.type.toString())) as IVehicleType
+      }
+      return all as IDriversInterface[]
+    }
+    else {
+      (all.profile as IPerson).password = ''
+      all.vehicle.type = (await this.vehicleTypeService.fetch(all.vehicle.type.toString())) as IVehicleType
+      return all as IDriversInterface
+    }
   }
 }

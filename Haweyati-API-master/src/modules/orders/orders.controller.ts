@@ -123,18 +123,6 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.getByStatus(OrderStatus.Pending)
   }
 
-  //-------------------- Accepted routes ----------------------
-
-  @Get('getactive')
-  async getActiveOrders(): Promise<IOrders[]> {
-    return await this.service.getByStatus(OrderStatus.Accepted)
-  }
-
-  @Patch('getactive/:id')
-  async getActive(@Param('id') id: string): Promise<any> {
-    return await this.service.updateStatus(id, OrderStatus.Accepted)
-  }
-
   //-------------------- Rejected routes ----------------------
 
   @Get('getrejected')
@@ -143,8 +131,11 @@ export class OrdersController extends SimpleController<IOrders> {
   }
 
   @Patch('getrejected/:id')
-  async getRejected(@Param('id') id: string): Promise<any> {
-    return await this.service.updateStatus(id, OrderStatus.Rejected)
+  async getRejected(@Param('id') id: string, @Body() data: any): Promise<any> {
+    if (data.message)
+      return await this.service.updateStatus(id, OrderStatus.Rejected, data.message)
+    else
+      return await this.service.updateStatus(id, OrderStatus.Rejected)
   }
 
   //-------------------- Completed routes ----------------------
@@ -161,14 +152,9 @@ export class OrdersController extends SimpleController<IOrders> {
 
   //-------------------- Approved routes ----------------------
 
-  @Get('approved')
-  async approved(): Promise<IOrders[]> {
-    return await this.service.getByStatus(OrderStatus.Approved)
-  }
-
   @Patch('approved/:id')
   async approve_order(@Param('id') id: string): Promise<any> {
-    return await this.service.updateStatus(id, OrderStatus.Approved)
+    return await this.service.updateStatus(id, OrderStatus.Pending)
   }
 
   @Patch('cancel/:id')

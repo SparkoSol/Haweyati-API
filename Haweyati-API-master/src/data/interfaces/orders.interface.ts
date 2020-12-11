@@ -4,7 +4,6 @@ import { IDropoffDetails } from './dropoffDetails.interface'
 
 export enum OrderStatus {
   Pending,
-  Approved,
   Accepted,
   Preparing,
   Dispatched,
@@ -27,9 +26,9 @@ export interface IOrders extends Document {
   items: [
     {
       item: Object
-      subtotal: String
-      supplier: Object
-      reason: Object
+      subtotal: string
+      supplier: string
+      reason: string
       dispatched: boolean
     }
   ]
@@ -41,5 +40,6 @@ export interface IOrders extends Document {
   note: string
   orderNo: string
   city: string
-  deliveryFee: Number
+  deliveryFee: number
+  reason: string
 }

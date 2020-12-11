@@ -71,6 +71,7 @@ export const OrdersSchema = new Schema(
     },
     reason: {
       type: String,
+      default: 'no reason specified!',
       required: false
     },
     deliveryFee: {

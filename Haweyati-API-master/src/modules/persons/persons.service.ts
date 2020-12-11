@@ -34,8 +34,7 @@ export class PersonsService extends SimpleService<IPerson> {
         .exec()
       delete data.email
     }
-
-    if (await this.model.findOne({email: data.email}).exec())
+    else if (await this.model.findOne({email: data.email}).exec())
       throw new HttpException(
         "Email Already Exists!",
         HttpStatus.NOT_ACCEPTABLE
@@ -117,7 +116,7 @@ export class PersonsService extends SimpleService<IPerson> {
   }
 
   async scopeConversion(document: any): Promise<IPerson> {
-    let person = (await this.model
+    const person = (await this.model
       .findOne({ contact: document.contact })
       .exec()) as IPerson
     person.scope.push('customer')
