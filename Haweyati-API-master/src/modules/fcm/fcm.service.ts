@@ -157,6 +157,4 @@ export class FcmService extends SimpleService<IFcmHistory>{
   async personUnseenHistory(id: string): Promise<IFcmHistory[]>{
     return await this.fcmHistoryModel.find({person: id, seen: false}).sort({createdAt: -1}).exec()
   }
-
-
 }

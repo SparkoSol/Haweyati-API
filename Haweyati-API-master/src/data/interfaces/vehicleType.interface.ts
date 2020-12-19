@@ -7,5 +7,6 @@ export interface IVehicleType extends Document{
   maxWeight: number,
   maxVolume: number,
   minWeight: number,
-  minVolume: number
+  minVolume: number,
+  deliveryCharges: number
 }

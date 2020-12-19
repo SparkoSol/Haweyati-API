@@ -91,6 +91,12 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.AddSupplierToItem(data)
   }
 
+  //Order Progress Update
+  @Patch('add-supplier-all')
+  async AddSupplierToAllItem(@Body() data: any): Promise<any> {
+    return await this.service.AddSupplierToAllItem(data)
+  }
+
   @Patch('add-driver')
   async AddDriver(@Body() data: any): Promise<any> {
     return await this.service.AddDriver(data)
@@ -99,6 +105,11 @@ export class OrdersController extends SimpleController<IOrders> {
   @Get('selected-supplier/:id')
   async getBySupplierId(@Param('id') id: string): Promise<any> {
     return await this.service.getBySupplierId(id)
+  }
+
+  @Get('assigned-supplier/:id')
+  async getAssignedOrdersBySupplierId(@Param('id') id: string): Promise<any> {
+    return await this.service.getAssignedOrdersBySupplierId(id)
   }
 
   @Get('driver/:id')
@@ -211,5 +222,10 @@ export class OrdersController extends SimpleController<IOrders> {
   @Get('cancelled')
   async cancelled(): Promise<any> {
     return await this.service.getByStatus(OrderStatus.Cancelled)
+  }
+
+  @Get('driver/new/:city')
+  async getDriverOrdersFromCity(@Param('city') city: string): Promise<IOrders[]>{
+    return await this.service.getDriverOrdersFromCity(city);
   }
 }

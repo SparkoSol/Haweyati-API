@@ -64,7 +64,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
         city,
         'Construction Dumpster'
       )
-      const dump = await this.model.find().exec()
+      const dump = await this.model.find({status: 'Active'}).exec()
       const result = new Set()
 
       for (const item of dump) {

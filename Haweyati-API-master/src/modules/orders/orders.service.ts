@@ -23,6 +23,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async create(document: IOrders): Promise<IOrders> {
+    console.log(document)
     const customer = await this.customersService.fetch(
       // @ts-ignore
       document.customer._id.toString()
@@ -73,6 +74,7 @@ export class OrdersService extends SimpleService<IOrders> {
     const order = (await this.model.findById(data.id)) as IOrders
     if (order.image) order.image.push(data.image)
     else {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       order.image = [data.image]
     }
@@ -156,8 +158,24 @@ export class OrdersService extends SimpleService<IOrders> {
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
-        if (one.supplier?._id == id && (order.status == OrderStatus.Accepted || order.status == OrderStatus.Preparing)) {
+        if (one.supplier?._id == id && order.status == OrderStatus.Accepted) {
           result.add(order)
+          break;
+        }
+      }
+    }
+    return Array.from(result)
+  }
+
+  async getAssignedOrdersBySupplierId(id: string): Promise<any> {
+    const result = new Set()
+    const orders = (await this.fetch()) as IOrders[]
+    for (const order of orders) {
+      for (const one of order.items) {
+        // @ts-ignore
+        if (one.supplier?._id == id && order.status == OrderStatus.Preparing) {
+          result.add(order)
+          break;
         }
       }
     }
@@ -256,25 +274,38 @@ export class OrdersService extends SimpleService<IOrders> {
   async updateStatus(id: string, status: OrderStatus, message?: string) {
     await this.model.findByIdAndUpdate(id, { status, reason: message }).exec()
     const order = await this.model.findById(id).exec()
-    const persons: string[] = []
+    const persons = new Set<string>()
 
     // @ts-ignore
-    persons.push(
+    persons.add(
       (
         await this.customersService.fetch(order.customer.toString())
       ).profile._id.toString()
     )
     if (order.driver) {
       // @ts-ignore
-      persons.push(order.driver.profile._id.toString())
+      persons.add(order.driver.profile._id.toString())
     }
     for (const item of order.items) {
       if (item.supplier) {
         // @ts-ignore
-        persons.push(item.supplier.person._id.toString())
+        persons.add(item.supplier.person._id.toString())
       }
     }
 
+    const notificationStatus = this.getStatusString(status)
+
+    for (const id of persons) {
+      await this.fcmService.sendSingle({
+        id: id,
+        title: 'Order Status Update',
+        body: status == OrderStatus.Delivered ? "Your order has been delivered! Order # " + order.orderNo : 'Your Order Status has been changed to ' + notificationStatus + 'Order # ' + order.orderNo
+      })
+    }
+    return order
+  }
+
+  getStatusString(status: OrderStatus): string{
     let notificationStatus: string
     switch (status) {
       case OrderStatus.Accepted:
@@ -292,15 +323,7 @@ export class OrdersService extends SimpleService<IOrders> {
       case OrderStatus.Rejected:
         notificationStatus = 'Rejected'
     }
-
-    for (const id of persons) {
-      await this.fcmService.sendSingle({
-        id: id,
-        title: 'Order Status Update',
-        body: 'Your Order Status has been changed to ' + notificationStatus
-      })
-    }
-    return order
+    return notificationStatus
   }
 
   async search(query: any) {
@@ -541,15 +564,52 @@ export class OrdersService extends SimpleService<IOrders> {
     return order.save()
   }
 
+  async AddSupplierToAllItem(data: any): Promise<any> {
+    const order = await this.model.findById(data._id).exec()
+
+    for (const orderItem of order.items){
+      if (data.flag) {
+        // @ts-ignore
+        if (orderItem.supplier && orderItem?.supplier?._id != data.supplier._id) return 'Invalid Operation'
+        else {
+          orderItem.supplier = data.supplier
+          orderItem.reason = undefined
+        }
+      }
+      else {
+        // @ts-ignore
+        if (orderItem?.supplier?._id == data.supplier._id) {
+          orderItem.supplier = null
+          // @ts-ignore
+          orderItem.reason = {
+            supplier: data.supplier._id,
+            message: data.reason
+          }
+        } else return 'Invalid Operation'
+      }
+    }
+    /// Change order status;
+    if (this.shouldActivateOrder(order)) {
+      order.status = OrderStatus.Accepted
+    } else {
+      order.status = OrderStatus.Pending
+    }
+
+    return order.save()
+  }
+
   async AddDriver(data: any): Promise<any> {
     if (data.flag) {
       if (!(await this.model.findById(data._id).exec()).driver) {
-        return await this.model
+        const order = await this.model
           .findOneAndUpdate(
             { _id: data._id },
             { driver: data.driver, status: OrderStatus.Preparing }
           )
           .exec()
+        // @ts-ignore
+        this.fcmService.sendSingle({id: data.driver.profile._id, title: 'You have been assigned an order!', body: 'Order # '+ order.orderNo})
+        // this.fcmService.sendSingle({id: order.customer.profile._id, title: "Your order status has been changed to "+ this.getStatusString(OrderStatus.Preparing), body: 'Order # '+ order.orderNo})
       } else {
         throw new HttpException(
           'Order Not Available!',
@@ -603,7 +663,6 @@ export class OrdersService extends SimpleService<IOrders> {
       // @ts-ignore
       if (item.supplier._id == data.supplierId) {
         item.dispatched = true
-        break
       }
     }
 
@@ -611,8 +670,13 @@ export class OrdersService extends SimpleService<IOrders> {
     for (const item of order.items) {
       if (item.dispatched != true) return order
     }
+    return await this.updateStatus(order._id, OrderStatus.Dispatched)
+  }
+
+  async getDriverOrdersFromCity(city: string): Promise<IOrders[]>{
     return await this.model
-      .findByIdAndUpdate(order._id, { status: OrderStatus.Dispatched })
+      .find({ city, service: 'Delivery Vehicle' })
+      .sort({ createdAt: -1 })
       .exec()
   }
 }

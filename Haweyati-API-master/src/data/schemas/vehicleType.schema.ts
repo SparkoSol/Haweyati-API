@@ -25,5 +25,9 @@ export const VehicleTypeSchema = new Schema({
   minVolume: {
     type: Number,
     required: true
+  },
+  deliveryCharges: {
+    type: Number,
+    required: true
   }
 })
