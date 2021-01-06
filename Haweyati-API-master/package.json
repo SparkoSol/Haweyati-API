@@ -32,7 +32,7 @@
     "@nestjs/platform-socket.io": "^7.4.2",
     "@nestjs/serve-static": "^2.1.3",
     "@nestjs/websockets": "^7.4.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "blake2": "^4.0.1",
     "carbone": "^2.0.1",
     "dotenv": "^8.2.0",
