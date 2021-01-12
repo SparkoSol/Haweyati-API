@@ -37,13 +37,17 @@ export const BuildingMaterialsSchema = new Schema(
                 price: Number,
                 unit: String
               },
-              {_id: false}
+              { _id: false }
             )
           ]
         },
-        {_id: false}
+        { _id: false }
       )
     ],
+    volumetricWeight: {
+      type: Number,
+      required: true
+    },
     status: {
       type: String,
       required: false,

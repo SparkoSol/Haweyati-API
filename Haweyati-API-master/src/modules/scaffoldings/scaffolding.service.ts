@@ -2,15 +2,15 @@ import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
-import { IScaffoldingsInterface } from '../../data/interfaces/scaffoldings.interface'
-import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
+import { IScaffoldingInterface } from '../../data/interfaces/scaffolding.interface'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 
 @Injectable()
-export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
+export class ScaffoldingService extends SimpleService<IScaffoldingInterface> {
   constructor(
     @InjectModel('scaffoldings')
-    protected readonly model: Model<IScaffoldingsInterface>,
+    protected readonly model: Model<IScaffoldingInterface>,
     private readonly service: ShopRegistrationService
   ) {
     super(model)
@@ -18,7 +18,7 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
 
   async fetch(
     id?: string
-  ): Promise<IScaffoldingsInterface[] | IScaffoldingsInterface> {
+  ): Promise<IScaffoldingInterface[] | IScaffoldingInterface> {
     if (id) {
       const data = await this.model.findById(id).exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
@@ -29,7 +29,7 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
       return data
     } else {
       const all = await this.model.find().exec()
-      for (let data of all) {
+      for (const data of all) {
         for (let i = 0; i < data.suppliers.length; ++i) {
           data.suppliers[i] = (await this.service.fetch(
             data.suppliers[i].toString()
@@ -52,4 +52,23 @@ export class ScaffoldingsService extends SimpleService<IScaffoldingsInterface> {
     return result
   }
 
+  async getByCity(city: string): Promise<any> {
+    if (city) {
+      const data = await this.service.getDataFromCityName(
+        city,
+        'Scaffolding'
+      )
+      const scaffolding = await this.model.find().exec()
+      const result = new Set()
+
+      for (const item of scaffolding) {
+        for (const supplier of data) {
+          if (item.suppliers.includes(supplier)) {
+            result.add(item)
+          }
+        }
+      }
+      return Array.from(result)
+    }
+  }
 }

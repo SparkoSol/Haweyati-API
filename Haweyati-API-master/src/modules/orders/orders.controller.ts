@@ -1,11 +1,11 @@
 import {
-  Body,
-  Controller,
   Get,
+  Body,
+  Post,
   Param,
   Patch,
-  Post,
   Query,
+  Controller,
   UploadedFile,
   UseInterceptors
 } from '@nestjs/common'
@@ -86,12 +86,6 @@ export class OrdersController extends SimpleController<IOrders> {
   }
 
   //Order Progress Update
-  @Patch('add-supplier')
-  async AddSupplierToItem(@Body() data: any): Promise<any> {
-    return await this.service.AddSupplierToItem(data)
-  }
-
-  //Order Progress Update
   @Patch('add-supplier-all')
   async AddSupplierToAllItem(@Body() data: any): Promise<any> {
     return await this.service.AddSupplierToAllItem(data)
@@ -100,6 +94,11 @@ export class OrdersController extends SimpleController<IOrders> {
   @Patch('add-driver')
   async AddDriver(@Body() data: any): Promise<any> {
     return await this.service.AddDriver(data)
+  }
+
+  @Patch('process-payment')
+  async processPayment(@Body() data): Promise<IOrders>{
+    return await this.service.processPayment(data)
   }
 
   @Get('selected-supplier/:id')
@@ -112,6 +111,16 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.getAssignedOrdersBySupplierId(id)
   }
 
+  @Get('supplier-status/:id/:status')
+  async getOrdersBySupplierAndStatus(@Param('id') id: string, @Param('status') status: number): Promise<any> {
+    return await this.service.getOrdersBySupplierAndStatus(id, status)
+  }
+
+  @Get('driver-status/:id/:status')
+  async getOrdersByDriverAndStatus(@Param('id') id: string, @Param('status') status: number): Promise<any> {
+    return await this.service.getOrdersByDriverAndStatus(id, status)
+  }
+
   @Get('driver/:id')
   async getByDriverId(@Param('id') id: string): Promise<IOrders[]> {
     return await this.service.getByDriverId(id)
@@ -122,16 +131,40 @@ export class OrdersController extends SimpleController<IOrders> {
     return await this.service.filter(data)
   }
 
-  @Patch('pickup-update')
-  async pickupUpdate(@Body() data: any): Promise<any> {
-    return await this.service.pickupUpdate(data)
+  @Patch('update-order-status')
+  async updateOrderStatus(@Body() data: any): Promise<any> {
+    return await this.service.updateStatus(data._id, this.getStatusFromIndex(data.status))
   }
 
-  //-------------------- pending routes ----------------------
+  getStatusFromIndex(index: number): OrderStatus{
+    switch (index){
+      case 0:
+        return OrderStatus.Pending
+      case 1:
+        return OrderStatus.Accepted
+      case 2:
+        return OrderStatus.Preparing
+      case 3:
+        return OrderStatus.Dispatched
+      case 4:
+        return OrderStatus.Delivered
+      case 5:
+        return OrderStatus.Rejected
+      case 6:
+        return OrderStatus.Cancelled
+    }
+  }
+  
+  //-------------------- pending - accepted routes ----------------------
 
   @Get('getpending')
   async getPendingOrders(): Promise<IOrders[]> {
     return await this.service.getByStatus(OrderStatus.Pending)
+  }
+
+  @Get('getactive')
+  async getActiveOrders(): Promise<IOrders[]> {
+    return await this.service.getByStatus(OrderStatus.Accepted)
   }
 
   //-------------------- Rejected routes ----------------------
@@ -227,5 +260,16 @@ export class OrdersController extends SimpleController<IOrders> {
   @Get('driver/new/:city')
   async getDriverOrdersFromCity(@Param('city') city: string): Promise<IOrders[]>{
     return await this.service.getDriverOrdersFromCity(city);
+  }
+
+  //Estimating Distance and price for Delivery Vehicles
+  @Post('estimate-price')
+  async estimateDistanceAndPrice(@Body() data: any): Promise<any>{
+    return await this.service.estimateDistanceAndPrice(data)
+  }
+
+  @Get('driver/volumetric-weight/:city/:driver')
+  async ordersFromVolumetricWeight(@Param('city') city: string, @Param('driver') driver: string): Promise<IOrders[]>{
+    return this.service.ordersFromVolumetricWeight(city, driver)
   }
 }

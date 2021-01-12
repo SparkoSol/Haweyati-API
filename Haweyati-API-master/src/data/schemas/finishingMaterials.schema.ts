@@ -31,13 +31,9 @@ export const FinishingMaterialsSchema = new Schema(
       type: Number,
       required: false
     },
-    volume: {
+    volumetricWeight: {
       type: Number,
-      required: false
-    },
-    weight: {
-      type: Number,
-      required: false
+      required: true
     },
     options: [
       {

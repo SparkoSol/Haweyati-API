@@ -10,6 +10,7 @@ import { OrdersSchema } from '../../data/schemas/orders.schema'
 import { CustomersModule } from '../customers/customers.module'
 import { ShopRegistrationModule } from '../shop-registration/shop-registration.module'
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
+import { VehicleTypeModule } from "../vehicle-type/vehicle-type.module";
 
 @Module({
   imports: [
@@ -18,9 +19,10 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
       dest: '../uploads',
     }),
     FcmModule,
+    DriversModule,
     PersonsModule,
     CustomersModule,
-    DriversModule,
+    VehicleTypeModule,
     ShopRegistrationModule,
     AdminNotificationsModule
   ],

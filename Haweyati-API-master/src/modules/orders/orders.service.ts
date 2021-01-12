@@ -3,9 +3,14 @@ import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { FcmService } from '../fcm/fcm.service'
 import { PersonsService } from '../persons/persons.service'
+import { DriversService } from '../drivers/drivers.service'
 import { SimpleService } from '../../common/lib/simple.service'
+import { LocationUtils } from '../../common/lib/location-utils'
 import { CustomersService } from '../customers/customers.service'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { VehicleTypeService } from '../vehicle-type/vehicle-type.service'
+import { IVehicleType } from '../../data/interfaces/vehicleType.interface'
+import { IDriversInterface } from '../../data/interfaces/drivers.interface'
 import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
@@ -15,8 +20,10 @@ export class OrdersService extends SimpleService<IOrders> {
     @InjectModel('orders')
     protected readonly model: Model<IOrders>,
     protected readonly fcmService: FcmService,
+    protected readonly driverService: DriversService,
     protected readonly personsService: PersonsService,
     protected readonly customersService: CustomersService,
+    protected readonly vehicleTypeService: VehicleTypeService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
     super(model)
@@ -24,11 +31,8 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async create(document: IOrders): Promise<IOrders> {
     console.log(document)
-    const customer = await this.customersService.fetch(
-      // @ts-ignore
-      document.customer._id.toString()
-    )
-    if (customer.status != 'Blocked') {
+    // @ts-ignore
+    if (document.customer.status != 'Blocked') {
       document.orderNo =
         'HW' +
         moment().format('YY') +
@@ -55,12 +59,14 @@ export class OrdersService extends SimpleService<IOrders> {
         const notification = {
           type: 'Order',
           title: 'New Order',
-          message: 'New Order generated with Ref. # ' + document.orderNo + '.'
+          message: 'New Order with Ref. # ' + document.orderNo + '.'
         }
         await this.adminNotificationsService.create(notification)
       }
-      orderCreated.customer = customer
-      // @ts-ignore
+      orderCreated.customer = await this.customersService.fetch(
+        // @ts-ignore
+        document.customer
+      )
       return orderCreated
     } else {
       throw new HttpException(
@@ -153,18 +159,13 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async getBySupplierId(id: string): Promise<any> {
-    const result = new Set()
-    const orders = (await this.fetch()) as IOrders[]
-    for (const order of orders) {
-      for (const one of order.items) {
-        // @ts-ignore
-        if (one.supplier?._id == id && order.status == OrderStatus.Accepted) {
-          result.add(order)
-          break;
-        }
-      }
-    }
-    return Array.from(result)
+    return await this.getPerson(
+      await this.model
+        .find({ status: OrderStatus.Accepted })
+        .where('supplier._id: id')
+        .populate('customer')
+        .exec()
+    )
   }
 
   async getAssignedOrdersBySupplierId(id: string): Promise<any> {
@@ -175,11 +176,32 @@ export class OrdersService extends SimpleService<IOrders> {
         // @ts-ignore
         if (one.supplier?._id == id && order.status == OrderStatus.Preparing) {
           result.add(order)
-          break;
+          break
         }
       }
     }
     return Array.from(result)
+  }
+
+  async getOrdersBySupplierAndStatus(id: string, status: number): Promise<any> {
+    return await this.getPerson(
+      await this.model
+        .find({ status: status })
+        .where('supplier._id', id)
+        .populate('customer')
+        .exec()
+    )
+  }
+
+  async getOrdersByDriverAndStatus(id: string, status: number): Promise<any> {
+    return await this.getPerson(
+      await this.model
+        .find({ status: status })
+        .where('driver._id', id)
+        .populate('customer')
+        .sort({createdAt: -1})
+        .exec()
+    )
   }
 
   async completedSupplierId(id: string): Promise<any> {
@@ -286,11 +308,9 @@ export class OrdersService extends SimpleService<IOrders> {
       // @ts-ignore
       persons.add(order.driver.profile._id.toString())
     }
-    for (const item of order.items) {
-      if (item.supplier) {
-        // @ts-ignore
-        persons.add(item.supplier.person._id.toString())
-      }
+    if (order.supplier) {
+      // @ts-ignore
+      persons.add(order.supplier.person._id.toString())
     }
 
     const notificationStatus = this.getStatusString(status)
@@ -299,13 +319,19 @@ export class OrdersService extends SimpleService<IOrders> {
       await this.fcmService.sendSingle({
         id: id,
         title: 'Order Status Update',
-        body: status == OrderStatus.Delivered ? "Your order has been delivered! Order # " + order.orderNo : 'Your Order Status has been changed to ' + notificationStatus + 'Order # ' + order.orderNo
+        body:
+          status == OrderStatus.Delivered
+            ? 'Your order has been delivered! Order # ' + order.orderNo
+            : 'Your Order Status has been changed to ' +
+              notificationStatus +
+              ' Order # ' +
+              order.orderNo
       })
     }
     return order
   }
 
-  getStatusString(status: OrderStatus): string{
+  getStatusString(status: OrderStatus): string {
     let notificationStatus: string
     switch (status) {
       case OrderStatus.Accepted:
@@ -323,6 +349,7 @@ export class OrdersService extends SimpleService<IOrders> {
       case OrderStatus.Rejected:
         notificationStatus = 'Rejected'
     }
+    console.log(notificationStatus)
     return notificationStatus
   }
 
@@ -370,6 +397,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
     return result
   }
+
   async getByWeek(date: number): Promise<any[]> {
     const orders = await this.getByStatus(OrderStatus.Delivered)
     const result = []
@@ -382,6 +410,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
     return result
   }
+
   async getByMonth(date: number): Promise<any[]> {
     const orders = await this.getByStatus(OrderStatus.Delivered)
     const result = []
@@ -394,6 +423,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
     return result
   }
+
   async getByYear(date: number): Promise<any[]> {
     const orders = await this.getByStatus(OrderStatus.Delivered)
     const result = []
@@ -406,6 +436,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
     return result
   }
+
   async getCustom(date: string, dateTo: string): Promise<any[]> {
     const orders = await this.getByStatus(OrderStatus.Delivered)
     const result = []
@@ -531,84 +562,87 @@ export class OrdersService extends SimpleService<IOrders> {
   //   return result
   // }
 
-  async AddSupplierToItem(data: any): Promise<any> {
-    const order = await this.model.findById(data._id).exec()
-    const orderItem = order.items[data.item]
-
-    if (data.flag) {
-      if (orderItem.supplier) return 'Invalid Operation'
-      else {
-        orderItem.supplier = data.supplier
-        // @ts-ignore
-        orderItem.reason = undefined
-      }
-    } else {
-      // @ts-ignore
-      if (orderItem?.supplier?._id == data.supplier._id) {
-        orderItem.supplier = null
-        // @ts-ignore
-        orderItem.reason = {
-          supplier: data.supplier._id,
-          message: data.reason
-        }
-      } else return 'Invalid Operation'
-    }
-
-    /// Change order status;
-    if (this.shouldActivateOrder(order)) {
-      order.status = OrderStatus.Accepted
-    } else {
-      order.status = OrderStatus.Pending
-    }
-
-    return order.save()
-  }
-
   async AddSupplierToAllItem(data: any): Promise<any> {
-    const order = await this.model.findById(data._id).exec()
-
-    for (const orderItem of order.items){
-      if (data.flag) {
-        // @ts-ignore
-        if (orderItem.supplier && orderItem?.supplier?._id != data.supplier._id) return 'Invalid Operation'
-        else {
-          orderItem.supplier = data.supplier
-          orderItem.reason = undefined
-        }
-      }
-      else {
-        // @ts-ignore
-        if (orderItem?.supplier?._id == data.supplier._id) {
-          orderItem.supplier = null
-          // @ts-ignore
-          orderItem.reason = {
-            supplier: data.supplier._id,
-            message: data.reason
-          }
-        } else return 'Invalid Operation'
-      }
-    }
-    /// Change order status;
-    if (this.shouldActivateOrder(order)) {
+    const order = await this.model.findById(data._id).populate('customer').exec()
+    if (data.flag) {
+      //move these two statement below on your own risk
+      order.supplier = data.supplier
       order.status = OrderStatus.Accepted
+      if (order.service != 'Construction Dumpster'){
+        // @ts-ignore
+        const distance = await LocationUtils.getDistance(order.dropoff.dropoffLocation.latitude, order.dropoff.dropoffLocation.longitude, order.supplier.location.latitude, order.supplier.location.longitude)
+        let volumetricWeight = 0
+        for (const item of order.items){
+          // @ts-ignore
+          volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
+        }
+        const vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight) as IVehicleType
+        order.deliveryFee = vehicle[0].deliveryCharges * distance
+        order.volumetricWeight = volumetricWeight
+      }
     } else {
+      if (order.service != 'Construction Dumpster' && order.service != 'Delivery Vehicle'){
+        order.paymentType = null
+        order.deliveryFee = null
+      }
+      order.supplier = undefined
       order.status = OrderStatus.Pending
+      order.supplierCancellationReason = {
+        supplier: data.supplier._id,
+        message: data.reason
+      }
     }
-
-    return order.save()
+    return await order.save()
   }
 
   async AddDriver(data: any): Promise<any> {
     if (data.flag) {
-      if (!(await this.model.findById(data._id).exec()).driver) {
-        const order = await this.model
-          .findOneAndUpdate(
-            { _id: data._id },
-            { driver: data.driver, status: OrderStatus.Preparing }
+      const order = await this.model
+        .findById(data._id)
+        .populate('customer')
+        .exec()
+      if (!order.driver) {
+        if (
+          order.service == 'Scaffolding' ||
+          order.service == 'Building Material'
+        ) {
+          const distance = await LocationUtils.getDistance(
+            // @ts-ignore
+            order.customer.location.latitude,
+            // @ts-ignore
+            order.customer.location.longitude,
+            // @ts-ignore
+            order.supplier.location.latitude,
+            // @ts-ignore
+            order.supplier.location.longitude
           )
-          .exec()
-        // @ts-ignore
-        this.fcmService.sendSingle({id: data.driver.profile._id, title: 'You have been assigned an order!', body: 'Order # '+ order.orderNo})
+          order.driver = data.driver
+          order.deliveryFee =
+            distance * data.driver.vehicle.type.deliveryCharges
+          order.total += order.deliveryFee
+          order.status = OrderStatus.Preparing
+          await order.save()
+
+          // @ts-ignore
+          await this.fcmService.sendSingle({
+            // @ts-ignore
+            id: order.customer.profile._id,
+            title:
+              'You order #' + order.orderNo + 'is awaiting payment selection!',
+            body: 'Please select payment method for order page to proceed.'
+          })
+        } else {
+          order.driver = data.driver
+          order.status = OrderStatus.Preparing
+          await order.save()
+
+          // @ts-ignore
+          await this.fcmService.sendSingle({
+            id: data.driver.profile._id,
+            title: 'You have been assigned an order!',
+            body: 'Order # ' + order.orderNo
+          })
+        }
         // this.fcmService.sendSingle({id: order.customer.profile._id, title: "Your order status has been changed to "+ this.getStatusString(OrderStatus.Preparing), body: 'Order # '+ order.orderNo})
       } else {
         throw new HttpException(
@@ -626,21 +660,28 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
-  shouldActivateOrder(order: IOrders): boolean {
-    if (order.items.length > 1) {
-      for (const item of order.items) {
-        if (!item.supplier) return false
-      }
-      return true
-    }
-
-    return !!order.items[0].supplier
+  async processPayment(data: any): Promise<IOrders> {
+    const order = await this.model
+      .findByIdAndUpdate(data._id, {
+        paymentType: data.paymentType,
+        paymentIntentId: data.paymentIntentId
+      })
+      .exec()
+    // @ts-ignore
+    await this.fcmService.sendSingle({
+      // @ts-ignore
+      id: order.supplier.person._id,
+      title:
+        'Order #' + order.orderNo + ' payment is confirmed!',
+      body: 'Please proceed with the order.'
+    })
+    return order
   }
 
   async filter(data: any): Promise<IOrders[]> {
     const result = new Set<any>()
     const orders = await this.model
-      .find({ city: data.city, status: OrderStatus.Pending })
+      .find({ city: data.city, status: OrderStatus.Pending, service: {$ne: 'Delivery Vehicle'} })
       .populate('customer')
       .sort({ createdAt: -1 })
       .exec()
@@ -657,26 +698,51 @@ export class OrdersService extends SimpleService<IOrders> {
     return Array.from(result)
   }
 
-  async pickupUpdate(data: any): Promise<any> {
-    let order = (await this.model.findById(data._id).exec()) as IOrders
-    for (const item of order.items) {
-      // @ts-ignore
-      if (item.supplier._id == data.supplierId) {
-        item.dispatched = true
-      }
-    }
-
-    order = await order.save()
-    for (const item of order.items) {
-      if (item.dispatched != true) return order
-    }
-    return await this.updateStatus(order._id, OrderStatus.Dispatched)
+  async getDriverOrdersFromCity(city: string): Promise<IOrders[]> {
+    return await this.getPerson(
+      await this.model
+        .find({ city, service: 'Delivery Vehicle' })
+        .populate('customer')
+        .sort({ createdAt: -1 })
+        .exec()
+    )
   }
 
-  async getDriverOrdersFromCity(city: string): Promise<IOrders[]>{
-    return await this.model
-      .find({ city, service: 'Delivery Vehicle' })
-      .sort({ createdAt: -1 })
-      .exec()
+  async estimateDistanceAndPrice(data: any): Promise<any> {
+    const distance = +(await LocationUtils.getDistance(
+      data.pickUpLat,
+      data.pickUpLng,
+      data.dropOffLat,
+      data.dropOffLng
+    ))
+    return {
+      distance,
+      price:
+        distance *
+        +((await this.vehicleTypeService.fetch(data.vehicle)) as IVehicleType)
+          ?.deliveryCharges
+    }
+  }
+
+  async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrders[]>{
+    const driver  = await this.driverService.fetch(driverId) as IDriversInterface
+    const orders = (await this.model.find(
+      {
+        // @ts-ignore
+        volumetricWeight: {$lte: driver.vehicle.type.volumetricWeight},
+        paymentType: {$ne: null},
+        driver: {$eq: null},
+        city,
+        service: {$ne: 'Delivery Vehicle'}
+      }).populate('customer').exec()) as IOrders[]
+    // @ts-ignore
+    const dvOrders = await this.model.find({service: 'Delivery Vehicle', status: OrderStatus.Pending}).populate('customer').exec() as IOrders[]
+    for (const singleOrder of dvOrders){
+      // @ts-ignore
+      if (singleOrder.items[0].item.product._id == driver.vehicle.type._id){
+        orders.push(singleOrder)
+      }
+    }
+    return await this.getPerson(orders)
   }
 }

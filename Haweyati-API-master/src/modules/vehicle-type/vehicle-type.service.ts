@@ -10,8 +10,7 @@ export class VehicleTypeService extends SimpleService<IVehicleType>{
     super(model);
   }
 
-  create(document: IVehicleType): Promise<IVehicleType> {
-    console.log(document)
-    return super.create(document)
+  async findClosestVehicle(volumetricVolume: number): Promise<any>{
+    return await this.model.find({volumetricWeight : {$gt: volumetricVolume}}).sort({volumetricWeight: -1}).limit(1).exec()
   }
 }

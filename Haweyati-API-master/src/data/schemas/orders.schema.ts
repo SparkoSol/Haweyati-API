@@ -27,14 +27,20 @@ export const OrdersSchema = new Schema(
         {
           item: Object,
           subtotal: Number,
-          supplier: Object,
-          reason: Object,
           dispatched: Boolean
         },
         { _id: false }
       )
     ],
+    supplier: {
+      type: Object,
+      required: false
+    },
     driver: {
+      type: Object,
+      required: false
+    },
+    supplierCancellationReason: {
       type: Object,
       required: false
     },
@@ -76,7 +82,10 @@ export const OrdersSchema = new Schema(
     },
     deliveryFee: {
       type: Number
-    }
+    },
+    volumetricWeight: {
+      type: Number
+    },
   },
   { timestamps: true }
 )

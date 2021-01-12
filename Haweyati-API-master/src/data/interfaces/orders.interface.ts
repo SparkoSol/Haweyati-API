@@ -27,11 +27,11 @@ export interface IOrders extends Document {
     {
       item: Object
       subtotal: string
-      supplier: string
-      reason: string
       dispatched: boolean
     }
   ]
+  supplierCancellationReason: Object
+  supplier: Object
   driver: Object
   customer: ICustomerInterface | string
   status: OrderStatus
@@ -41,5 +41,6 @@ export interface IOrders extends Document {
   orderNo: string
   city: string
   deliveryFee: number
+  volumetricWeight: number
   reason: string
 }

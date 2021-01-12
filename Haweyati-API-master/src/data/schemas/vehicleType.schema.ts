@@ -10,19 +10,7 @@ export const VehicleTypeSchema = new Schema({
     type: ImagesSchema,
     required: false
   },
-  maxWeight: {
-    type: Number,
-    required: true
-  },
-  maxVolume: {
-    type: Number,
-    required: true
-  },
-  minWeight: {
-    type: Number,
-    required: true
-  },
-  minVolume: {
+  volumetricWeight: {
     type: Number,
     required: true
   },
