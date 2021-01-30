@@ -6,4 +6,7 @@ export interface IVehicleType extends Document{
   image: IImage,
   volumetricWeight: number
   deliveryCharges: number
+  cbmLength: number
+  cbmWidth: number
+  cbmHeight: number
 }

@@ -48,6 +48,18 @@ export const ScaffoldingSchema = new Schema(
       type: Number,
       required: true
     },
+    cbmLength: {
+      type: Number,
+      required: true
+    },
+    cbmWidth: {
+      type: Number,
+      required: true
+    },
+    cbmHeight: {
+      type: Number,
+      required: true
+    },
   },
   { timestamps: true }
 )

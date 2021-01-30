@@ -42,5 +42,6 @@ export interface IOrders extends Document {
   city: string
   deliveryFee: number
   volumetricWeight: number
+  cbm: number
   reason: string
 }

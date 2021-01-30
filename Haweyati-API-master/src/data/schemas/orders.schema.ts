@@ -86,6 +86,9 @@ export const OrdersSchema = new Schema(
     volumetricWeight: {
       type: Number
     },
+    cbm: {
+      type: Number,
+    }
   },
   { timestamps: true }
 )

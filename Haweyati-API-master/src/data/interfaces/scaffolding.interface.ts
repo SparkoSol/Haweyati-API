@@ -24,4 +24,7 @@ export interface IScaffoldingInterface extends Document {
     }
   ],
   volumetricWeight: number
+  cbmLength: number
+  cbmWidth: number
+  cbmHeight: number
 }

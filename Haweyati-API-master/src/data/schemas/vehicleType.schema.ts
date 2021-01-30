@@ -10,6 +10,18 @@ export const VehicleTypeSchema = new Schema({
     type: ImagesSchema,
     required: false
   },
+  cbmLength: {
+    type: Number,
+    required: true
+  },
+  cbmWidth: {
+    type: Number,
+    required: true
+  },
+  cbmHeight: {
+    type: Number,
+    required: true
+  },
   volumetricWeight: {
     type: Number,
     required: true

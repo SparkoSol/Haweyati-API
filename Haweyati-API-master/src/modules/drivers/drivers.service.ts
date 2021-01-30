@@ -258,6 +258,10 @@ export class DriversService extends SimpleService<IDriversInterface> {
     }
   }
 
+  async getDataFromCityName(city: string): Promise<IDriversInterface[]>{
+    return await this.model.find({city}).populate('profile').exec()
+  }
+
   async getCompanyDrivers(id: string): Promise<IDriversInterface[]> {
     const all =  await this.model
       .find()

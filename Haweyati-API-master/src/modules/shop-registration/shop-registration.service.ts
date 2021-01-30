@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
+import { IDumpster } from "../../data/interfaces/dumpster.interface"
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { IBuildingMaterials } from "../../data/interfaces/buildingMaterials.interface"
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
-import { IBuildingMaterials } from "../../data/interfaces/buildingMaterials.interface";
-import { IDumpster } from "../../data/interfaces/dumpster.interface";
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<IShopRegistration> {
@@ -146,6 +146,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         city: city,
         status: 'Active'
       })
+      .populate('person')
       .exec()
     const newSet = new Set()
     data.forEach(value => {
@@ -154,6 +155,23 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       }
     })
     return Array.from(newSet)
+  }
+
+  async getSupplierFromCityName(city: string, service: string): Promise<IShopRegistration[]> {
+    const data = await this.model
+      .find({
+        city: city,
+        status: 'Active'
+      })
+      .populate('person')
+      .exec()
+    const newSet = new Set()
+    data.forEach(value => {
+      if (value.services.includes(service)) {
+        newSet.add(value)
+      }
+    })
+    return Array.from(newSet) as IShopRegistration[]
   }
 
   async getByService(name: string): Promise<any> {
@@ -271,7 +289,6 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     }
     return cities
   }
-
 
   //used in BuildingMaterial and Dumpster, creating here for code re-usability
   async checkPricingAccordingToSuppliers(document: IBuildingMaterials | IDumpster): Promise<IDumpster | IBuildingMaterials>{

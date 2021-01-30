@@ -21,5 +21,8 @@ export interface IBuildingMaterials extends Document {
     }
   ],
   volumetricWeight: number
+  cbmLength: number
+  cbmWidth: number
+  cbmHeight: number
   status: string
 }

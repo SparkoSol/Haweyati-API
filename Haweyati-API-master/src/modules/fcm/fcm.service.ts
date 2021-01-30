@@ -105,6 +105,34 @@ export class FcmService extends SimpleService<IFcmHistory>{
     }
   }
 
+  async sendMultiple(tokens: string[], title: string, body: string){
+    for (const token of tokens){
+      let flag = false;
+
+      flag = true
+      await this.http.post(
+        "https://fcm.googleapis.com/fcm/send",
+        {
+          notification: {
+            title,
+            body,
+          },
+          data: {
+            type: "order",
+            createdAt: Date()
+          },
+          to: token
+        },
+        {
+          headers: {
+            "ContentType": "application/json",
+            "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+          }
+        }
+      ).subscribe(asd => console.log(asd));
+    }
+  }
+
   async sendPending(id: string){
     const pending = await this.fcmHistoryModel.find({person: id, status: FcmStatus.pending}).exec()
     if (pending.length > 0){
