@@ -19,6 +19,11 @@ export class DriversController extends ImageController<IDriversInterface> {
     return await this.service.getByStatus('Active')
   }
 
+  @Get('getverified/stand-alone')
+  async getVerifiedStandAloneDrivers(): Promise<IDriversInterface[]> {
+    return await this.service.getVerifiedStandAloneDrivers()
+  }
+
   @Get('getrejected')
   async getRejectedDrivers(): Promise<IDriversInterface[]> {
     return await this.service.getByStatus('Rejected')

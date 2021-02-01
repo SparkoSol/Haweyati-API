@@ -51,7 +51,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
         for (let i = 0; i< buildingMaterial.price.length; ++i){
           priceList.push({
             price: buildingMaterial.price[i],
-            unit: buildingMaterial.price[i]
+            unit: buildingMaterial.unit[i]
           })
         }
         buildingMaterial.pricing = [
@@ -86,7 +86,6 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
         'Image is Required!',
         HttpStatus.NOT_ACCEPTABLE
       );
-    console.log(buildingMaterial)
     return super.post(file, this.parseData(buildingMaterial))
   }
 

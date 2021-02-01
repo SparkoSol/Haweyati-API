@@ -16,7 +16,7 @@ export class VehicleTypeService extends SimpleService<IVehicleType>{
       .sort({volumetricWeight: -1})
       .exec();
     for (const vehicle of vehicles) {
-      if ((vehicle.cbmHeight * vehicle.cbmLength * vehicle.cbmWidth) > cbm) {
+      if ((vehicle.cbmHeight * vehicle.cbmLength * vehicle.cbmWidth) >= cbm) {
         return vehicle;
       }
     }

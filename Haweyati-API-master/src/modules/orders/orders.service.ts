@@ -601,7 +601,7 @@ export class OrdersService extends SimpleService<IOrders> {
       //move these two statement below on your own risk
       order.supplier = data.supplier
       order.status = OrderStatus.Accepted
-      if (order.service != 'Construction Dumpster'){
+      if (order.service != 'Construction Dumpster' && order.service != 'Building Material'){
         const distance = await LocationUtils.getDistance(
           order.dropoff.dropoffLocation.latitude,
           order.dropoff.dropoffLocation.longitude,
@@ -619,10 +619,19 @@ export class OrdersService extends SimpleService<IOrders> {
           cbm += ((item.item.product.cbmLength * item.item.product.cbmWidth * item.item.product.cbmHeight) * item.item.qty)
         }
         const vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
+        console.log(volumetricWeight)
+        console.log(cbm)
+        console.log(vehicle)
+        if (!vehicle){
+          console.log('here')
+          throw new HttpException(
+            'No Vehicle present to carry this order.',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+        }
         order.deliveryFee = vehicle.deliveryCharges * distance
         order.volumetricWeight = volumetricWeight
         order.cbm = cbm
-        console.log(cbm)
 
         // //sending notification to all drivers
         // const ids = new Set<string>()
@@ -636,13 +645,23 @@ export class OrdersService extends SimpleService<IOrders> {
         // this.fcmService.sendMultiple(Array.from(ids), 'New ' + order.service + ' order.', 'City: ' + order.city)
       }
 
+      if (order.service == 'Building Material'){
+        //sending notification to customer
+        const drivers = await this.driverService.getDataFromCityName(order.city)
+        const tokenSet = new Set<string>()
+        for (const driver of drivers)
+          { // @ts-ignore
+            tokenSet.add(driver.profile.token.toString())
+          }
+        this.fcmService.sendMultiple(Array.from(tokenSet), 'New Building Material Order.', 'Order #' + order.orderNo)
+      }
       //sending notification to customer
       this.fcmService.sendSingle({
         // @ts-ignore
         id: order.customer.profile._id,
         // @ts-ignore
         title: 'Your order has been accepted by ' + order.supplier.person.name,
-        body: order.service == 'Construction Dumpster' ? 'Order #' + order.orderNo : 'Please proceed with payment for Order #' + order.orderNo
+        body: order.service == 'Construction Dumpster' || order.service == 'Building Material' ? 'Order #' + order.orderNo :  'Please proceed with payment for Order #' + order.orderNo
       })
     }
     else {
@@ -667,6 +686,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
 
     //dont move
+    console.log(order)
     return await order.save()
   }
 
@@ -678,10 +698,7 @@ export class OrdersService extends SimpleService<IOrders> {
         .populate('customer')
         .exec())
       if (!order.driver) {
-        if (
-          order.service == 'Scaffolding' ||
-          order.service == 'Building Material'
-        ) {
+        if (order.service == 'Scaffolding' || order.service == 'Building Material') {
           const distance = await LocationUtils.getDistance(
             // @ts-ignore
             order.customer.location.latitude,
@@ -705,7 +722,7 @@ export class OrdersService extends SimpleService<IOrders> {
             id: order.customer.profile._id,
             title:
               'You order has been accepted by driver!',
-            body: 'Order #' + order.orderNo
+            body: order.service == 'Scaffolding' ? 'Order #' + order.orderNo : 'Your order is awaiting payment response. Order #' + order.orderNo
           })
           // @ts-ignore
           await this.fcmService.sendSingle({
@@ -715,7 +732,9 @@ export class OrdersService extends SimpleService<IOrders> {
               'You order has been accepted by driver!',
             body: 'Order #' + order.orderNo
           })
-        } else {
+        }
+
+        else {
           order.driver = data.driver
           order.status = OrderStatus.Preparing
           await order.save()
@@ -766,6 +785,17 @@ export class OrdersService extends SimpleService<IOrders> {
         'Order #' + order.orderNo + ' payment is confirmed!',
       body: 'Please proceed with the order.'
     })
+
+    if (order.driver){
+      // @ts-ignore
+      await this.fcmService.sendSingle({
+        // @ts-ignore
+        id: order.driver.profile._id,
+        title:
+          'Order #' + order.orderNo + ' payment is confirmed!',
+        body: 'Please proceed with the order.'
+      })
+    }
 
     const ids = new Set<string>()
 
@@ -827,6 +857,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
   async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrders[]>{
     const driver  = await this.driverService.fetch(driverId) as IDriversInterface
+
     const orders = (await this.model.find(
       {
         // @ts-ignore
@@ -836,22 +867,33 @@ export class OrdersService extends SimpleService<IOrders> {
         driver: {$eq: null},
         paymentType: {$ne: null},
         city,
-        service: {$ne: 'Delivery Vehicle'}
+        service: {$nin: ['Delivery Vehicle', 'Building Material']}
       })
       .populate('customer')
       .sort({createdAt: -1})
       .exec()) as IOrders[]
+
     // @ts-ignore
     const dvOrders = await this.model
-      .find({service: 'Delivery Vehicle', status: OrderStatus.Pending})
+      .find({service: 'Delivery Vehicle', status: OrderStatus.Pending, city})
       .populate('customer')
       .sort({createdAt: -1})
       .exec() as IOrders[]
+
+    const bmOrders = await this.model
+      .find({service: 'Building Material', status: OrderStatus.Accepted, city})
+      .populate('customer')
+      .sort({createdAt: -1})
+      .exec() as IOrders[]
+
     for (const singleOrder of dvOrders){
       // @ts-ignore
       if (singleOrder.items[0].item.product._id == driver.vehicle.type._id){
         orders.push(singleOrder)
       }
+    }
+    for (const singleOrder of bmOrders){
+      orders.push(singleOrder)
     }
     return await this.getPerson(orders)
   }

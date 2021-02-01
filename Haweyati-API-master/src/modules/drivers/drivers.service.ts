@@ -133,6 +133,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async change(document: any): Promise<IDriversInterface> {
+    console.log(document)
     const allDrivers = await this.model
       .find({ status: { $nin: ['Rejected'] } })
       .exec()
@@ -170,6 +171,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
         email: document.email
       }
     }
+
     document.profile = await this.personsService.change(personObject)
     const person = document.profile
     if (person) {
@@ -242,6 +244,13 @@ export class DriversService extends SimpleService<IDriversInterface> {
       await this.model.findByIdAndUpdate(id, { status }).exec()
       return { message: 'Status Changed Successfully!' }
     }
+  }
+
+  async getVerifiedStandAloneDrivers(): Promise<IDriversInterface[]>{
+    return await this.model
+      .find({status: 'Active', supplier: undefined})
+      .populate('profile')
+      .exec()
   }
 
   async getRejected(id: string, data?: any): Promise<any> {
