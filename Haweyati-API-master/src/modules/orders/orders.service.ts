@@ -817,6 +817,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async filter(data: any): Promise<IOrders[]> {
+    console.log(data)
     const result = new Set<any>()
     const orders = await this.getPerson(
       await this.model
@@ -825,11 +826,14 @@ export class OrdersService extends SimpleService<IOrders> {
       .sort({ createdAt: -1 })
       .exec()
     )
+    console.log(orders)
     for (const order of orders) {
       if (data.services.includes(order.service)) {
         result.add(order)
       }
     }
+    console.log('-----------------------------------')
+    console.log(result)
     return Array.from(result)
   }
 
