@@ -40,7 +40,8 @@ export class PersonsService extends SimpleService<IPerson> {
         HttpStatus.NOT_ACCEPTABLE
       )
 
-    const person = await super.create(data)
+    let person = await super.create(data)
+    person = await this.fetchByUsername(person.contact)
     if (!person.scope.includes('guest'))
       await this.invitationService.create(person)
     return person

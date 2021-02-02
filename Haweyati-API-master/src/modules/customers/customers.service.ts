@@ -148,7 +148,6 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async new(document: any): Promise<any> {
-    console.log(document)
     document.profile.scope = 'customer'
 
     document.profile.username = document.profile.contact
@@ -182,7 +181,6 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   private async createCustomer(document: any): Promise<any>{
-    console.log(document)
     let customer: any
     const person = await this.personService.create(document.profile)
 
