@@ -73,13 +73,15 @@ export class OrdersService extends SimpleService<IOrders> {
         if (orderCreated.service != 'Delivery Vehicle'){
           data = await this.supplierService.getSupplierFromCityName(orderCreated.city, orderCreated.service) as IShopRegistration[]
           for (const item of data){
-            ids.add(item.person.token?.toString())
+            if (item.person.token)
+              ids.add(item.person.token.toString())
           }
         }
         else{
           data = await this.driverService.getDataFromCityName(orderCreated.city) as IDriversInterface[]
           for (const item of data){
-            ids.add(item.profile.token?.toString())
+            if (item.profile.token)
+              ids.add(item.profile.token?.toString())
           }
         }
 
