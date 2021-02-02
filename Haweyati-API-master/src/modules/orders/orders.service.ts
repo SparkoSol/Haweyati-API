@@ -33,67 +33,72 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async create(document: IOrders): Promise<IOrders> {
-    // @ts-ignore
-    if (document.customer.status != 'Blocked') {
-      document.orderNo =
-        'HW' +
-        moment().format('YY') +
-        moment().format('MM') +
-        (
-          '0000' +
-          ((await this.model
-            .find({
-              createdAt: {
-                $lt: moment().endOf('month'),
-                $gte: moment().startOf('month')
-              }
-            })
-            .countDocuments()
-            .exec()) +
-            1)
-        ).slice(-4)
+    try {
+      // @ts-ignore
+      if (document.customer.status != 'Blocked') {
+        document.orderNo =
+          'HW' +
+          moment().format('YY') +
+          moment().format('MM') +
+          (
+            '0000' +
+            ((await this.model
+                .find({
+                  createdAt: {
+                    $lt: moment().endOf('month'),
+                    $gte: moment().startOf('month')
+                  }
+                })
+                .countDocuments()
+                .exec()) +
+              1)
+          ).slice(-4)
 
-      //order generation
-      const orderCreated = await super.create(document)
+        //order generation
+        const orderCreated = await super.create(document)
 
-      //notification for admin
-      if (orderCreated) {
-        const notification = {
-          type: 'Order',
-          title: 'New Order',
-          message: 'New Order with Ref. # ' + document.orderNo + '.'
+        //notification for admin
+        if (orderCreated) {
+          const notification = {
+            type: 'Order',
+            title: 'New Order',
+            message: 'New Order with Ref. # ' + document.orderNo + '.'
+          }
+          await this.adminNotificationsService.create(notification)
         }
-        await this.adminNotificationsService.create(notification)
-      }
 
-      let data
-      const ids = new Set<string>()
+        let data
+        const ids = new Set<string>()
 
-      if (orderCreated.service != 'Delivery Vehicle'){
-        data = await this.supplierService.getSupplierFromCityName(orderCreated.city, orderCreated.service) as IShopRegistration[]
-        for (const item of data){
-          ids.add(item.person.token?.toString())
+        if (orderCreated.service != 'Delivery Vehicle'){
+          data = await this.supplierService.getSupplierFromCityName(orderCreated.city, orderCreated.service) as IShopRegistration[]
+          for (const item of data){
+            ids.add(item.person.token?.toString())
+          }
         }
-      }
-      else{
-        data = await this.driverService.getDataFromCityName(orderCreated.city) as IDriversInterface[]
-        for (const item of data){
-          ids.add(item.profile.token?.toString())
+        else{
+          data = await this.driverService.getDataFromCityName(orderCreated.city) as IDriversInterface[]
+          for (const item of data){
+            ids.add(item.profile.token?.toString())
+          }
         }
+
+        this.fcmService.sendMultiple(Array.from(ids), 'New ' + orderCreated.service + ' order.', 'City: ' + orderCreated.city)
+
+        orderCreated.customer = await this.customersService.fetch(
+          // @ts-ignore
+          document.customer
+        )
+        return orderCreated
+      } else {
+        throw new HttpException(
+          "You are blocked by Admin! You can't place order, contact Haweyati Support for help.",
+          HttpStatus.NOT_ACCEPTABLE
+        )
       }
-
-      this.fcmService.sendMultiple(Array.from(ids), 'New ' + orderCreated.service + ' order.', 'City: ' + orderCreated.city)
-
-      orderCreated.customer = await this.customersService.fetch(
-        // @ts-ignore
-        document.customer
-      )
-      return orderCreated
-    } else {
-      throw new HttpException(
-        "You are blocked by Admin! You can't place order, contact Haweyati Support for help.",
-        HttpStatus.NOT_ACCEPTABLE
-      )
+    } catch (e) {
+      console.log(e)
+      console.log(e.message)
     }
   }
 
