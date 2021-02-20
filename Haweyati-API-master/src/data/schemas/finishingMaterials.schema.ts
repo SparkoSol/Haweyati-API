@@ -33,7 +33,15 @@ export const FinishingMaterialsSchema = new Schema(
     },
     volumetricWeight: {
       type: Number,
-      required: true
+    },
+    cbmLength: {
+      type: Number,
+    },
+    cbmWidth: {
+      type: Number,
+    },
+    cbmHeight: {
+      type: Number,
     },
     options: [
       {

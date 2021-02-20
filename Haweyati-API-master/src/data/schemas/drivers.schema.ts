@@ -29,6 +29,9 @@ export const DriversSchema = new Schema(
       type: Number,
       required: false
     },
+    deviceId: {
+      type: String
+    },
     status: {
       type: String,
       required: false,

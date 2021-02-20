@@ -88,6 +88,15 @@ export const OrdersSchema = new Schema(
     },
     cbm: {
       type: Number,
+    },
+    vehicleRounds: {
+      type: Number
+    },
+    tripId: {
+      type: String,
+    },
+    shareUrl: {
+      type: String,
     }
   },
   { timestamps: true }

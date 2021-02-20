@@ -70,7 +70,22 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       person = await this.personService.create(personObject)
       if (person) {
         document.person = person
-        supplier = await this.model.create(document)
+        const cities = []
+        if (document.cities && Array.isArray(document.cities))
+          for (const city of document.cities)
+            cities.push({'name': city})
+        else if (document.cities)
+          cities.push({'name': document.cities})
+        document.cities = cities
+        try {
+          supplier = await this.model.create(document)
+        } catch (e){
+          await this.personService.delete(person)
+          throw new HttpException(
+            'Unable to sign up, Please contact admin support!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+        }
       }
     }
 
@@ -122,6 +137,14 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       document.latitude,
       document.longitude
     )
+
+    const cities = []
+    if (document.cities && Array.isArray(document.cities))
+      for (const city of document.cities)
+        cities.push({'name': city})
+    else if (document.cities)
+      cities.push({'name': document.cities})
+    document.cities = cities
     return await super.change(document)
   }
 
@@ -330,5 +353,54 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       )
     else
       return document
+  }
+
+  //-------------------------------------------------------------------------------------------//
+  async finishingMaterialSuppliers(city: string, lat: string, lng: string): Promise<IShopRegistration[]>{
+    const fmSupplier = await this.model
+      .find({services: 'Finishing Material', parent: null})
+      .populate('person')
+      .exec()
+    const result: IShopRegistration[] = []
+
+    for (const supplier of fmSupplier){
+      const sameCity: IShopRegistration[] = []
+
+      const subSuppliers = await this.model
+        .find({services: 'Finishing Material', parent: supplier._id})
+        .populate('person')
+        .exec() as IShopRegistration[]
+
+      if (subSuppliers.length != 0){
+        for (const oneSubSupplier of subSuppliers){
+          if (oneSubSupplier.city == city || oneSubSupplier.cities.includes(city)){
+            sameCity.push(oneSubSupplier)
+          }
+        }
+      }
+
+      if (supplier.city == city || supplier.cities.includes(city)){
+        sameCity.push(supplier)
+      }
+
+      if (sameCity.length != 0){
+        if (sameCity.length == 1)
+          result.push(sameCity[0])
+        else{
+          const coordinates = []
+          for (const single of sameCity){
+            coordinates.push({
+              'lat': single.location.longitude,
+              'lng': single.location.longitude,
+            })
+          }
+
+          const index = await LocationUtils.findNearestIndexOfCoordinateFromGivenLocation(coordinates, lat, lng)
+          result.push(coordinates[index])
+        }
+      }
+    }
+
+    return result
   }
 }

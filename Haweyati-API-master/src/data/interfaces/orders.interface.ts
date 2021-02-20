@@ -43,5 +43,8 @@ export interface IOrders extends Document {
   deliveryFee: number
   volumetricWeight: number
   cbm: number
+  vehicleRounds: number
+  tripId: string
+  shareUrl: string
   reason: string
 }

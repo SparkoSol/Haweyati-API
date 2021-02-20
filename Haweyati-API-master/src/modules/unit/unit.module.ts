@@ -7,6 +7,7 @@ import { UnitSchema } from '../../data/schemas/unit.schema'
 @Module({
   imports: [MongooseModule.forFeature([{name: 'unit', schema: UnitSchema}])],
   providers: [UnitService],
-  controllers: [UnitController]
+  controllers: [UnitController],
+  exports: [UnitService]
 })
 export class UnitModule {}

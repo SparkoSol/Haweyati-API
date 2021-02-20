@@ -11,4 +11,5 @@ export interface IDriversInterface extends Document {
   vehicle: IVehicles
   status: string
   rating: number
+  deviceId: string
 }

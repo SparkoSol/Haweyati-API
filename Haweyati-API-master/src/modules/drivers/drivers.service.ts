@@ -133,7 +133,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   async change(document: any): Promise<IDriversInterface> {
-    console.log(document)
     const allDrivers = await this.model
       .find({ status: { $nin: ['Rejected'] } })
       .exec()
@@ -227,6 +226,10 @@ export class DriversService extends SimpleService<IDriversInterface> {
     return await this.populateVehicleType(driver) as IDriversInterface
   }
 
+  async updateLocation(document: any): Promise<IDriversInterface>{
+    return await this.model.findByIdAndUpdate(document._id, {liveLocation: document.liveLocation, lastUpdatedLocation: document.lastUpdatedLocation}).exec()
+  }
+
   async getByStatus(status: string): Promise<IDriversInterface[]> {
     return await this.model
       .find({ status })
@@ -303,5 +306,10 @@ export class DriversService extends SimpleService<IDriversInterface> {
       all.vehicle.type = (await this.vehicleTypeService.fetch(all.vehicle.type.toString())) as IVehicleType
       return all as IDriversInterface
     }
+  }
+
+  //used while logging out in auth.service
+  async removeDeviceId(id: string) {
+    return await this.model.findByIdAndUpdate(id, {deviceId: undefined}).exec()
   }
 }

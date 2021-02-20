@@ -11,6 +11,9 @@ export interface IFinishingMaterials extends Document {
   image: IImage
   price: number
   volumetricWeight: number
+  cbmLength: number
+  cbmWidth: number
+  cbmHeight: number
   options: [
     {
       optionName: string

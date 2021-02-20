@@ -2,6 +2,7 @@ import * as moment from "moment";
 import { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
 import { FcmService } from "../fcm/fcm.service";
+import { UnitService } from "../unit/unit.service";
 import { PersonsService } from "../persons/persons.service";
 import { DriversService } from "../drivers/drivers.service";
 import { SimpleService } from "../../common/lib/simple.service";
@@ -22,6 +23,7 @@ export class OrdersService extends SimpleService<IOrders> {
     @InjectModel('orders')
     protected readonly model: Model<IOrders>,
     protected readonly fcmService: FcmService,
+    protected readonly unitService: UnitService,
     protected readonly driverService: DriversService,
     protected readonly personsService: PersonsService,
     protected readonly customersService: CustomersService,
@@ -32,40 +34,108 @@ export class OrdersService extends SimpleService<IOrders> {
     super(model)
   }
 
-  async create(document: IOrders): Promise<IOrders> {
-    try {
-      // @ts-ignore
-      if (document.customer.status != 'Blocked') {
-        document.orderNo =
-          'HW' +
-          moment().format('YY') +
-          moment().format('MM') +
-          (
-            '0000' +
-            ((await this.model
-                .find({
-                  createdAt: {
-                    $lt: moment().endOf('month'),
-                    $gte: moment().startOf('month')
-                  }
-                })
-                .countDocuments()
-                .exec()) +
-              1)
-          ).slice(-4)
+  async create(document: IOrders): Promise<any> {
+    // @ts-ignore
+    if (document.customer.status != 'Blocked') {
+      document.orderNo =
+        'HW' +
+        moment().format('YY') +
+        moment().format('MM') +
+        (
+          '0000' +
+          ((await this.model
+              .find({
+                createdAt: {
+                  $lt: moment().endOf('month'),
+                  $gte: moment().startOf('month')
+                }
+              })
+              .countDocuments()
+              .exec()) +
+            1)
+        ).slice(-4)
 
-        //order generation
-        const orderCreated = await super.create(document)
+      if (document.service == 'Finishing Material'){
+        document.status = OrderStatus.Accepted
 
-        //notification for admin
-        if (orderCreated) {
-          const notification = {
-            type: 'Order',
-            title: 'New Order',
-            message: 'New Order with Ref. # ' + document.orderNo + '.'
+        const distance = await LocationUtils.getDistance(
+          document.dropoff.dropoffLocation.latitude,
+          document.dropoff.dropoffLocation.longitude,
+          // @ts-ignore
+          document.supplier.location.latitude,
+          // @ts-ignore
+          document.supplier.location.longitude
+        )
+        let volumetricWeight = 0
+        let cbm = 0
+
+        let check = false;
+        for (const item of document.items){
+          // @ts-ignore
+          if (item.item.varients){
+            check = true
+            break
           }
-          await this.adminNotificationsService.create(notification)
         }
+
+        if (check){
+          for (const item of document.items){
+            // @ts-ignore
+            volumetricWeight += (item.item.variants.volumetricWeight * item.item.qty)
+            // @ts-ignore
+            cbm += ((item.item.variants.cbmLength * item.item.variants.cbmHeight * item.item.variants.cbmWidth) * item.item.qty)
+          }
+        } else {
+          for (const item of document.items){
+            // @ts-ignore
+            volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
+            // @ts-ignore
+            cbm += ((item.item.product.cbmLength * item.item.product.cbmHeight * item.item.product.cbmWidth) * item.item.qty)
+          }
+        }
+
+        let rounds = 1
+        let vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
+        if (document.service == 'Finishing Material' && !vehicle){
+          rounds++
+          vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight / rounds, cbm / rounds) as IVehicleType
+        }
+
+        if (!vehicle)
+        {
+          throw new HttpException(
+            'No Vehicle present to carry this order.',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+        }
+
+        document.deliveryFee = vehicle.deliveryCharges * distance * rounds
+        document.volumetricWeight = volumetricWeight
+        document.cbm = cbm
+        document.vehicleRounds = rounds
+      }
+
+      //order generation
+      const orderCreated = await super.create(document)
+
+      //notification for admin
+      if (orderCreated) {
+
+        if (orderCreated.service == 'Finishing Material'){
+          this.fcmService.sendSingle({
+            // @ts-ignore
+            id: orderCreated.supplier.person._id,
+            title: 'You have been assigned an order.',
+            body: 'Order #' + orderCreated.orderNo
+          })
+        }
+
+        const notification = {
+          type: 'Order',
+          title: 'New Order',
+          message: 'New Order with Ref. # ' + orderCreated.orderNo + '.'
+        }
+        await this.adminNotificationsService.create(notification)
 
         let data
         const ids = new Set<string>()
@@ -91,16 +161,19 @@ export class OrdersService extends SimpleService<IOrders> {
           // @ts-ignore
           document.customer
         )
+
         return orderCreated
-      } else {
+      }
+      else
         throw new HttpException(
-          "You are blocked by Admin! You can't place order, contact Haweyati Support for help.",
+          'No vehicle present to carry your order',
           HttpStatus.NOT_ACCEPTABLE
         )
-      }
-    } catch (e) {
-      console.log(e)
-      console.log(e.message)
+    } else {
+      throw new HttpException(
+        "You are blocked by Admin! You can't place order, contact Haweyati Support for help.",
+        HttpStatus.NOT_ACCEPTABLE
+      )
     }
   }
 
@@ -602,13 +675,13 @@ export class OrdersService extends SimpleService<IOrders> {
   //   return result
   // }
 
-  async AddSupplierToAllItem(data: any): Promise<any> {
+  async AddSupplierToOrder(data: any): Promise<any> {
     const order = await this.getPerson(await this.model.findById(data._id).populate('customer').exec()) as IOrders
     if (data.flag) {
       //move these two statement below on your own risk
-      order.supplier = data.supplier
+      if (!order.supplier) order.supplier = data.supplier
       order.status = OrderStatus.Accepted
-      if (order.service != 'Construction Dumpster' && order.service != 'Building Material'){
+      if (order.service != 'Construction Dumpster'){
         const distance = await LocationUtils.getDistance(
           order.dropoff.dropoffLocation.latitude,
           order.dropoff.dropoffLocation.longitude,
@@ -619,57 +692,93 @@ export class OrdersService extends SimpleService<IOrders> {
         )
         let volumetricWeight = 0
         let cbm = 0
-        for (const item of order.items){
-          // @ts-ignore
-          volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
-          // @ts-ignore
-          cbm += ((item.item.product.cbmLength * item.item.product.cbmWidth * item.item.product.cbmHeight) * item.item.qty)
+
+        if (order.service == 'Building Material'){
+          for (const item of order.items){
+            // @ts-ignore
+            const unit = await this.unitService.findFromName(item.item.price.unit.toString())
+            // @ts-ignore
+            volumetricWeight += (unit.volumetricWeight * item.item.qty)
+            // @ts-ignore
+            cbm += ((unit.cbmLength * unit.cbmHeight * unit.cbmWidth) * item.item.qty)
+          }
         }
-        const vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
-        console.log(volumetricWeight)
-        console.log(cbm)
-        console.log(vehicle)
+        else if (order.service == 'Finishing Material'){
+          let check = false;
+          for (const item of order.items){
+            // @ts-ignore
+            if (item.item.varients){
+              check = true
+              break
+            }
+          }
+
+          if (check){
+            for (const item of order.items){
+              // @ts-ignore
+              volumetricWeight += (item.item.variants.volumetricWeight * item.item.qty)
+              // @ts-ignore
+              cbm += ((item.item.variants.cbmLength * item.item.variants.cbmHeight * item.item.variants.cbmWidth) * item.item.qty)
+            }
+          } else {
+            for (const item of order.items){
+              // @ts-ignore
+              volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
+              // @ts-ignore
+              cbm += ((item.item.product.cbmLength * item.item.product.cbmHeight * item.item.product.cbmWidth) * item.item.qty)
+            }
+          }
+        }
+        else {
+          for (const item of order.items){
+            // @ts-ignore
+            volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
+            // @ts-ignore
+            cbm += ((item.item.product.cbmLength * item.item.product.cbmWidth * item.item.product.cbmHeight) * item.item.qty)
+          }
+        }
+
+        let rounds = 1
+        let vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
+        if (order.service == 'Finishing Material'){
+          if (order.service == 'Finishing Material' && !vehicle){
+            rounds++
+            vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight / rounds, cbm / rounds) as IVehicleType
+          }
+        }
+
         if (!vehicle){
-          console.log('here')
           throw new HttpException(
             'No Vehicle present to carry this order.',
             HttpStatus.NOT_ACCEPTABLE
           )
         }
-        order.deliveryFee = vehicle.deliveryCharges * distance
+
+        order.deliveryFee = vehicle.deliveryCharges * distance * rounds
         order.volumetricWeight = volumetricWeight
         order.cbm = cbm
+        order.vehicleRounds = rounds
 
-        // //sending notification to all drivers
-        // const ids = new Set<string>()
-        //
-        // const data = await this.driverService.getDataFromCityName(order.city) as IDriversInterface[]
-        // for (const item of data){
-        //   // @ts-ignore
-        //   ids.add(item.profile.token?.toString())
-        // }
-        //
-        // this.fcmService.sendMultiple(Array.from(ids), 'New ' + order.service + ' order.', 'City: ' + order.city)
+        // //sending notification to supplier
+        if (order.service == 'Finishing Material') {
+          this.fcmService.sendSingle({
+            // @ts-ignore
+            id: order.supplier.person._id,
+            title: 'You have been assigned an order.',
+            body: 'Order #' + order.orderNo
+          })
+        }
       }
-
-      if (order.service == 'Building Material'){
+      else {
         //sending notification to customer
-        const drivers = await this.driverService.getDataFromCityName(order.city)
-        const tokenSet = new Set<string>()
-        for (const driver of drivers)
-          { // @ts-ignore
-            tokenSet.add(driver.profile.token.toString())
-          }
-        this.fcmService.sendMultiple(Array.from(tokenSet), 'New Building Material Order.', 'Order #' + order.orderNo)
+        this.fcmService.sendSingle({
+          // @ts-ignore
+          id: order.customer.profile._id,
+          // @ts-ignore
+          title: 'Your order has been accepted by ' + order.supplier.person.name,
+          body: order.service == 'Construction Dumpster' ? 'Order #' + order.orderNo :  'Please proceed with payment for Order #' + order.orderNo
+        })
       }
-      //sending notification to customer
-      this.fcmService.sendSingle({
-        // @ts-ignore
-        id: order.customer.profile._id,
-        // @ts-ignore
-        title: 'Your order has been accepted by ' + order.supplier.person.name,
-        body: order.service == 'Construction Dumpster' || order.service == 'Building Material' ? 'Order #' + order.orderNo :  'Please proceed with payment for Order #' + order.orderNo
-      })
     }
     else {
       if (order.service != 'Construction Dumpster' && order.service != 'Delivery Vehicle'){
@@ -760,13 +869,15 @@ export class OrdersService extends SimpleService<IOrders> {
           })
         }
         // this.fcmService.sendSingle({id: order.customer.profile._id, title: "Your order status has been changed to "+ this.getStatusString(OrderStatus.Preparing), body: 'Order # '+ order.orderNo})
-      } else {
+      }
+      else {
         throw new HttpException(
           'Order Not Available!',
           HttpStatus.NOT_ACCEPTABLE
         )
       }
-    } else {
+    }
+    else {
       return await this.model
         .findOneAndUpdate(
           { _id: data._id },
@@ -817,7 +928,6 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async filter(data: any): Promise<IOrders[]> {
-    console.log(data)
     const result = new Set<any>()
     const orders = await this.getPerson(
       await this.model
@@ -826,14 +936,11 @@ export class OrdersService extends SimpleService<IOrders> {
       .sort({ createdAt: -1 })
       .exec()
     )
-    console.log(orders)
     for (const order of orders) {
       if (data.services.includes(order.service)) {
         result.add(order)
       }
     }
-    console.log('-----------------------------------')
-    console.log(result)
     return Array.from(result)
   }
 
@@ -904,5 +1011,25 @@ export class OrdersService extends SimpleService<IOrders> {
       orders.push(singleOrder)
     }
     return await this.getPerson(orders)
+  }
+
+  async acceptItems(data: any): Promise<IOrders>{
+    const order = await this.model.findById(data._id).exec()
+    for (const index of data.selected) {
+      // @ts-ignore
+      order.items[index].item.selected = true
+    }
+    for (const item of order.items){
+      // @ts-ignore
+      if (!item.item.selected) {
+        // @ts-ignore
+        item.item.selected = false;
+      }
+    }
+    return await this.model.findByIdAndUpdate(order._id, order).exec()
+  }
+
+  async trip(data: any): Promise<IOrders>{
+    return await this.model.findByIdAndUpdate(data._id, {tripId: data.tripId, shareUrl: data.shareUrl}).exec()
   }
 }

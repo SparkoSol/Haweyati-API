@@ -6,7 +6,6 @@ import { LocalStrategy } from './local.strategy'
 import { PassportModule } from '@nestjs/passport'
 import { AuthController } from './auth.controller'
 import { PersonsModule } from 'src/modules/persons/persons.module'
-// import { UsersModule } from '../../modules/administrator/users/users.module'
 
 
 @Module({

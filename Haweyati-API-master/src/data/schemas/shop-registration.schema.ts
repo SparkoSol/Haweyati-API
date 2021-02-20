@@ -24,6 +24,9 @@ export const ShopRegistrationSchema = new Schema(
       type: Number,
       required: false
     },
+    cities: [
+      Object
+    ],
     message: {
       type: String,
       required: false,

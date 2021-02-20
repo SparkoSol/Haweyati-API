@@ -14,21 +14,23 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { FinishingMaterialsService } from './finishing-materials.service'
 import { IFinishingMaterials } from '../../data/interfaces/finishingMaterials.interface'
+import { IFinishingMaterialCategory } from "../../data/interfaces/finishingMaterialCategory.interface";
 
 @Controller('finishing-materials')
-export class FinishingMaterialsController extends ImageController<
-  IFinishingMaterials
-> {
-  constructor(
-    protected readonly service: FinishingMaterialsService
-  )
-  {
+export class FinishingMaterialsController extends ImageController<IFinishingMaterials> {
+  constructor(protected readonly service: FinishingMaterialsService) {
     super(service)
   }
 
   @Get('available')
   async Get(@Query() data): Promise<any> {
     return await this.service.getByCity(data.city, data.parent)
+  }
+
+  //-----------------------------------------------------------------//
+  @Get('categories-supplier/:id')
+  async getCategoriesFromSupplier(@Param('id') id: string): Promise<IFinishingMaterialCategory[]>{
+    return await this.service.getCategoriesFromSupplier(id)
   }
 
   @Get(':id')
@@ -41,7 +43,7 @@ export class FinishingMaterialsController extends ImageController<
 
   protected parseData(finishingMaterial: any) {
     if (finishingMaterial.price == '0') {
-      let option = []
+      const option = []
       if (Array.isArray(finishingMaterial.optionName)) {
         for (let i = 0; i < finishingMaterial.optionName.length; i++) {
           option[i] = {
@@ -84,8 +86,10 @@ export class FinishingMaterialsController extends ImageController<
           }
 
           pricingObj['price'] = finishingMaterial.varientPrice[i]
-          pricingObj['volume'] = finishingMaterial.varientVolume[i]
-          pricingObj['weight'] = finishingMaterial.varientWeight[i]
+          pricingObj['volumetricWeight'] = finishingMaterial.varientWeight[i]
+          pricingObj['cbmLength'] = finishingMaterial.varientLength[i]
+          pricingObj['cbmWidth'] = finishingMaterial.varientWidth[i]
+          pricingObj['cbmHeight'] = finishingMaterial.varientHeight[i]
           pricing.push(pricingObj)
         }
       }
@@ -113,13 +117,16 @@ export class FinishingMaterialsController extends ImageController<
         }
 
         priceObj['price'] = finishingMaterial.varientPrice
-        priceObj['volume'] = finishingMaterial.varientVolume
-        priceObj['weight'] = finishingMaterial.varientWeight
+        priceObj['volumetricWeight'] = finishingMaterial.varientWeight
+        priceObj['cbmLength'] = finishingMaterial.varientLength
+        priceObj['cbmWidth'] = finishingMaterial.varientWidth
+        priceObj['cbmHeight'] = finishingMaterial.varientHeight
         pricing.push(priceObj)
       }
 
       finishingMaterial.varient = pricing
-    } else {
+    }
+    else {
       finishingMaterial.varient = []
       finishingMaterial.options = []
     }

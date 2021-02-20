@@ -10,6 +10,7 @@ export interface IShopRegistration extends Document{
    city: string,
    services : [string]
    rating: number
-   status: string,
+   status: string
+   cities: [Object]
    message: string
 }

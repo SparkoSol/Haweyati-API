@@ -88,7 +88,7 @@ export class OrdersController extends SimpleController<IOrders> {
   //Order Progress Update
   @Patch('add-supplier-all')
   async AddSupplierToAllItem(@Body() data: any): Promise<any> {
-    return await this.service.AddSupplierToAllItem(data)
+    return await this.service.AddSupplierToOrder(data)
   }
 
   @Patch('add-driver')
@@ -271,5 +271,15 @@ export class OrdersController extends SimpleController<IOrders> {
   @Get('driver/volumetric-weight/:city/:driver')
   async ordersFromVolumetricWeight(@Param('city') city: string, @Param('driver') driver: string): Promise<IOrders[]>{
     return this.service.ordersFromVolumetricWeight(city, driver)
+  }
+
+  @Patch('select-items')
+  async acceptItems(@Body() data: any): Promise<IOrders>{
+    return await this.service.acceptItems(data)
+  }
+
+  @Patch('trip')
+  async trip(@Body() data: any): Promise<IOrders>{
+    return await this.service.trip(data)
   }
 }

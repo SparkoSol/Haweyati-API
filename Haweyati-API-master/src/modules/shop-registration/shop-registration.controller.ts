@@ -5,7 +5,7 @@ import {
   Param,
   Controller,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors, Query
 } from "@nestjs/common";
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
@@ -91,5 +91,11 @@ export class ShopRegistrationController extends ImageController<
   @Get('cities')
   async getCities(): Promise<string[]>{
     return await this.service.suppliersCities()
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  @Get('fm-suppliers')
+  async finishingMaterialSuppliers(@Query() data: any): Promise<IShopRegistration[]>{
+    return this.service.finishingMaterialSuppliers(data.city, data.lat, data.lng)
   }
 }

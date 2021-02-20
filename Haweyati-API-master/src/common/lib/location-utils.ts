@@ -60,6 +60,15 @@ export class LocationUtils {
       console.log("Can't find distance")
     }
   }
+
+  static async findNearestIndexOfCoordinateFromGivenLocation(coordinates: any[], lat: string, lng: string): Promise<number>{
+    const distance: number[] = []
+
+    for (const singleCoordinate of coordinates){
+      distance.push(await this.getDistance(singleCoordinate.lat, singleCoordinate.lng, lat, lng))
+    }
+    return distance.indexOf(Math.max(...distance))
+  }
 }
 
 function getRequest(url: string) {

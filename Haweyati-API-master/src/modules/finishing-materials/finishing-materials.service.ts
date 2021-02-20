@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { Injectable } from '@nestjs/common'
+import { Injectable } from "@nestjs/common"
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
@@ -33,8 +33,8 @@ export class FinishingMaterialsService extends SimpleService<
       }
       return data
     } else {
-      let big = await this.model.find({ status: 'Active' }).exec()
-      for (let data of big) {
+      const big = await this.model.find({ status: 'Active' }).exec()
+      for (const data of big) {
         for (let i = 0; i < data.suppliers.length; ++i) {
           data.suppliers[i] = (await this.service.fetch(
             data.suppliers[i].toString()
@@ -132,5 +132,16 @@ export class FinishingMaterialsService extends SimpleService<
   //used in reward points module
   async getDataForRewardPoints(data: any): Promise<IFinishingMaterials[]> {
     return await this.model.find({ _id: { $nin: data } }).exec()
+  }
+
+  //-----------------------------------------------------------------//
+  async getCategoriesFromSupplier(id: string): Promise<IFinishingMaterialCategory[]>{
+    const myResult = new Set()
+    // @ts-ignore
+    const fm = await this.model.find({suppliers: id}).populate('parent').exec() as IFinishingMaterials[]
+    for (const item of fm){
+      myResult.add(item.parent)
+    }
+    return Array.from(myResult) as IFinishingMaterialCategory[]
   }
 }

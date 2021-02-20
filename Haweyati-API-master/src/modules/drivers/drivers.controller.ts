@@ -9,6 +9,11 @@ export class DriversController extends ImageController<IDriversInterface> {
     super(service)
   }
 
+  @Patch('update-location')
+  async updateLocation(@Body() document: any): Promise<IDriversInterface>{
+    return await this.service.updateLocation(document)
+  }
+
   @Get('getrequests')
   async getRequests(): Promise<IDriversInterface[]> {
     return await this.service.getByStatus('Pending')
@@ -62,5 +67,11 @@ export class DriversController extends ImageController<IDriversInterface> {
   @Get('getbyperson/:id')
   async getByPersonId(@Param('id') id: string) {
     return await this.service.getByPersonId(id)
+  }
+
+  @Patch('remove-device-id/:id')
+  async removeDeviceId(@Param('id') id: string) {
+    console.log(id)
+    return await this.service.removeDeviceId(id)
   }
 }
