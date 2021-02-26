@@ -8,5 +8,7 @@ export interface ICustomerInterface extends Document{
    status: string,
    points: number
    rating: number
+   referralCode: string
+   fromReferralCode: string
    message : string
 }

@@ -8,12 +8,14 @@ import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { FcmService } from "../fcm/fcm.service";
 
 @Injectable()
 export class CustomersService extends SimpleService<ICustomerInterface> {
   constructor(
     @InjectModel('customers')
     protected readonly model: Model<ICustomerInterface>,
+    protected readonly fcmService: FcmService,
     protected readonly personService: PersonsService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
@@ -122,7 +124,6 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
   }
 
   async create(document: any): Promise<any> {
-    console.log(document)
     let customer: any
     document.scope = 'customer'
 
@@ -132,6 +133,19 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     )
 
     if (document.profile) {
+      //Generating referral code
+      document.referralCode = 'HW-Refer-' + await NoGeneratorUtils.generateCode()
+      if (document.referralCode){
+        if (await this.model.findOne({referralCode: document.fromReferralCode}).exec()){
+          document.points = 500
+        }
+        else {
+          throw new HttpException(
+            'Referral code not exist. Try to SignUp without referral code.',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+        }
+      }
       customer = await super.create(document)
     } else
       throw new HttpException(
@@ -154,6 +168,19 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     if (document.profile.email == '')
       delete document.profile.email
 
+    //Generating referral code
+    document.referralCode = 'HW-Refer-' + await NoGeneratorUtils.generateCode()
+    if (document.referralCode){
+      if (await this.model.findOne({referralCode: document.fromReferralCode}).exec()){
+        document.points = 500
+      }
+      else {
+        throw new HttpException(
+          'Referral code not exist. Try to SignUp without referral code.',
+          HttpStatus.NOT_ACCEPTABLE
+        )
+      }
+    }
     return await this.createCustomer(document)
   }
 
@@ -203,7 +230,13 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
 
   async convertFromGuest(document: any): Promise<ICustomerInterface>{
     const profile = await this.personService.scopeConversion(document.profile)
-    return await this.model.findOneAndUpdate({ profile }, {location: document.location}).populate('profile').exec()
+    //Generating referral code
+    const referralCode = 'HW-Refer-' + await NoGeneratorUtils.generateCode()
+    const customer = await this.model.findOne({profile: document.profile}).exec()
+    if (customer){
+      await this.model.findByIdAndUpdate(customer._id, {referralCode}).exec()
+      return await this.model.findOneAndUpdate({ profile }, {location: document.location}).populate('profile').exec()
+    }
   }
 
   protected async sendAdminNotification(profile: any){
@@ -356,5 +389,39 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
         .find()
         .populate('profile')
         .exec()
+  }
+
+  async updatePointsFromReferral(referralCode: string, points: number, add: boolean): Promise<ICustomerInterface>{
+    let customer = await this.model.findOne({referralCode})
+    if (customer.points)
+      add ? customer.points += points : customer.points -= points
+    else
+      add ? customer.points = points : customer.points = 0
+    customer = await customer.save()
+    
+    this.sendNotificationToCustomer(
+      customer.profile.toString(),
+      'Congratulations! You got 500 reward points.',
+      'The customer signed up from your referral purchases a product for the first time.'
+    )
+    return customer
+  }
+  
+  async updatePointsFromId(id: string, points: number, add: boolean): Promise<ICustomerInterface>{
+    const customer = await this.model.findById({_id: id})
+    if (customer.points)
+      add ? customer.points += points : customer.points -= points
+    else
+      add ? customer.points = points : customer.points = 0
+    return  await customer.save()
+  }
+  
+  async sendNotificationToCustomer(profile: string, title: string, message: string){
+    await this.fcmService.sendSingle({
+      id: profile,
+      title: title,
+      body: message
+    })
+    return;
   }
 }

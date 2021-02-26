@@ -7,6 +7,7 @@ import { CustomersController } from './customers.controller'
 import { CustomersSchema } from "../../data/schemas/customers.schema"
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module'
 import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
+import { FcmModule } from "../fcm/fcm.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
     MulterModule.register({
       dest: ImageConversionUtils.imagePath
     }),
+    FcmModule,
     PersonsModule,
     AdminNotificationsModule
   ],

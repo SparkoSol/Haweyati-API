@@ -282,4 +282,9 @@ export class OrdersController extends SimpleController<IOrders> {
   async trip(@Body() data: any): Promise<IOrders>{
     return await this.service.trip(data)
   }
+
+  @Patch('rate')
+  async rating(@Body() data: any): Promise<IOrders>{
+    return await this.service.rating(data)
+  }
 }

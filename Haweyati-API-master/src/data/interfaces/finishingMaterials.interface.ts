@@ -7,7 +7,7 @@ export interface IFinishingMaterials extends Document {
   name: string
   description: string
   parent: IFinishingMaterialCategory | string
-  suppliers: IShopRegistration[]
+  suppliers: IShopRegistration[] | string[]
   image: IImage
   price: number
   volumetricWeight: number

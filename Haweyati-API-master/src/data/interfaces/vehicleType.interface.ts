@@ -9,4 +9,6 @@ export interface IVehicleType extends Document{
   cbmLength: number
   cbmWidth: number
   cbmHeight: number
+  minDeliveryCharges: number
+  minDistance: number
 }

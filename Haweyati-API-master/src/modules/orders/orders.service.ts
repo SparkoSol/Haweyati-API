@@ -1,21 +1,22 @@
-import * as moment from "moment";
-import { Model } from "mongoose";
-import { InjectModel } from "@nestjs/mongoose";
-import { FcmService } from "../fcm/fcm.service";
-import { UnitService } from "../unit/unit.service";
-import { PersonsService } from "../persons/persons.service";
-import { DriversService } from "../drivers/drivers.service";
-import { SimpleService } from "../../common/lib/simple.service";
-import { LocationUtils } from "../../common/lib/location-utils";
-import { CustomersService } from "../customers/customers.service";
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { VehicleTypeService } from "../vehicle-type/vehicle-type.service";
-import { IVehicleType } from "../../data/interfaces/vehicleType.interface";
-import { IDriversInterface } from "../../data/interfaces/drivers.interface";
-import { IOrders, OrderStatus } from "../../data/interfaces/orders.interface";
-import { IShopRegistration } from "../../data/interfaces/shop-registration.interface";
-import { ShopRegistrationService } from "../shop-registration/shop-registration.service";
-import { AdminNotificationsService } from "../admin-notifications/admin-notifications.service";
+import * as moment from 'moment'
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { FcmService } from '../fcm/fcm.service'
+import { UnitService } from '../unit/unit.service'
+import { PersonsService } from '../persons/persons.service'
+import { DriversService } from '../drivers/drivers.service'
+import { SimpleService } from '../../common/lib/simple.service'
+import { LocationUtils } from '../../common/lib/location-utils'
+import { CustomersService } from '../customers/customers.service'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { VehicleTypeService } from '../vehicle-type/vehicle-type.service'
+import { IVehicleType } from '../../data/interfaces/vehicleType.interface'
+import { IDriversInterface } from '../../data/interfaces/drivers.interface'
+import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
+import { ICustomerInterface } from '../../data/interfaces/customers.interface'
+import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class OrdersService extends SimpleService<IOrders> {
@@ -56,8 +57,6 @@ export class OrdersService extends SimpleService<IOrders> {
         ).slice(-4)
 
       if (document.service == 'Finishing Material'){
-        document.status = OrderStatus.Accepted
-
         const distance = await LocationUtils.getDistance(
           document.dropoff.dropoffLocation.latitude,
           document.dropoff.dropoffLocation.longitude,
@@ -109,10 +108,11 @@ export class OrdersService extends SimpleService<IOrders> {
           )
         }
 
-        document.deliveryFee = vehicle.deliveryCharges * distance * rounds
+        document.deliveryFee = (distance > vehicle.minDistance ? vehicle.deliveryCharges : vehicle.minDeliveryCharges) * distance * rounds
         document.volumetricWeight = volumetricWeight
         document.cbm = cbm
         document.vehicleRounds = rounds
+        document.total += document.deliveryFee
       }
 
       //order generation
@@ -395,8 +395,21 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async updateStatus(id: string, status: OrderStatus, message?: string) {
-    await this.model.findByIdAndUpdate(id, { status, reason: message }).exec()
-    const order = await this.model.findById(id).exec()
+    const order = await this.model.findByIdAndUpdate(id, { status, reason: message }, {new: true}).exec()
+
+    if (status == OrderStatus.Delivered){
+      await this.customersService.updatePointsFromId(order.customer.toString(), ~~(order.total * 0.05), true)
+
+      if (
+        await this.model.find({customer: order.customer.toString(), status: OrderStatus.Delivered}).countDocuments().exec() == 1 &&
+        (await this.customersService.fetch(order.customer.toString()) as ICustomerInterface).fromReferralCode
+      ){
+        await this.customersService.updatePointsFromReferral(
+          (await this.customersService.fetch(order.customer.toString()) as ICustomerInterface).fromReferralCode, 500, false
+        )
+      }
+    }
+    
     const persons = new Set<string>()
 
     if (order.service != 'Delivery Vehicle'){
@@ -702,34 +715,7 @@ export class OrdersService extends SimpleService<IOrders> {
             // @ts-ignore
             cbm += ((unit.cbmLength * unit.cbmHeight * unit.cbmWidth) * item.item.qty)
           }
-        }
-        else if (order.service == 'Finishing Material'){
-          let check = false;
-          for (const item of order.items){
-            // @ts-ignore
-            if (item.item.varients){
-              check = true
-              break
-            }
-          }
-
-          if (check){
-            for (const item of order.items){
-              // @ts-ignore
-              volumetricWeight += (item.item.variants.volumetricWeight * item.item.qty)
-              // @ts-ignore
-              cbm += ((item.item.variants.cbmLength * item.item.variants.cbmHeight * item.item.variants.cbmWidth) * item.item.qty)
-            }
-          } else {
-            for (const item of order.items){
-              // @ts-ignore
-              volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
-              // @ts-ignore
-              cbm += ((item.item.product.cbmLength * item.item.product.cbmHeight * item.item.product.cbmWidth) * item.item.qty)
-            }
-          }
-        }
-        else {
+        } else {
           for (const item of order.items){
             // @ts-ignore
             volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
@@ -738,14 +724,8 @@ export class OrdersService extends SimpleService<IOrders> {
           }
         }
 
-        let rounds = 1
-        let vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
-        if (order.service == 'Finishing Material'){
-          if (order.service == 'Finishing Material' && !vehicle){
-            rounds++
-            vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight / rounds, cbm / rounds) as IVehicleType
-          }
-        }
+        const rounds = 1
+        const vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
 
         if (!vehicle){
           throw new HttpException(
@@ -758,18 +738,8 @@ export class OrdersService extends SimpleService<IOrders> {
         order.volumetricWeight = volumetricWeight
         order.cbm = cbm
         order.vehicleRounds = rounds
-
-        // //sending notification to supplier
-        if (order.service == 'Finishing Material') {
-          this.fcmService.sendSingle({
-            // @ts-ignore
-            id: order.supplier.person._id,
-            title: 'You have been assigned an order.',
-            body: 'Order #' + order.orderNo
-          })
-        }
-      }
-      else {
+        order.total += order.deliveryFee
+      } else {
         //sending notification to customer
         this.fcmService.sendSingle({
           // @ts-ignore
@@ -802,7 +772,6 @@ export class OrdersService extends SimpleService<IOrders> {
     }
 
     //dont move
-    console.log(order)
     return await order.save()
   }
 
@@ -815,20 +784,8 @@ export class OrdersService extends SimpleService<IOrders> {
         .exec())
       if (!order.driver) {
         if (order.service == 'Scaffolding' || order.service == 'Building Material') {
-          const distance = await LocationUtils.getDistance(
-            // @ts-ignore
-            order.customer.location.latitude,
-            // @ts-ignore
-            order.customer.location.longitude,
-            // @ts-ignore
-            order.supplier.location.latitude,
-            // @ts-ignore
-            order.supplier.location.longitude
-          )
           order.driver = data.driver
-          order.deliveryFee =
-            distance * data.driver.vehicle.type.deliveryCharges
-          order.total += order.deliveryFee
+
           order.status = OrderStatus.Preparing
           await order.save()
 
@@ -848,9 +805,7 @@ export class OrdersService extends SimpleService<IOrders> {
               'You order has been accepted by driver!',
             body: 'Order #' + order.orderNo
           })
-        }
-
-        else {
+        } else {
           order.driver = data.driver
           order.status = OrderStatus.Preparing
           await order.save()
@@ -1026,10 +981,34 @@ export class OrdersService extends SimpleService<IOrders> {
         item.item.selected = false;
       }
     }
+
+    /// TODO: Reason not saving
+
+    order.itemReason = data.reason
+    order.status = OrderStatus.Accepted
     return await this.model.findByIdAndUpdate(order._id, order).exec()
   }
 
   async trip(data: any): Promise<IOrders>{
     return await this.model.findByIdAndUpdate(data._id, {tripId: data.tripId, shareUrl: data.shareUrl}).exec()
+  }
+
+  async rating(data: any): Promise<IOrders>{
+    try {
+      const order = await this.model.findById(data._id).exec()
+
+      // @ts-ignore
+      await this.driverService.updateRating(order.driver._id, data.driverRating)
+      if (data.supplierRating){
+        // @ts-ignore
+        await this.supplierService.updateRating(order.supplier._id, data.supplierRating)
+        return this.model.findByIdAndUpdate(data._id, {rating: ((data.driverRating + data.supplierRating) / 2)}).exec()
+      }
+      else
+        return this.model.findByIdAndUpdate(data._id, {rating: data.driverRating}).exec()
+    } catch (e) {
+      throw new HttpException("An unexpected error occurred! try again later or contact customer support.",
+        HttpStatus.NOT_ACCEPTABLE)
+    }
   }
 }

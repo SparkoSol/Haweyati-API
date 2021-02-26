@@ -27,10 +27,20 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
     return await this.service.getByCity(data.city, data.parent)
   }
 
+  @Get('available-supplier')
+  async getByParentSupplier(@Query() data): Promise<any> {
+    return await this.service.getByParentSupplier(data.parent, data.supplier)
+  }
+
   //-----------------------------------------------------------------//
   @Get('categories-supplier/:id')
   async getCategoriesFromSupplier(@Param('id') id: string): Promise<IFinishingMaterialCategory[]>{
     return await this.service.getCategoriesFromSupplier(id)
+  }
+
+  @Get('search')
+  async search(@Query() query: any): Promise<IFinishingMaterials[]>{
+    return await this.service.search(query.name)
   }
 
   @Get(':id')
@@ -171,10 +181,5 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
   @Delete('deletecategory/:id')
   async deleteCategory(@Param('id') id: string): Promise<any> {
     return await this.service.deleteCategory(id)
-  }
-
-  @Get('search')
-  async search(@Query() query: any): Promise<IFinishingMaterials[]>{
-    return await this.service.search(query.name)
   }
 }

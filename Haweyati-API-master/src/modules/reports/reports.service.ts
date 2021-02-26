@@ -28,20 +28,33 @@ export class ReportsService {
   async generateOrdersReport(data: any) {
     const orders = await this.getOrdersData(data)
     let total = 0
-    for (let order of orders) {
-      order.orderDate = moment(order.updatedAt).format('MM-DD-YYYY')
-      total += +order.total
+    for (const order of orders) {
+      total += order.total
     }
-    const dateTo = data.dateTo ? ' - ' + data.dateTo : ''
-    const date = data.date ? data.date : ''
+
     const dataForReport = {
       title: data.type[0].toUpperCase() + data.type.slice(1),
-      create: moment().format('MM-DD-YYYY'),
-      date: date + dateTo,
+      create: moment(moment.now() , 'MMMM-DD-YYYY'),
+      date: this.getStringOfDate(data),
       orders: orders,
       total: total
     }
     return ReportUtils.renderReport('order_report.odt', dataForReport)
+  }
+
+  getStringOfDate(data: any): string{
+    if (data.type == 'all')
+      return '';
+    else if (data.type == 'weekly')
+      return 'Week# ' + data.date
+    else if (data.type == 'monthly')
+      return 'Month# ' + data.date
+    else if (data.type == 'daily')
+      return data.date
+    else if (data.type == 'yearly')
+      return 'Year# ' + data.date
+    else
+      return data.date + ' to ' + data.dateTo
   }
 
   async getSalesData(data) {

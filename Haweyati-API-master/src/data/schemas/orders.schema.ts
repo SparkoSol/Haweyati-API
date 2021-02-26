@@ -80,6 +80,9 @@ export const OrdersSchema = new Schema(
       default: 'no reason specified!',
       required: false
     },
+    itemReason: {
+      type: String,
+    },
     deliveryFee: {
       type: Number
     },
@@ -94,6 +97,9 @@ export const OrdersSchema = new Schema(
     },
     tripId: {
       type: String,
+    },
+    rating: {
+      type: Number,
     },
     shareUrl: {
       type: String,

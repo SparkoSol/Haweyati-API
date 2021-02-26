@@ -18,7 +18,7 @@ export class ReportsController {
   }
 
   @Get('orders-report')
-  async generateOrdersReport(@Query() data: any,@Res() res){
+  async generateOrdersReport(@Query() data: any, @Res() res){
     ;(await this.service.generateOrdersReport(data)).pipe(res)
   }
 

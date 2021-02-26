@@ -26,6 +26,12 @@ export const CustomersSchema = new Schema(
       type: Number,
       required: false
     },
+    referralCode: {
+      type: String
+    },
+    fromReferralCode: {
+      type: String,
+    },
     message: {
       type: String,
       required: false,

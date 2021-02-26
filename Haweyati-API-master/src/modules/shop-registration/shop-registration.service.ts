@@ -403,4 +403,13 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
 
     return result
   }
+
+  async updateRating(id: string, rating: number): Promise<IShopRegistration>{
+    const supplier = await this.model.findById(id).exec()
+    if (supplier.rating){
+      rating += supplier.rating
+      rating /= 2
+    }
+    return await this.model.findByIdAndUpdate(id, {rating}).exec()
+  }
 }

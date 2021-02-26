@@ -25,7 +25,7 @@ export class FinishingMaterialsService extends SimpleService<
     id?: string
   ): Promise<IFinishingMaterials[] | IFinishingMaterials> {
     if (id) {
-      let data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
+      const data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
@@ -62,7 +62,7 @@ export class FinishingMaterialsService extends SimpleService<
       .where('parent', parent)
       .exec()
 
-    let result = new Set()
+    const result = new Set()
 
     for (const item of dump) {
       for (const supplier of data) {
@@ -73,6 +73,12 @@ export class FinishingMaterialsService extends SimpleService<
     }
 
     return Array.from(result)
+  }
+
+  async getByParentSupplier(parent: string, supplier: string): Promise<any> {
+    return await this.model
+      .find({ status: 'Active', parent, suppliers: supplier})
+      .exec()
   }
 
   async getSuppliers(id: string): Promise<any> {
@@ -106,10 +112,10 @@ export class FinishingMaterialsService extends SimpleService<
   }
 
   async search(name: string): Promise<IFinishingMaterials[]> {
-    let big = await this.model
+    const big = await this.model
       .find({ status: 'Active', name: { $regex: name, $options: 'i' } })
       .exec()
-    for (let data of big) {
+    for (const data of big) {
       for (let i = 0; i < data.suppliers.length; ++i) {
         data.suppliers[i] = (await this.service.fetch(
           data.suppliers[i].toString()
@@ -134,7 +140,6 @@ export class FinishingMaterialsService extends SimpleService<
     return await this.model.find({ _id: { $nin: data } }).exec()
   }
 
-  //-----------------------------------------------------------------//
   async getCategoriesFromSupplier(id: string): Promise<IFinishingMaterialCategory[]>{
     const myResult = new Set()
     // @ts-ignore

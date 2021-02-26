@@ -45,6 +45,8 @@ export interface IOrders extends Document {
   cbm: number
   vehicleRounds: number
   tripId: string
+  rating: number
   shareUrl: string
   reason: string
+  itemReason: string
 }

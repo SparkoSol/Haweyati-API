@@ -312,4 +312,13 @@ export class DriversService extends SimpleService<IDriversInterface> {
   async removeDeviceId(id: string) {
     return await this.model.findByIdAndUpdate(id, {deviceId: undefined}).exec()
   }
+
+  async updateRating(id: string, rating: number): Promise<IDriversInterface>{
+    const driver = await this.model.findById(id).exec()
+    if (driver.rating){
+      rating += driver.rating
+      rating /= 2
+    }
+    return await this.model.findByIdAndUpdate(id, {rating}).exec()
+  }
 }
