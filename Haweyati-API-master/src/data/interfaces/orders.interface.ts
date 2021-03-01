@@ -49,6 +49,5 @@ export interface IOrders extends Document {
   shareUrl: string
   reason: string
   itemReason: string
-  rewardPointsUsed: boolean
   rewardPointsValue: number
 }

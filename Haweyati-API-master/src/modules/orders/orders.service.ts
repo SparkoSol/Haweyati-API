@@ -118,7 +118,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
 
 
-        if (document.rewardPointsUsed){
+        if (document.rewardPointsValue){
           if (rewardPointsValue > document.total) {
             const remainingValue = rewardPointsValue - document.total
             document.rewardPointsValue = rewardPointsValue - remainingValue
@@ -137,7 +137,7 @@ export class OrdersService extends SimpleService<IOrders> {
       //notification for admin
       if (orderCreated) {
 
-        if (document.rewardPointsUsed){
+        if (document.rewardPointsValue){
           if (rewardPointsValue > document.total){
             const remainingValue = rewardPointsValue - document.total
             const usedPoints = (rewardPointsValue - remainingValue) / await this.unitService.getValue()

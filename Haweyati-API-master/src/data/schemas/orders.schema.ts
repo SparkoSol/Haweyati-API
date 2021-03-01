@@ -104,9 +104,6 @@ export const OrdersSchema = new Schema(
     shareUrl: {
       type: String,
     },
-    rewardPointsUsed: {
-      type: Boolean,
-    },
     rewardPointsValue: {
       type: Number,
     }
