@@ -31,22 +31,9 @@ export class DashboardService {
     const customers = ((await this.customersService.fetch()) as ICustomerInterface[])
       .length
 
-    let count: number =
+    const count: number =
       ((await this.buildingMaterialService.fetch()) as []).length +
       ((await this.finishingMaterialService.fetch()) as []).length
-    // let count: number = 0
-    // const sold = (await this.ordersService.fetch()) as IOrders[]
-    // for (const item of sold) {
-    //   if (
-    //     item.service == 'Finishing Material' ||
-    //     item.service == 'Building Material'
-    //   ) {
-    //     for (const index of item.items) {
-    //       // @ts-ignore
-    //       count += +index.item.qty
-    //     }
-    //   }
-    // }
 
     return {
       drivers: drivers,

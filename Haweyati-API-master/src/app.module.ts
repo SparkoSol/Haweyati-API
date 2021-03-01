@@ -13,10 +13,8 @@ import { DumpstersModule } from './modules/dumpsters/dumpsters.module'
 import { CustomersModule } from './modules/customers/customers.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { TimeSlotsModule } from './modules/time-slots/time-slots.module'
-import { InvitationModule } from './modules/invitation/invitation.module'
-import { VehicleTypeModule } from './modules/vehicle-type/vehicle-type.module'
 import { ScaffoldingModule } from './modules/scaffoldings/scaffolding.module'
-import { RewardPointsModule } from './modules/reward-points/reward-points.module'
+import { VehicleTypeModule } from './modules/vehicle-type/vehicle-type.module'
 import { ServiceRequestsModule } from './modules/service-requests/service-requests.module'
 import { BuildingMaterialsModule } from './modules/building-materials/building-materials.module'
 import { FinishingMaterialsModule } from './modules/finishing-materials/finishing-materials.module'
@@ -40,10 +38,8 @@ import { BuildingMaterialSubCategoryModule } from './modules/building-material-s
     TimeSlotsModule,
     DashboardModule,
     CustomersModule,
-    InvitationModule,
     VehicleTypeModule,
     ScaffoldingModule,
-    RewardPointsModule,
     ServiceRequestsModule,
     BuildingMaterialsModule,
     AdminNotificationsModule,

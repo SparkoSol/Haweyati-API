@@ -35,14 +35,14 @@ export class ReportsService {
     const dataForReport = {
       title: data.type[0].toUpperCase() + data.type.slice(1),
       create: moment(moment.now() , 'MMMM-DD-YYYY'),
-      date: this.getStringOfDate(data),
+      date: ReportsService.getStringOfDate(data),
       orders: orders,
       total: total
     }
     return ReportUtils.renderReport('order_report.odt', dataForReport)
   }
 
-  getStringOfDate(data: any): string{
+  private static getStringOfDate(data: any): string{
     if (data.type == 'all')
       return '';
     else if (data.type == 'weekly')

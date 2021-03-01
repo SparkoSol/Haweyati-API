@@ -56,6 +56,8 @@ export class OrdersService extends SimpleService<IOrders> {
             1)
         ).slice(-4)
 
+      const rewardPointsValue = (document.customer as ICustomerInterface).points * await this.unitService.getValue()
+
       if (document.service == 'Finishing Material'){
         const distance = await LocationUtils.getDistance(
           document.dropoff.dropoffLocation.latitude,
@@ -113,6 +115,20 @@ export class OrdersService extends SimpleService<IOrders> {
         document.cbm = cbm
         document.vehicleRounds = rounds
         document.total += document.deliveryFee
+
+
+
+        if (document.rewardPointsUsed){
+          if (rewardPointsValue > document.total) {
+            const remainingValue = rewardPointsValue - document.total
+            document.rewardPointsValue = rewardPointsValue - remainingValue
+            document.total = 0
+          }
+          else {
+            document.rewardPointsValue = rewardPointsValue
+            document.total -= rewardPointsValue
+          }
+        }
       }
 
       //order generation
@@ -120,6 +136,18 @@ export class OrdersService extends SimpleService<IOrders> {
 
       //notification for admin
       if (orderCreated) {
+
+        if (document.rewardPointsUsed){
+          if (rewardPointsValue > document.total){
+            const remainingValue = rewardPointsValue - document.total
+            const usedPoints = (rewardPointsValue - remainingValue) / await this.unitService.getValue()
+            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, usedPoints, false)
+
+          }
+          else {
+            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, (document.customer as ICustomerInterface).points, false)
+          }
+        }
 
         if (orderCreated.service == 'Finishing Material'){
           this.fcmService.sendSingle({

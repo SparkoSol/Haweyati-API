@@ -4,7 +4,6 @@ import { InjectModel } from '@nestjs/mongoose'
 import { EmailUtils } from '../../common/lib/email-utils'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IPerson } from 'src/data/interfaces/person.interface'
-import { InvitationService } from '../invitation/invitation.service'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
@@ -16,8 +15,6 @@ export class PersonsService extends SimpleService<IPerson> {
     protected readonly model: Model<IPerson>,
     @InjectModel('forgotpassword')
     protected readonly forgotPasswordModel: Model<IAdminForgotPassword>,
-
-    protected readonly invitationService: InvitationService
   ) {
     super(model)
   }
@@ -42,8 +39,6 @@ export class PersonsService extends SimpleService<IPerson> {
 
     let person = await super.create(data)
     person = await this.fetchByUsername(person.contact)
-    if (!person.scope.includes('guest'))
-      await this.invitationService.create(person)
     return person
   }
 
