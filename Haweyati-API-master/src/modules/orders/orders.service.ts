@@ -5,9 +5,11 @@ import { FcmService } from '../fcm/fcm.service'
 import { UnitService } from '../unit/unit.service'
 import { PersonsService } from '../persons/persons.service'
 import { DriversService } from '../drivers/drivers.service'
+import { ReviewsService } from "../reviews/reviews.service"
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
 import { CustomersService } from '../customers/customers.service'
+import { IReviews } from "../../data/interfaces/reviews.interface"
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { VehicleTypeService } from '../vehicle-type/vehicle-type.service'
 import { IVehicleType } from '../../data/interfaces/vehicleType.interface'
@@ -25,6 +27,7 @@ export class OrdersService extends SimpleService<IOrders> {
     protected readonly model: Model<IOrders>,
     protected readonly fcmService: FcmService,
     protected readonly unitService: UnitService,
+    protected readonly reviewService: ReviewsService,
     protected readonly driverService: DriversService,
     protected readonly personsService: PersonsService,
     protected readonly customersService: CustomersService,
@@ -36,6 +39,7 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async create(document: IOrders): Promise<any> {
+    console.log(document)
     // @ts-ignore
     if (document.customer.status != 'Blocked') {
       document.orderNo =
@@ -115,19 +119,16 @@ export class OrdersService extends SimpleService<IOrders> {
         document.cbm = cbm
         document.vehicleRounds = rounds
         document.total += document.deliveryFee
+      }
 
-
-
-        if (document.rewardPointsValue){
-          if (rewardPointsValue > document.total) {
-            const remainingValue = rewardPointsValue - document.total
-            document.rewardPointsValue = rewardPointsValue - remainingValue
-            document.total = 0
-          }
-          else {
-            document.rewardPointsValue = rewardPointsValue
-            document.total -= rewardPointsValue
-          }
+      if (document.rewardPointsValue){
+        if (rewardPointsValue > document.total) {
+          const remainingValue = rewardPointsValue - document.total
+          document.rewardPointsValue = rewardPointsValue - remainingValue
+          document.total = 0
+        }
+        else {
+          document.total -= document.rewardPointsValue
         }
       }
 
@@ -142,7 +143,6 @@ export class OrdersService extends SimpleService<IOrders> {
             const remainingValue = rewardPointsValue - document.total
             const usedPoints = (rewardPointsValue - remainingValue) / await this.unitService.getValue()
             await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, usedPoints, false)
-
           }
           else {
             await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, (document.customer as ICustomerInterface).points, false)
@@ -1022,18 +1022,34 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async rating(data: any): Promise<IOrders>{
-    try {
-      const order = await this.model.findById(data._id).exec()
+    const order = await this.model.findById(data._id).exec()
 
+    // @ts-ignore
+    await this.driverService.updateRating(order.driver._id, data.driverRating)
+    if (data.supplierRating){
       // @ts-ignore
-      await this.driverService.updateRating(order.driver._id, data.driverRating)
-      if (data.supplierRating){
-        // @ts-ignore
-        await this.supplierService.updateRating(order.supplier._id, data.supplierRating)
-        return this.model.findByIdAndUpdate(data._id, {rating: ((data.driverRating + data.supplierRating) / 2)}).exec()
-      }
-      else
-        return this.model.findByIdAndUpdate(data._id, {rating: data.driverRating}).exec()
+      await this.supplierService.updateRating(order.supplier._id, data.supplierRating)
+      await this.reviewService.create({
+        customer: order.customer.toString(),
+        supplier: order.supplier as IShopRegistration,
+        driver: order.driver as IDriversInterface,
+        order: order,
+        supplierFeedback: data.supplierReview,
+        driverFeedback: data.driverReview
+      } as IReviews)
+      return this.model.findByIdAndUpdate(data._id, {rating: ((data.driverRating + data.supplierRating) / 2)}).exec()
+    }
+    else {
+      await this.reviewService.create({
+        customer: order.customer.toString(),
+        driver: order.driver as IDriversInterface,
+        order: order,
+        driverFeedback: data.driverReview
+      } as IReviews)
+      return this.model.findByIdAndUpdate(order._id, {rating: data.driverRating}).exec()
+    }
+    try {
+
     } catch (e) {
       throw new HttpException("An unexpected error occurred! try again later or contact customer support.",
         HttpStatus.NOT_ACCEPTABLE)

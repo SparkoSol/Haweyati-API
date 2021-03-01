@@ -9,16 +9,19 @@ export const ReviewsSchema = new Schema({
   supplier: {
     type: Schema.Types.ObjectId,
     ref: 'shopregistration',
-    required: true
   },
   driver: {
     type: Schema.Types.ObjectId,
     ref: 'drivers',
     required: true
   },
+  order: {
+    type: Schema.Types.ObjectId,
+    ref: 'orders',
+    required: true
+  },
   supplierFeedback: {
     type: String,
-    required: true
   },
   driverFeedback: {
     type: String,
