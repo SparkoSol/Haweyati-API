@@ -411,7 +411,6 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
-  //also used in reports module
   async getByStatus(status: OrderStatus) {
     let all = await this.model
       .find({ status })
@@ -503,7 +502,7 @@ export class OrdersService extends SimpleService<IOrders> {
       case OrderStatus.Rejected:
         notificationStatus = 'Rejected'
     }
-    console.log(notificationStatus)
+
     return notificationStatus
   }
 
@@ -539,182 +538,72 @@ export class OrdersService extends SimpleService<IOrders> {
     return Array.from(results)
   }
 
-  async getByDate(date: string): Promise<any[]> {
-    const orders = await this.getByStatus(OrderStatus.Delivered)
-    const result = []
-    for (const order of orders) {
-      // @ts-ignore
-      const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
-      if (convertedDate == date) {
-        result.push(order)
+  async ordersAfterFilter(document: any): Promise<IOrders[]>{
+    const condition = {}
+
+    condition['status'] = OrderStatus.Delivered
+    if (document){
+      if (document.customer) {
+        condition['customer'] = document.customer;
+      }
+      if (document.supplier) {
+        condition['supplier._id'] = document.supplier;
+      }
+      if (document.driver) {
+        condition['driver._id'] = document.driver;
+      }
+
+      if (document.payment == paymentType.cod){
+        condition['paymentType'] = 'COD';
+      }
+      else if (document.payment == paymentType.op){
+        condition['paymentType'] = 'OP';
+      }
+
+      if (document.date){
+        condition['createdAt'] = {
+          $gte: moment(document.date).toDate(),
+          $lt: document.dateTo ? moment(document.dateTo).add(1, 'day').toDate() : moment(document.date).add(1, 'day').toDate()
+        }
+      }
+
+      else if (document.week){
+        condition['createdAt'] = {
+          $gte: moment(document.week).toDate(),
+          $lt: moment(document.week).add(1, 'week').toDate()
+        }
+      }
+
+      else if (document.month){
+        condition['createdAt'] = {
+          $gte: moment(document.month).toDate(),
+          $lt: moment(document.month).add(1, 'month').toDate()
+        }
+      }
+
+      else if (document.year){
+        condition['createdAt'] = {
+          $gte: moment(document.year).toDate(),
+          $lt: moment(document.year).add(1, 'year').toDate()
+        }
       }
     }
-    return result
-  }
 
-  async getByWeek(date: number): Promise<any[]> {
-    const orders = await this.getByStatus(OrderStatus.Delivered)
-    const result = []
-    for (const order of orders) {
-      // @ts-ignore
-      const convertedDate = moment(order.updatedAt).week()
-      if (date == convertedDate) {
-        result.push(order)
-      }
-    }
-    return result
+    return await this.model
+      .find(
+        condition
+      )
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .exec()
   }
-
-  async getByMonth(date: number): Promise<any[]> {
-    const orders = await this.getByStatus(OrderStatus.Delivered)
-    const result = []
-    for (const order of orders) {
-      // @ts-ignore
-      const convertedDate = moment(order.updatedAt).month() + 1
-      if (date == convertedDate) {
-        result.push(order)
-      }
-    }
-    return result
-  }
-
-  async getByYear(date: number): Promise<any[]> {
-    const orders = await this.getByStatus(OrderStatus.Delivered)
-    const result = []
-    for (const order of orders) {
-      // @ts-ignore
-      const convertedDate = moment(order.updatedAt).year()
-      if (date == convertedDate) {
-        result.push(order)
-      }
-    }
-    return result
-  }
-
-  async getCustom(date: string, dateTo: string): Promise<any[]> {
-    const orders = await this.getByStatus(OrderStatus.Delivered)
-    const result = []
-    for (const order of orders) {
-      // @ts-ignore
-      const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
-      if (convertedDate >= date && convertedDate <= dateTo) {
-        result.push(order)
-      }
-    }
-    return result
-  }
-
-  // async getByProduct(date: string, dateTo: string): Promise<any[]>{
-  //   let orders = await this.getByStatus('completed')
-  //   let name = [], qty = [], total = [], result = []
-  //   for (let order of orders){
-  //     // @ts-ignore
-  //     const convertedDate = moment(order.updatedAt).format('MM-DD-YYYY')
-  //     if (convertedDate >= date && convertedDate <= dateTo){
-  //       for (let i=0; i< order.details.items.length; ++i){
-  //         let flag: boolean = false
-  //         switch (order.service) {
-  //           case 'Construction Dumpster': {
-  //             if (name.length > 0) {
-  //               for (let j = 0; j < name.length; ++j) {
-  //                 if (name[j] == order.details.items[i].product.size + ' Yard Dumpster') {
-  //                   qty[j] += 1
-  //                   total[j] += +order.details.items[i].total
-  //                   flag = true
-  //                   break
-  //                 }
-  //               }
-  //               if (!flag){
-  //                 name.push(order.details.items[i].product.size + ' Yard Dumpster')
-  //                 qty.push(1)
-  //                 total.push(+order.details.items[i].total)
-  //                 break
-  //               }
-  //             } else {
-  //               name.push(order.details.items[i].product.size + ' Yard Dumpster')
-  //               qty.push(1)
-  //               total.push(+order.details.items[i].total)
-  //             }
-  //           }
-  //           case 'Building Material': {
-  //             if (name.length > 0) {
-  //               for (let j = 0; j < name.length; ++j) {
-  //                 if (name[j] == (order.details.items[i].product.name + ' ' + order.details.items[i].size)) {
-  //                   qty[j] += +order.details.items[i].qty
-  //                   total[j] += +order.details.items[i].total
-  //                   flag = true
-  //                   break
-  //                 }
-  //               }
-  //               if (!flag){
-  //                 name.push(order.details.items[i].product.name + ' ' + order.details.items[i].size)
-  //                 qty.push(+order.details.items[i].qty)
-  //                 total.push(+order.details.items[i].total)
-  //                 break
-  //               }
-  //             } else {
-  //               name.push(order.details.items[i].product.name + ' ' + order.details.items[i].size)
-  //               qty.push(+order.details.items[i].qty)
-  //               total.push(+order.details.items[i].total)
-  //             }
-  //           }
-  //           case 'Finishing Material': {
-  //             if (name.length > 0) {
-  //               for (let j = 0; j < name.length; ++j) {
-  //                 if (name[j] == (order.details.items[i].product.name)) {
-  //                   qty[j] += +order.details.items[i].qty
-  //                   total[j] += +order.details.items[i].total
-  //                   flag = true
-  //                   break
-  //                 }
-  //                 if (!flag){
-  //                   name.push(order.details.items[i].product.name)
-  //                   qty.push(+order.details.items[i].qty)
-  //                   total.push(+order.details.items[i].total)
-  //                   break
-  //                 }
-  //               }
-  //             } else {
-  //               name.push(order.details.items[i].product.name)
-  //               qty.push(+order.details.items[i].qty)
-  //               total.push(+order.details.items[i].total)
-  //             }
-  //           }
-  //           case 'Scaffolding': {
-  //             if (name.length > 0) {
-  //               for (let j = 0; j < name.length; ++j) {
-  //                 if (name[j] == (order.details.items[i].name + ' ' + order.details.items[i].size)) {
-  //                   qty[j] += +order.details.items[i].qty
-  //                   total[j] += +order.details.items[i].total
-  //                   flag = true
-  //                   break
-  //                 }
-  //                 if (!flag){
-  //                   name.push(order.details.items[i].name + ' ' + order.details.items[i].size)
-  //                   qty.push(+order.details.items[i].qty)
-  //                   total.push(+order.details.items[i].total)
-  //                   break
-  //                 }
-  //               }
-  //             } else {
-  //               name.push(order.details.items[i].name + ' ' + order.details.items[i].size)
-  //               qty.push(+order.details.items[i].qty)
-  //               total.push(+order.details.items[i].total)
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  //   for (let i=0; i< name.length; ++i){
-  //     result.push({
-  //       name: name[i],
-  //       quantity: qty[i],
-  //       total: total[i]
-  //     })
-  //   }
-  //   return result
-  // }
 
   async AddSupplierToOrder(data: any): Promise<any> {
     const order = await this.getPerson(await this.model.findById(data._id).populate('customer').exec()) as IOrders
@@ -1035,7 +924,9 @@ export class OrdersService extends SimpleService<IOrders> {
         driver: order.driver as IDriversInterface,
         order: order,
         supplierFeedback: data.supplierReview,
-        driverFeedback: data.driverReview
+        driverFeedback: data.driverReview,
+        driverRating: data.driverRating,
+        supplierRating: data.supplierRating
       } as IReviews)
       return this.model.findByIdAndUpdate(data._id, {rating: ((data.driverRating + data.supplierRating) / 2)}).exec()
     }
@@ -1044,7 +935,8 @@ export class OrdersService extends SimpleService<IOrders> {
         customer: order.customer.toString(),
         driver: order.driver as IDriversInterface,
         order: order,
-        driverFeedback: data.driverReview
+        driverFeedback: data.driverReview,
+        driverRating: data.driverRating,
       } as IReviews)
       return this.model.findByIdAndUpdate(order._id, {rating: data.driverRating}).exec()
     }
@@ -1055,4 +947,9 @@ export class OrdersService extends SimpleService<IOrders> {
         HttpStatus.NOT_ACCEPTABLE)
     }
   }
+}
+
+enum paymentType {
+  cod = 1,
+  op = 2
 }

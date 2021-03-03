@@ -11,4 +11,6 @@ export interface IReviews extends Document{
   order: IOrders | string
   supplierFeedback: string
   driverFeedback: string
+  supplierRating: number
+  driverRating: number
 }

@@ -5,7 +5,9 @@ import { ReviewsController } from './reviews.controller';
 import { ReviewsSchema } from "../../data/schemas/reviews.schema";
 
 @Module({
-  imports: [MongooseModule.forFeature([{name: 'reviews', schema: ReviewsSchema}])],
+  imports: [MongooseModule.forFeature([{
+    name: 'reviews', schema: ReviewsSchema
+  }])],
   providers: [ReviewsService],
   controllers: [ReviewsController],
   exports: [ReviewsService]

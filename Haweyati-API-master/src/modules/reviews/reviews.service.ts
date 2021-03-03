@@ -7,41 +7,131 @@ import { IReviews } from "../../data/interfaces/reviews.interface";
 @Injectable()
 export class ReviewsService extends SimpleService<IReviews> {
   constructor(
-    @InjectModel('reviews') protected readonly model: Model<IReviews>
+    @InjectModel('reviews')
+    protected readonly model: Model<IReviews>
   ) {
     super(model)
   }
 
-  create(document: IReviews): Promise<IReviews> {
-    console.log(document)
-    return super.create(document)
-  }
-
-  async getFromCustomer(customer: string): Promise<IReviews[]> {
-    return await this.model
-      .find({ customer })
-      .sort({ createdAt: -1 })
-      .exec()
-  }
-
-  async getFromSupplier(supplier: string): Promise<IReviews[]> {
-    return await this.model
-      .find({ supplier })
-      .sort({ createdAt: -1 })
-      .exec()
-  }
-
-  async getFromDriver(driver: string): Promise<IReviews[]> {
-    return await this.model
-      .find({ driver })
-      .sort({ createdAt: -1 })
-      .exec()
-  }
-
-  async getFromOrder(order: string): Promise<IReviews[]> {
-    return await this.model
-      .find({ order })
-      .sort({ createdAt: -1 })
-      .exec()
+  async getReviews(data: any): Promise<IReviews[]>{
+    switch (data.type){
+      case 'customer':
+        return await this.model
+          .find({ customer: data.id })
+          .populate({
+            path: 'customer',
+            model: 'customers',
+            populate: {
+              path: 'profile',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'supplier',
+            model: 'shopregistration',
+            populate: {
+              path: 'person',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'driver',
+            model: 'drivers',
+            populate:
+              {
+                path: 'profile',
+                model: 'persons',
+              }
+          })
+          .sort({ createdAt: -1 })
+          .exec()
+      case 'supplier':
+        return await this.model
+          .find({ supplier: data.id })
+          .populate({
+            path: 'customer',
+            model: 'customers',
+            populate: {
+              path: 'profile',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'supplier',
+            model: 'shopregistration',
+            populate: {
+              path: 'person',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'driver',
+            model: 'drivers',
+            populate: {
+              path: 'profile',
+              model: 'persons'
+            }
+          })
+          .sort({ createdAt: -1 })
+          .exec()
+      case 'driver':
+        return await this.model
+          .find({ driver: data.id })
+          .populate({
+            path: 'customer',
+            model: 'customers',
+            populate: {
+              path: 'profile',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'supplier',
+            model: 'shopregistration',
+            populate: {
+              path: 'person',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'driver',
+            model: 'drivers',
+            populate: {
+              path: 'profile',
+              model: 'persons'
+            }
+          })
+          .sort({ createdAt: -1 })
+          .exec()
+      case 'order':
+        return await this.model
+          .find({ order: data.id })
+          .populate({
+            path: 'customer',
+            model: 'customers',
+            populate: {
+              path: 'profile',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'supplier',
+            model: 'shopregistration',
+            populate: {
+              path: 'person',
+              model: 'persons'
+            }
+          })
+          .populate({
+            path: 'driver',
+            model: 'drivers',
+            populate: {
+              path: 'profile',
+              model: 'persons'
+            }
+          })
+          .sort({ createdAt: -1 })
+          .exec()
+    }
   }
 }

@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectModel } from '@nestjs/mongoose'
 import { IUnit } from '../../data/interfaces/unit.interface'
 import { SimpleService } from '../../common/lib/simple.service'
@@ -28,8 +28,14 @@ export class UnitService extends SimpleService<IUnit> {
   }
 
   async updateValue(value: number): Promise<number>{
-    const x = await this.pointValueModel.findOne().exec()
-    await this.pointValueModel.findOneAndUpdate({_id: x._id}, {value}).exec()
-    return value
+    if (value){
+      const x = await this.pointValueModel.findOne().exec()
+      if (x)
+        await this.pointValueModel.findOneAndUpdate({_id: x._id}, {value}).exec()
+      else
+        await this.pointValueModel.create({value})
+      return value
+    }
+    else throw new HttpException("Can't update value", HttpStatus.NOT_ACCEPTABLE)
   }
 }

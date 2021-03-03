@@ -27,4 +27,10 @@ export const ReviewsSchema = new Schema({
     type: String,
     required: true
   },
+  supplierRating: {
+    type: Number
+  },
+  driverRating: {
+    type: Number
+  },
 }, {timestamps: true})
