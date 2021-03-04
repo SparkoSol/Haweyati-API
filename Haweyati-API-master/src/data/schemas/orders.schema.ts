@@ -22,6 +22,10 @@ export const OrdersSchema = new Schema(
       type: Number,
       default: 0
     },
+    vat: {
+      type: Number,
+      required: true
+    },
     items: [
       new Schema(
         {

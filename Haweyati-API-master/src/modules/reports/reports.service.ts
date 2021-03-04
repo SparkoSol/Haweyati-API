@@ -26,7 +26,7 @@ export class ReportsService {
       orders: orders,
       total: total.toFixed(0)
     }
-    return ReportUtils.renderReport('order_report.odt', dataForReport)
+    return ReportUtils.renderReport('order_report', dataForReport)
   }
 
   private static title(data: any): string{
@@ -54,5 +54,19 @@ export class ReportsService {
       return data.year
     else
       return ''
+  }
+
+  async generateCustomerInvoice(id: string): Promise<any>{
+    const order = await this.ordersService.fetch(id) as IOrders
+    let subtotal = 0
+    for (const item of order.items)
+      subtotal += +item.subtotal
+
+    const dataForReport = {
+      date: moment().format('YYYY-MM-DD'),
+      subtotal,
+      order: order,
+    }
+    return ReportUtils.renderReport('order_invoice', dataForReport)
   }
 }

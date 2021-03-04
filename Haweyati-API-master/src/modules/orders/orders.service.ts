@@ -5,11 +5,11 @@ import { FcmService } from '../fcm/fcm.service'
 import { UnitService } from '../unit/unit.service'
 import { PersonsService } from '../persons/persons.service'
 import { DriversService } from '../drivers/drivers.service'
-import { ReviewsService } from "../reviews/reviews.service"
+import { ReviewsService } from '../reviews/reviews.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
 import { CustomersService } from '../customers/customers.service'
-import { IReviews } from "../../data/interfaces/reviews.interface"
+import { IReviews } from '../../data/interfaces/reviews.interface'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { VehicleTypeService } from '../vehicle-type/vehicle-type.service'
 import { IVehicleType } from '../../data/interfaces/vehicleType.interface'
@@ -121,31 +121,19 @@ export class OrdersService extends SimpleService<IOrders> {
         document.total += document.deliveryFee
       }
 
-      if (document.rewardPointsValue){
-        if (rewardPointsValue > document.total) {
-          const remainingValue = rewardPointsValue - document.total
-          document.rewardPointsValue = rewardPointsValue - remainingValue
-          document.total = 0
-        }
-        else {
-          document.total -= document.rewardPointsValue
-        }
-      }
-
+      document.vat = +document.vat.toFixed(2)
       //order generation
       const orderCreated = await super.create(document)
 
       //notification for admin
       if (orderCreated) {
-
-        if (document.rewardPointsValue){
-          if (rewardPointsValue > document.total){
-            const remainingValue = rewardPointsValue - document.total
-            const usedPoints = (rewardPointsValue - remainingValue) / await this.unitService.getValue()
-            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, usedPoints, false)
+        if (document.rewardPointsValue != 0){
+          if (rewardPointsValue >= document.rewardPointsValue){
+            const usedPoints = document.rewardPointsValue / await this.unitService.getValue()
+            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, ~~usedPoints, false)
           }
           else {
-            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, (document.customer as ICustomerInterface).points, false)
+            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, ~~(orderCreated.total * 0.15), false)
           }
         }
 
@@ -318,6 +306,7 @@ export class OrdersService extends SimpleService<IOrders> {
         .find({ status: status })
         .where('supplier._id', id)
         .populate('customer')
+        .sort({createdAt: -1})
         .exec()
     )
   }
@@ -655,7 +644,18 @@ export class OrdersService extends SimpleService<IOrders> {
         order.volumetricWeight = volumetricWeight
         order.cbm = cbm
         order.vehicleRounds = rounds
-        order.total += order.deliveryFee
+
+        let subtotal = 0
+        if (order.service == 'Building Material'){
+          for (const item of order.items){
+            subtotal += +item.subtotal
+          }
+          subtotal += order.deliveryFee
+          order.vat = (subtotal * 0.15)
+          order.total = subtotal + order.vat
+        }
+        else
+          order.total += order.deliveryFee
       } else {
         //sending notification to customer
         this.fcmService.sendSingle({
@@ -672,8 +672,19 @@ export class OrdersService extends SimpleService<IOrders> {
         order.paymentType = null
         order.deliveryFee = null
       }
+
       order.supplier = undefined
-      order.status = OrderStatus.Pending
+      order.status = order.service == 'Finishing Material' ? OrderStatus.Rejected : OrderStatus.Pending
+      
+      if (order.service == 'Building Material') {
+        let sub = 0
+        for (const item of order.items) {
+          sub += +item.subtotal
+        }
+        order.vat = sub * 0.15
+        order.total = sub + order.vat
+      }
+
       order.supplierCancellationReason = {
         supplier: data.supplier._id,
         message: data.reason

@@ -3,7 +3,7 @@ import { ImagesSchema } from './images.schema'
 
 export const DumpstersSchema = new Schema(
   {
-    size: {
+    name: {
       type: String,
       required: true
     },

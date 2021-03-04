@@ -5,7 +5,7 @@ import { IShopRegistration } from './shop-registration.interface'
 export interface IScaffoldingInterface extends Document {
   suppliers: IShopRegistration[]
   description: string
-  type: string
+  name: string
   image: IImage
   pricing: [
     {

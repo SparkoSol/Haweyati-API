@@ -23,6 +23,7 @@ export interface IOrders extends Document {
     }
   ]
   total: number
+  vat: number
   items: [
     {
       item: Object

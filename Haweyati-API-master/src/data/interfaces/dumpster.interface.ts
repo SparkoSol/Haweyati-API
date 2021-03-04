@@ -3,7 +3,7 @@ import { IImage } from './image.interface';
 import { IShopRegistration } from './shop-registration.interface';
 
 export interface IDumpster extends Document {
-  size: string,
+  name: string,
   suppliers : IShopRegistration[],
   image: IImage,
   description: string,

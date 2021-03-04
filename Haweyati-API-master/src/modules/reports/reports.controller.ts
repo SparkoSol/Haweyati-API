@@ -2,8 +2,8 @@ import {
   Get,
   Res,
   Query,
-  Controller
-} from '@nestjs/common'
+  Controller, Param
+} from "@nestjs/common";
 import { ReportsService } from './reports.service'
 
 @Controller('reports')
@@ -18,5 +18,10 @@ export class ReportsController {
   @Get('orders-report')
   async generateOrdersReport(@Query() data: any, @Res() res){
     ;(await this.service.generateOrdersReport(data)).pipe(res)
+  }
+
+  @Get('order-invoice/:id')
+  async generateCustomerInvoice(@Param('id') id: string, @Res() res){
+    ;(await this.service.generateCustomerInvoice(id)).pipe(res)
   }
 }

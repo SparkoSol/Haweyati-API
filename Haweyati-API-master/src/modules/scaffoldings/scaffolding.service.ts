@@ -40,11 +40,6 @@ export class ScaffoldingService extends SimpleService<IScaffoldingInterface> {
     }
   }
 
-  async change(document: IScaffoldingInterface): Promise<IScaffoldingInterface> {
-    console.log(document)
-    return super.change(document);
-  }
-
   async getSuppliers(id: string): Promise<any> {
     const dump = await this.model.find().exec()
     const result = []

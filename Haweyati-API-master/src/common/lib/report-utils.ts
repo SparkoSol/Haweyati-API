@@ -6,7 +6,7 @@ export class ReportUtils {
 
    static renderReport(name: string, data: any): Promise<Readable> {
       return new Promise<Readable>((resolve, reject) => {
-         carbone.render(this.PATH + name, data, { convertTo : 'pdf' }, (err, result) => {
+         carbone.render(this.PATH + name + '.odt', data, { convertTo : 'pdf' }, (err, result) => {
             if (err) reject(err);
             else {
                const stream = new Readable();
