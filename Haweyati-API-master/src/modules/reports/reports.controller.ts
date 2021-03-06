@@ -22,6 +22,6 @@ export class ReportsController {
 
   @Get('order-invoice/:id')
   async generateCustomerInvoice(@Param('id') id: string, @Res() res){
-    ;(await this.service.generateCustomerInvoice(id)).pipe(res)
+    ;(await this.service.generateOrderInvoice(id)).pipe(res)
   }
 }

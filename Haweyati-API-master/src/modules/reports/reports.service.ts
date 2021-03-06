@@ -21,7 +21,6 @@ export class ReportsService {
 
     const dataForReport = {
       title: ReportsService.title(data),
-      create: moment().format('YYYY-MM-DD'),
       date: ReportsService.subTitle(data),
       orders: orders,
       total: total.toFixed(0)
@@ -56,17 +55,60 @@ export class ReportsService {
       return ''
   }
 
-  async generateCustomerInvoice(id: string): Promise<any>{
+  async generateOrderInvoice(id: string): Promise<any> {
     const order = await this.ordersService.fetch(id) as IOrders
     let subtotal = 0
     for (const item of order.items)
       subtotal += +item.subtotal
 
-    const dataForReport = {
-      date: moment().format('YYYY-MM-DD'),
-      subtotal,
-      order: order,
+    const variants = []
+
+    if (order.service == 'Finishing Material') {
+      for (const item of order.items) {
+        const values = []
+
+        // @ts-ignore
+        delete item.item.variants['price']
+        // @ts-ignore
+        delete item.item.variants['volumetricWeight']
+        // @ts-ignore
+        delete item.item.variants['cbmLength']
+        // @ts-ignore
+        delete item.item.variants['cbmHeight']
+        // @ts-ignore
+        delete item.item.variants['cbmWidth']
+
+        // @ts-ignore
+        for (const i in item.item.variants) {
+          // @ts-ignore
+          values.push(item.item.variants[i])
+        }
+
+        if (values.length == 0)
+          variants.push({
+            values: ''
+          })
+        else
+          variants.push({
+            values: values.join(' - ').toString()
+          })
+      }
     }
+    else if (order.service == 'Delivery Vehicle'){
+      for (const item of order.items) {
+        variants.push({
+          // @ts-ignore
+          values: item.item.distance.toString() + ' KM'
+        })
+      }
+    }
+
+    const dataForReport = {
+      subtotal,
+      order,
+      variants,
+    }
+
     return ReportUtils.renderReport('order_invoice', dataForReport)
   }
 }
