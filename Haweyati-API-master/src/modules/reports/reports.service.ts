@@ -1,8 +1,8 @@
 import * as moment from 'moment'
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { OrdersService } from '../orders/orders.service'
 import { ReportUtils } from '../../common/lib/report-utils'
-import { IOrders } from "../../data/interfaces/orders.interface";
+import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
 
 @Injectable()
 export class ReportsService {
@@ -57,58 +57,71 @@ export class ReportsService {
 
   async generateOrderInvoice(id: string): Promise<any> {
     const order = await this.ordersService.fetch(id) as IOrders
-    let subtotal = 0
-    for (const item of order.items)
-      subtotal += +item.subtotal
+    if (order.status == OrderStatus.Delivered){
+      let subtotal = 0
+      for (const item of order.items)
+        subtotal += +item.subtotal
 
-    const variants = []
+      const variants = []
 
-    if (order.service == 'Finishing Material') {
-      for (const item of order.items) {
-        const values = []
+      if (order.service == 'Finishing Material') {
+        for (const item of order.items) {
+          const values = []
 
-        // @ts-ignore
-        delete item.item.variants['price']
-        // @ts-ignore
-        delete item.item.variants['volumetricWeight']
-        // @ts-ignore
-        delete item.item.variants['cbmLength']
-        // @ts-ignore
-        delete item.item.variants['cbmHeight']
-        // @ts-ignore
-        delete item.item.variants['cbmWidth']
-
-        // @ts-ignore
-        for (const i in item.item.variants) {
           // @ts-ignore
-          values.push(item.item.variants[i])
-        }
+          delete item.item.variants['price']
+          // @ts-ignore
+          delete item.item.variants['volumetricWeight']
+          // @ts-ignore
+          delete item.item.variants['cbmLength']
+          // @ts-ignore
+          delete item.item.variants['cbmHeight']
+          // @ts-ignore
+          delete item.item.variants['cbmWidth']
 
-        if (values.length == 0)
+          // @ts-ignore
+          for (const i in item.item.variants) {
+            // @ts-ignore
+            values.push(item.item.variants[i])
+          }
+
+          if (values.length == 0)
+            variants.push({
+              values: ''
+            })
+          else
+            variants.push({
+              values: values.join(' - ').toString()
+            })
+        }
+      }
+      else if (order.service == 'Delivery Vehicle'){
+        for (const item of order.items) {
+          variants.push({
+            // @ts-ignore
+            values: item.item.distance.toString() + ' KM'
+          })
+        }
+      }
+      else {
+        for (const item of order.items) {
           variants.push({
             values: ''
           })
-        else
-          variants.push({
-            values: values.join(' - ').toString()
-          })
+        }
       }
-    }
-    else if (order.service == 'Delivery Vehicle'){
-      for (const item of order.items) {
-        variants.push({
-          // @ts-ignore
-          values: item.item.distance.toString() + ' KM'
-        })
+
+      const dataForReport = {
+        subtotal,
+        order,
+        variants,
       }
-    }
 
-    const dataForReport = {
-      subtotal,
-      order,
-      variants,
+      return ReportUtils.renderReport('order_invoice', dataForReport)
     }
-
-    return ReportUtils.renderReport('order_invoice', dataForReport)
+    else throw new HttpException(
+      'Order is not completed yet!',
+      HttpStatus.NOT_ACCEPTABLE
+    )
   }
 }

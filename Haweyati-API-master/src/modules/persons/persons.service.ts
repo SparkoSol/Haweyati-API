@@ -174,7 +174,7 @@ export class PersonsService extends SimpleService<IPerson> {
       verify = await this.forgotPasswordModel
         .findOne({ hash: data.hash })
         .exec()
-      if (verify && this.verifyHash(data.hash))
+      if (verify && await this.verifyHash(data.hash))
         person = (await this.model.findOne({ email: verify.email })) as IPerson
       else {
         throw new HttpException(

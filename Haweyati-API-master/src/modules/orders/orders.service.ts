@@ -6,6 +6,7 @@ import { UnitService } from '../unit/unit.service'
 import { PersonsService } from '../persons/persons.service'
 import { DriversService } from '../drivers/drivers.service'
 import { ReviewsService } from '../reviews/reviews.service'
+import { CouponsService } from "../coupons/coupons.service"
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
 import { CustomersService } from '../customers/customers.service'
@@ -29,6 +30,7 @@ export class OrdersService extends SimpleService<IOrders> {
     protected readonly unitService: UnitService,
     protected readonly reviewService: ReviewsService,
     protected readonly driverService: DriversService,
+    protected readonly couponService: CouponsService,
     protected readonly personsService: PersonsService,
     protected readonly customersService: CustomersService,
     protected readonly vehicleTypeService: VehicleTypeService,
@@ -39,7 +41,6 @@ export class OrdersService extends SimpleService<IOrders> {
   }
 
   async create(document: IOrders): Promise<any> {
-    console.log(document)
     // @ts-ignore
     if (document.customer.status != 'Blocked') {
       document.orderNo =
@@ -122,20 +123,34 @@ export class OrdersService extends SimpleService<IOrders> {
       }
 
       document.vat = +document.vat.toFixed(2)
-      //order generation
-      const orderCreated = await super.create(document)
+
+      let orderCreated
+
+      if (document.coupon){
+        if (await this.couponService.checkCouponValidity(document.coupon, (document.customer as ICustomerInterface)._id)){
+          orderCreated = await super.create(document)
+        }
+        else
+          throw new HttpException(
+            'Invalid Coupon',
+            HttpStatus.NOT_ACCEPTABLE
+          )
+      }
+      else
+        orderCreated = await super.create(document)
 
       //notification for admin
       if (orderCreated) {
-        if (document.rewardPointsValue != 0){
+        if (document.coupon){
+          await this.couponService.addUser(document.coupon, (document.customer as ICustomerInterface)._id)
+        }
+        else if (document.rewardPointsValue && document.rewardPointsValue != 0)
           if (rewardPointsValue >= document.rewardPointsValue){
             const usedPoints = document.rewardPointsValue / await this.unitService.getValue()
             await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, ~~usedPoints, false)
           }
-          else {
+          else
             await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, ~~(orderCreated.total * 0.15), false)
-          }
-        }
 
         if (orderCreated.service == 'Finishing Material'){
           this.fcmService.sendSingle({
@@ -400,7 +415,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
-  async getByStatus(status: OrderStatus) {
+  async getByStatus(status: OrderStatus): Promise<IOrders[]> {
     let all = await this.model
       .find({ status })
       .populate('customer')
@@ -410,7 +425,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return all
   }
 
-  async updateStatus(id: string, status: OrderStatus, message?: string) {
+  async updateStatus(id: string, status: OrderStatus, message?: string): Promise<IOrders> {
     const order = await this.model.findByIdAndUpdate(id, { status, reason: message }, {new: true}).exec()
 
     if (status == OrderStatus.Delivered){
@@ -421,7 +436,7 @@ export class OrdersService extends SimpleService<IOrders> {
         (await this.customersService.fetch(order.customer.toString()) as ICustomerInterface).fromReferralCode
       ){
         await this.customersService.updatePointsFromReferral(
-          (await this.customersService.fetch(order.customer.toString()) as ICustomerInterface).fromReferralCode, 500, false
+          (await this.customersService.fetch(order.customer.toString()) as ICustomerInterface).fromReferralCode, 500, true
         )
       }
     }
@@ -478,16 +493,22 @@ export class OrdersService extends SimpleService<IOrders> {
     switch (status) {
       case OrderStatus.Accepted:
         notificationStatus = 'Accepted'
+        break
       case OrderStatus.Delivered:
         notificationStatus = 'Delivered'
+        break
       case OrderStatus.Dispatched:
         notificationStatus = 'Dispatched'
+        break
       case OrderStatus.Pending:
         notificationStatus = 'Pending'
+        break
       case OrderStatus.Preparing:
         notificationStatus = 'Preparing'
+        break
       case OrderStatus.Cancelled:
         notificationStatus = 'Cancelled'
+        break
       case OrderStatus.Rejected:
         notificationStatus = 'Rejected'
     }
@@ -495,7 +516,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return notificationStatus
   }
 
-  async search(query: any) {
+  async search(query: any): Promise<IOrders[]> {
     const data = await this.model
       .find({
         $or: [

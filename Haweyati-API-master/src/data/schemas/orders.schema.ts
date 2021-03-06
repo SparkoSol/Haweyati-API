@@ -110,6 +110,12 @@ export const OrdersSchema = new Schema(
     },
     rewardPointsValue: {
       type: Number,
+    },
+    coupon: {
+      type: String
+    },
+    couponValue: {
+      type: Number
     }
   },
   { timestamps: true }

@@ -168,6 +168,10 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     if (document.profile.email == '')
       delete document.profile.email
 
+    if (document.referralCode){
+        document.fromReferralCode = document.referralCode
+    }
+
     //Generating referral code
     document.referralCode = 'HW-Refer-' + await NoGeneratorUtils.generateCode()
     if (document.referralCode){

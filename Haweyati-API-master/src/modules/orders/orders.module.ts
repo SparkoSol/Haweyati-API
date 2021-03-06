@@ -8,6 +8,7 @@ import { MulterModule } from '@nestjs/platform-express'
 import { PersonsModule } from '../persons/persons.module'
 import { DriversModule } from '../drivers/drivers.module'
 import { ReviewsModule } from "../reviews/reviews.module"
+import { CouponsModule } from "../coupons/coupons.module"
 import { OrdersSchema } from '../../data/schemas/orders.schema'
 import { CustomersModule } from '../customers/customers.module'
 import { VehicleTypeModule } from "../vehicle-type/vehicle-type.module"
@@ -25,6 +26,7 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
     ReviewsModule,
     DriversModule,
     PersonsModule,
+    CouponsModule,
     CustomersModule,
     VehicleTypeModule,
     ShopRegistrationModule,

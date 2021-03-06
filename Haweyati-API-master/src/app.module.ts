@@ -9,6 +9,7 @@ import { OrdersModule } from './modules/orders/orders.module'
 import { PersonsModule } from './modules/persons/persons.module'
 import { DriversModule } from './modules/drivers/drivers.module'
 import { ReportsModule } from './modules/reports/reports.module'
+import { CouponsModule } from "./modules/coupons/coupons.module"
 import { ReviewsModule } from "./modules/reviews/reviews.module"
 import { DumpstersModule } from './modules/dumpsters/dumpsters.module'
 import { CustomersModule } from './modules/customers/customers.module'
@@ -34,6 +35,7 @@ import { BuildingMaterialSubCategoryModule } from './modules/building-material-s
     OrdersModule,
     ReportsModule,
     PersonsModule,
+    CouponsModule,
     DriversModule,
     ReviewsModule,
     DumpstersModule,

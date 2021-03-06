@@ -51,4 +51,6 @@ export interface IOrders extends Document {
   reason: string
   itemReason: string
   rewardPointsValue: number
+  coupon: string
+  couponValue: number
 }
