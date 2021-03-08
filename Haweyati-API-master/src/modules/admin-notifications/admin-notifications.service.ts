@@ -44,7 +44,7 @@ export class AdminNotificationsService extends SimpleService<
     return await this.model.updateMany({ seen: false }, { seen: true }).exec()
   }
 
-  static async findSeen(): Promise<Boolean> {
+  static async findSeen(): Promise<boolean> {
     return !!(await this.staticModel.findOne({ seen: false }).exec())
   }
 }
