@@ -40,4 +40,9 @@ export class FcmController extends SimpleController<IFcmHistory>{
   async personUnseenHistory(@Param('id') id: string): Promise<IFcmHistory[]>{
     return await this.service.personUnseenHistory(id)
   }
+
+  @Patch('seen-to-unseen/:id')
+  async seenToUnseenHistory(@Param('id') id: string): Promise<IFcmHistory[]>{
+    return await this.service.seenToUnseenHistory(id)
+  }
 }
