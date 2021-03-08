@@ -111,9 +111,9 @@ export class FinishingMaterialsService extends SimpleService<
     return 'Category Deleted'
   }
 
-  async search(name: string): Promise<IFinishingMaterials[]> {
+  async search(name: string, parent: string, supplier: string): Promise<IFinishingMaterials[]> {
     const big = await this.model
-      .find({ status: 'Active', name: { $regex: name, $options: 'i' } })
+      .find({ status: 'Active', parent, suppliers: supplier, name: { $regex: name, $options: 'i' } })
       .exec()
     for (const data of big) {
       for (let i = 0; i < data.suppliers.length; ++i) {

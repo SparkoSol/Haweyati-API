@@ -39,8 +39,8 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
   }
 
   @Get('search')
-  async search(@Query() query: any): Promise<IFinishingMaterials[]>{
-    return await this.service.search(query.name)
+  async search(@Query() data): Promise<IFinishingMaterials[]>{
+    return await this.service.search(data.name, data.parent, data.supplier)
   }
 
   @Get(':id')
