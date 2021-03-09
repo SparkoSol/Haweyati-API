@@ -877,7 +877,7 @@ export class OrdersService extends SimpleService<IOrders> {
   async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrders[]>{
     const driver  = await this.driverService.fetch(driverId) as IDriversInterface
 
-    const orders = (await this.model.find(
+    let orders = (await this.model.find(
       {
         // @ts-ignore
         volumetricWeight: {$lte: driver.vehicle.type.volumetricWeight},
@@ -914,6 +914,10 @@ export class OrdersService extends SimpleService<IOrders> {
     for (const singleOrder of bmOrders){
       orders.push(singleOrder)
     }
+
+   // @ts-ignore
+    orders.sort((a,b) => (a.createdAt > b.createdAt) ? -1 : ((b.createdAt > a.createdAt) ? 1 : 0))
+
     return await this.getPerson(orders)
   }
 
