@@ -189,7 +189,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
         }
       }
       if (
-        document.isVehicleInfoChanged == true
+        document.isVehicleInfoChanged == true || document.isVehicleInfoChanged == 'true'
       ) {
         document.vehicle = {
           name: document.vehicleName,
@@ -301,7 +301,6 @@ export class DriversService extends SimpleService<IDriversInterface> {
       return all as IDriversInterface[]
     }
     else {
-      console.log(all);
       (all.profile as IPerson).password = ''
       all.vehicle.type = (await this.vehicleTypeService.fetch(all.vehicle.type.toString())) as IVehicleType
       return all as IDriversInterface
@@ -309,7 +308,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
   }
 
   //used while logging out in auth.service
-  async removeDeviceId(id: string) {
+  async removeDeviceId(id: string): Promise<IDriversInterface> {
     return await this.model.findByIdAndUpdate(id, {deviceId: undefined}).exec()
   }
 
