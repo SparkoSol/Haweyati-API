@@ -20,7 +20,6 @@ import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
     AdminNotificationsModule
   ],
   providers: [ServiceRequestsService],
-  controllers: [ServiceRequestsController],
-  exports : [ServiceRequestsService]
+  controllers: [ServiceRequestsController]
 })
 export class ServiceRequestsModule {}

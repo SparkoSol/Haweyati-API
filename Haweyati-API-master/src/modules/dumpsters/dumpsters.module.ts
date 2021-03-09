@@ -21,8 +21,7 @@ import { ShopRegistrationModule } from '../shop-registration/shop-registration.m
     ShopRegistrationModule
   ],
   controllers: [DumpstersController],
-  providers: [DumpstersService],
-  exports: [DumpstersService]
+  providers: [DumpstersService]
 })
 export class DumpstersModule {}
 
