@@ -935,8 +935,6 @@ export class OrdersService extends SimpleService<IOrders> {
       }
     }
 
-    /// TODO: Reason not saving
-
     order.itemReason = data.reason
     order.status = OrderStatus.Accepted
     return await this.model.findByIdAndUpdate(order._id, order).exec()
