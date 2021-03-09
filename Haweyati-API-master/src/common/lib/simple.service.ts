@@ -54,7 +54,6 @@ export abstract class SimpleService<T extends Document> {
       //@ts-ignore
       return this.model.create(document)
     } catch (error) {
-      console.log(error)
       throw new HttpException(error, 500)
     }
   }

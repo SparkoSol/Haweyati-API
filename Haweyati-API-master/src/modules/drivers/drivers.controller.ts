@@ -71,7 +71,6 @@ export class DriversController extends ImageController<IDriversInterface> {
 
   @Patch('remove-device-id/:id')
   async removeDeviceId(@Param('id') id: string) {
-    console.log(id)
     return await this.service.removeDeviceId(id)
   }
 }

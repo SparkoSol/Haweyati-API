@@ -44,7 +44,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
             "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
           }
         }
-      ).subscribe(asd => console.log(asd));
+      ).subscribe(asd => console.log('Notifications successfully sent to /topics/news'));
       return await this.fcmAllHistoryModel.create({
         title: data.title,
         body: data.body
@@ -82,7 +82,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
             "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
           }
         }
-      ).subscribe(asd => console.log(asd));
+      ).subscribe(asd => console.log('Notification successfully sent to #' + person.name));
     }
 
     if (flag){
@@ -129,7 +129,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
             "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
           }
         }
-      ).subscribe(asd => console.log(asd));
+      ).subscribe(asd => console.log('Notifications sent to multiple persons.'));
     }
   }
 
@@ -160,7 +160,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
                 "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
               }
             }
-          ).subscribe(asd => console.log(asd));
+          ).subscribe(asd => console.log('Pending Notification sent to #' + person.name));
           await this.fcmHistoryModel.findByIdAndUpdate(item._id, {status: FcmStatus.sent}).exec()
         }
       }

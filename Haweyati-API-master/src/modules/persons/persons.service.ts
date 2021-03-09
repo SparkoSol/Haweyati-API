@@ -151,8 +151,7 @@ export class PersonsService extends SimpleService<IPerson> {
     if (person) {
       const hash = await NoGeneratorUtils.generateCode()
 
-      const emailInfo = await EmailUtils.sendEmail(person.name, hash, email)
-      // console.log('Message sent: %s', emailInfo.messageId)
+      await EmailUtils.sendEmail(person.name, hash, email)
 
       //Store in DB
       const document = {

@@ -16,7 +16,10 @@ export class LocationUtils {
         timeout: 1000
       })
     } catch (e) {
-      console.log(e.response)
+      throw new HttpException(
+        'Unexpected Error occurred, Contact admin support!',
+        HttpStatus.NOT_ACCEPTABLE
+      )
     }
     return location?.data
   }
@@ -57,7 +60,10 @@ export class LocationUtils {
       // @ts-ignore
       return data.rows[0].elements[0].distance.text.split(' ')[0]
     } catch (e) {
-      console.log("Can't find distance")
+      throw new HttpException(
+        'Can\'t find distance, try changing your location or contact admin support.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
