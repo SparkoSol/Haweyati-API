@@ -2,10 +2,8 @@ import { Model } from 'mongoose'
 import { Injectable } from "@nestjs/common"
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
-import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { IBuildingMaterials } from '../../data/interfaces/buildingMaterials.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IBuildingMaterialSubCategory } from 'src/data/interfaces/buildingMaterialSubCategory.interface'
 import { BuildingMaterialCategoryService } from '../building-material-category/building-material-category.service'
 import { BuildingMaterialSubCategoryService } from '../building-material-sub-category/building-material-sub-category.service'
 
@@ -24,27 +22,30 @@ export class BuildingMaterialsService extends SimpleService<
   }
 
   async fetch(id?: string): Promise<IBuildingMaterials[] | IBuildingMaterials> {
-    if (id) {
-      const data = await this.model
+    if (id)
+      return await this.model
         .findOne({ _id: id, status: 'Active' })
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
         .exec()
-      for (let i = 0; i < data.suppliers.length; ++i) {
-        data.suppliers[i] = (await this.service.fetch(
-          data.suppliers[i].toString()
-        )) as IShopRegistration
-      }
-      return data
-    } else {
-      const big = await this.model.find({ status: 'Active' }).exec()
-      for (const data of big) {
-        for (let i = 0; i < data.suppliers.length; ++i) {
-          data.suppliers[i] = (await this.service.fetch(
-            data.suppliers[i].toString()
-          )) as IShopRegistration
-        }
-      }
-      return big
-    }
+    else
+      return await this.model
+        .find({ status: 'Active' })
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
+        .exec()
   }
 
   async fetchByParentId(id: string): Promise<IBuildingMaterials[]> {
@@ -61,7 +62,7 @@ export class BuildingMaterialsService extends SimpleService<
 
   async getByCity(city: string, parent: string): Promise<IBuildingMaterials[]> {
     if (city) {
-      const data = await this.service.getDataFromCityName(
+      const data = await this.service.getSupplierIdsFromCityName(
         city,
         'Building Material'
       )
@@ -85,20 +86,10 @@ export class BuildingMaterialsService extends SimpleService<
   }
 
   async getSuppliers(id: string): Promise<IBuildingMaterials[]> {
-    const dump = await this.model.find({ status: 'Active' }).exec()
-    const result = []
-
-    for (const item of dump) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (item.suppliers.includes(id)) {
-        item.parent = (await this.subCategoryService.fetch(
-          item.parent.toString()
-        )) as IBuildingMaterialSubCategory
-        result.push(item)
-      }
-    }
-    return result as IBuildingMaterials[]
+    return await this.model
+      .find({ status: 'Active', suppliers: id })
+      .populate('parent')
+      .exec()
   }
 
   async remove(id: string): Promise<IBuildingMaterials> {

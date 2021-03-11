@@ -6,8 +6,8 @@ import { IBuildingMaterialSubCategory } from './buildingMaterialSubCategory.inte
 export interface IBuildingMaterials extends Document {
   name: string
   description: string
-  parent: IBuildingMaterialSubCategory
-  suppliers: IShopRegistration[]
+  parent: IBuildingMaterialSubCategory | string
+  suppliers: IShopRegistration[] | string[]
   image: IImage
   pricing: [
     {

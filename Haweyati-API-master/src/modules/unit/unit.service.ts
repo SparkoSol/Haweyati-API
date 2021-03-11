@@ -1,8 +1,8 @@
 import { Model } from 'mongoose'
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectModel } from '@nestjs/mongoose'
 import { IUnit } from '../../data/interfaces/unit.interface'
 import { SimpleService } from '../../common/lib/simple.service'
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { IPointValue } from "../../data/interfaces/pointValue.interface";
 
 @Injectable()

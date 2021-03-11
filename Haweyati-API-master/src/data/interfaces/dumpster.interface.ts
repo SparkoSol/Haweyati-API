@@ -4,7 +4,7 @@ import { IShopRegistration } from './shop-registration.interface';
 
 export interface IDumpster extends Document {
   name: string,
-  suppliers : IShopRegistration[],
+  suppliers : IShopRegistration[] | string[],
   image: IImage,
   description: string,
   pricing: [

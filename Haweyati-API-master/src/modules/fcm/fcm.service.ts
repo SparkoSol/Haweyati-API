@@ -176,12 +176,12 @@ export class FcmService extends SimpleService<IFcmHistory>{
     return await this.fcmAllHistoryModel.find().sort({createdAt: -1}).exec()
   }
 
-  async personHistory(id: string): Promise<IFcmHistory[]>{
-    return await this.fcmHistoryModel.find({person: id}).sort({createdAt: -1}).exec()
+  async personHistory(person: string): Promise<IFcmHistory[]>{
+    return await this.fcmHistoryModel.find({person}).sort({createdAt: -1}).exec()
   }
 
-  async personUnseenHistory(id: string): Promise<IFcmHistory[]>{
-    return await this.fcmHistoryModel.find({person: id, seen: false}).sort({createdAt: -1}).exec()
+  async personUnseenHistory(person: string): Promise<IFcmHistory[]>{
+    return await this.fcmHistoryModel.find({person, seen: false}).sort({createdAt: -1}).exec()
   }
 
   async seenToUnseenHistory(person: string): Promise<any>{

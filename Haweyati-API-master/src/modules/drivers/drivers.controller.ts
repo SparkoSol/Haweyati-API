@@ -9,11 +9,6 @@ export class DriversController extends ImageController<IDriver> {
     super(service)
   }
 
-  @Patch('update-location')
-  async updateLocation(@Body() document: any): Promise<IDriver>{
-    return await this.service.updateLocation(document)
-  }
-
   @Get('getrequests')
   async getRequests(): Promise<IDriver[]> {
     return await this.service.getByStatus('Pending')

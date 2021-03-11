@@ -3,7 +3,7 @@ import { IImage } from "./image.interface"
 import { IShopRegistration } from './shop-registration.interface'
 
 export interface IScaffolding extends Document {
-  suppliers: IShopRegistration[]
+  suppliers: IShopRegistration[] | string[]
   description: string
   name: string
   image: IImage

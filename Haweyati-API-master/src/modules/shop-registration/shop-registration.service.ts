@@ -163,57 +163,44 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return data
   }
 
-  async getDataFromCityName(city: string, service: string): Promise<string[]> {
-    const data = await this.model
+  async getSupplierIdsFromCityName(city: string, service: string): Promise<string[]> {
+    const result: string[] = [];
+    (await this.model
       .find({
         city: city,
-        status: 'Active'
+        status: 'Active',
+        services: service
       })
       .populate('person')
-      .exec()
-    const newSet = new Set()
-    data.forEach(value => {
-      if (value.services.includes(service)) {
-        newSet.add(value._id)
-      }
-    })
-    return Array.from(newSet) as string[]
+      .exec()).forEach(value => {result.push(value._id)})
+
+    return result
   }
 
   async getSupplierFromCityName(city: string, service: string): Promise<IShopRegistration[]> {
-    const data = await this.model
+    const result: IShopRegistration[] = [];
+    (await this.model
       .find({
         city: city,
-        status: 'Active'
+        status: 'Active',
+        services: service
       })
       .populate('person')
-      .exec()
-    const newSet = new Set()
-    data.forEach(value => {
-      if (value.services.includes(service)) {
-        newSet.add(value)
-      }
-    })
-    return Array.from(newSet) as IShopRegistration[]
+      .exec()).forEach(value => {result.push(value)})
+
+    return result
   }
 
-  async getByService(name: string): Promise<IShopRegistration[]> {
-    const data = await this.model
-      .find({ status: 'Active' })
+  async getByService(service: string): Promise<IShopRegistration[]> {
+    return await this.model
+      .find({ status: 'Active', services: service })
       .populate('person')
       .exec()
-    const newSet = new Set()
-    data.forEach(value => {
-      if (value.services.includes(name)) {
-        newSet.add(value)
-      }
-    })
-    return Array.from(newSet) as IShopRegistration[]
   }
 
-  async getSubSuppliers(id: string): Promise<IShopRegistration[]> {
+  async getSubSuppliers(parent: string): Promise<IShopRegistration[]> {
     return await this.model
-      .find({ parent: id })
+      .find({ parent })
       .populate('person')
       .exec()
   }
@@ -227,11 +214,10 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
   }
 
   async getBlockedSuppliersWithoutParent(): Promise<IShopRegistration[]> {
-    const data = await this.model
+    return await this.insertSubSupplierCount(await this.model
       .find({ status: 'Blocked', parent: null })
       .populate('person')
-      .exec()
-    return await this.insertSubSupplierCount(data)
+      .exec())
   }
 
   async changeSupplierStatus(
@@ -281,9 +267,9 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return Array.from(newSet) as string[]
   }
 
-  async getByProfile(id: string): Promise<IShopRegistration> {
+  async getByProfile(person: string): Promise<IShopRegistration> {
     return await this.model
-      .findOne({ person: id })
+      .findOne({ person })
       .populate('person')
       .exec()
   }

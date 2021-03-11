@@ -19,10 +19,6 @@ export class PersonsService extends SimpleService<IPerson> {
     super(model)
   }
 
-  async fetchFromContact(contact: string): Promise<IPerson> {
-    return await this.model.findOne({ contact: contact }).exec()
-  }
-
   async create(data: any): Promise<IPerson> {
     if (!data.email) {
       data.email = undefined
@@ -192,15 +188,25 @@ export class PersonsService extends SimpleService<IPerson> {
     }
   }
 
-  async search(query: any): Promise<IPerson[]> {
+  //Used in Customer Module
+  async searchOfSpecificScope(query: any, scope: string): Promise<IPerson[]> {
     return await this.model
       .find({
         $or: [
           { name: { $regex: query.name, $options: 'i' } },
           { contact: { $regex: query.name, $options: 'i' } }
-        ]
+        ],
+        scope
       })
       .exec()
+  }
+
+  async guestAndCustomerFromContact(contact: string): Promise<IPerson> {
+    return await this.model.findOne({ contact, $or: [{scope: 'guest'}, {scope: 'customer'}]}).exec()
+  }
+
+  async personsFromSpecificScope(scope: string): Promise<IPerson[]>{
+    return await this.model.find({scope}).exec()
   }
 
   async updatePassword(document: any): Promise<IPerson> {

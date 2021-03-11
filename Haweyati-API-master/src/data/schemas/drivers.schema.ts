@@ -11,7 +11,7 @@ export const DriversSchema = new Schema(
     },
     supplier: {
       type: Schema.Types.ObjectId,
-      ref: 'suppliers',
+      ref: 'shopregistration',
       required: false
     },
     license: {

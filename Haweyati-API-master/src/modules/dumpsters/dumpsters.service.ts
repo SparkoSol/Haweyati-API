@@ -3,7 +3,6 @@ import { Injectable } from "@nestjs/common"
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
-import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 
 @Injectable()
@@ -17,25 +16,16 @@ export class DumpstersService extends SimpleService<IDumpster> {
   }
 
   async fetch(id?: string): Promise<IDumpster[] | IDumpster> {
-    if (id) {
-      const data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
-      for (let i = 0; i < data.suppliers.length; ++i) {
-        data.suppliers[i] = (await this.service.fetch(
-          data.suppliers[i].toString()
-        )) as IShopRegistration
-      }
-      return data
-    } else {
-      const big = await this.model.find({ status: 'Active' }).exec()
-      for (const data of big) {
-        for (let i = 0; i < data.suppliers.length; ++i) {
-          data.suppliers[i] = (await this.service.fetch(
-            data.suppliers[i].toString()
-          )) as IShopRegistration
-        }
-      }
-      return big
-    }
+    if (id)
+      return await this.model
+        .findOne({ _id: id, status: 'Active' })
+        .populate('suppliers')
+        .exec()
+    else
+      return await this.model
+        .find({ status: 'Active' })
+        .populate('suppliers')
+        .exec()
   }
 
   async create(document: IDumpster): Promise<IDumpster> {
@@ -44,39 +34,21 @@ export class DumpstersService extends SimpleService<IDumpster> {
   }
 
   async fromSuppliers(id: string): Promise<IDumpster[]> {
-    const dump = await this.model.find({ status: 'Active' }).exec()
-    const result = []
-
-    for (const item of dump) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (item.suppliers.includes(id)) {
-        result.push(item)
-      }
-    }
-
-    return result
+    return await this.model.find({ status: 'Active', suppliers: id }).exec()
   }
 
   async getByCity(city: string): Promise<IDumpster[]> {
-    if (city) {
-      const data = await this.service.getDataFromCityName(
-        city,
-        'Construction Dumpster'
-      )
-      const dump = await this.model.find({status: 'Active'}).exec()
-      const result = new Set()
+    const suppliers = await this.service.getSupplierIdsFromCityName(
+      city,
+      'Construction Dumpster'
+    )
+    const result = new Set()
 
-      for (const item of dump) {
-        for (const supplier of data) {
-          // @ts-ignore
-          if (item.suppliers.includes(supplier)) {
-            result.add(item)
-          }
-        }
-      }
-      return Array.from(result) as IDumpster[]
+    for (const supplier of suppliers){
+      result.add(await this.model.find({status: 'Active', suppliers: supplier}).exec())
     }
+
+    return Array.from(result) as IDumpster[]
   }
 
   async remove(id: string): Promise<IDumpster> {

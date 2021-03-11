@@ -65,12 +65,12 @@ export class CustomersController extends ImageController<ICustomer> {
 
   @Get('getactive')
   async getActive(): Promise<ICustomer[]> {
-    return await this.service.getWithScopeCustomer('Active')
+    return await this.service.getCustomers()
   }
 
   @Get('active-search')
   async search(@Query() query: any): Promise<ICustomer[]>{
-    return await this.service.searchActive(query)
+    return await this.service.search(query, 'Active', 'customer')
   }
 
   @Get('getblocked')
@@ -87,22 +87,17 @@ export class CustomersController extends ImageController<ICustomer> {
 
   @Get('blocked-search')
   async searchBlocked(@Query() query: any): Promise<ICustomer[]>{
-    return await this.service.searchBlocked(query)
+    return await this.service.search(query, 'Blocked', 'customer')
   }
 
   @Get('guest-search')
   async searchGuest(@Query() query: any): Promise<ICustomer[]> {
-    return await this.service.searchGuest(query)
-  }
-
-  @Post('guest-sign-up')
-  async guestSignUp(@Body() data: any): Promise<ICustomer> {
-    return await this.service.guestSignUp(data)
+    return await this.service.search(query, 'Active', 'guest')
   }
 
   @Patch('getunblocked/:id')
   async getUnblocked(@Param('id') id: string): Promise<ICustomer> {
-    return await this.service.getUnblocked(id)
+    return await this.service.Unblock(id)
   }
 
   @Get('getall')

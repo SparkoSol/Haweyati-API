@@ -7,6 +7,7 @@ import { IShopRegistration } from '../../data/interfaces/shop-registration.inter
 import { IFinishingMaterial } from '../../data/interfaces/finishingMaterials.interface'
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
+import { IDumpster } from "../../data/interfaces/dumpster.interface";
 
 @Injectable()
 export class FinishingMaterialsService extends SimpleService<
@@ -24,53 +25,33 @@ export class FinishingMaterialsService extends SimpleService<
   async fetch(
     id?: string
   ): Promise<IFinishingMaterial[] | IFinishingMaterial> {
-    if (id) {
-      const data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
-      for (let i = 0; i < data.suppliers.length; ++i) {
-        data.suppliers[i] = (await this.service.fetch(
-          data.suppliers[i].toString()
-        )) as IShopRegistration
-      }
-      return data
-    } else {
-      const big = await this.model.find({ status: 'Active' }).exec()
-      for (const data of big) {
-        for (let i = 0; i < data.suppliers.length; ++i) {
-          data.suppliers[i] = (await this.service.fetch(
-            data.suppliers[i].toString()
-          )) as IShopRegistration
-        }
-      }
-      return big
-    }
+    if (id)
+      return await this.model
+        .findOne({ _id: id, status: 'Active' })
+        .populate('suppliers')
+        .exec()
+    else
+      return await this.model
+        .find({ status: 'Active' })
+        .populate('suppliers')
+        .exec()
   }
 
-  fetchByParentId(id: string): Promise<IFinishingMaterial[]> {
+  fetchByParentId(parent: string): Promise<IFinishingMaterial[]> {
     return this.model
-      .find({ status: 'Active' })
-      .where('parent', id)
+      .find({ status: 'Active', parent })
       .exec()
   }
 
   async getByCity(city: string, parent: string): Promise<IFinishingMaterial[]> {
-    const data = await this.service.getDataFromCityName(
+    const suppliers = await this.service.getSupplierIdsFromCityName(
       city,
       'Finishing Material'
     )
-    const dump = await this.model
-      .find({ status: 'Active' })
-      .where('parent', parent)
-      .exec()
-
     const result = new Set()
 
-    for (const item of dump) {
-      for (const supplier of data) {
-        // @ts-ignore
-        if ((item.suppliers).includes(supplier)) {
-          result.add(item)
-        }
-      }
+    for (const supplier of suppliers){
+      result.add(await this.model.find({status: 'Active', parent, suppliers: supplier}).exec())
     }
 
     return Array.from(result) as IFinishingMaterial[]
@@ -82,21 +63,8 @@ export class FinishingMaterialsService extends SimpleService<
       .exec()
   }
 
-  async getSuppliers(id: string): Promise<IFinishingMaterial[]> {
-    const dump = await this.model.find({ status: 'Active' }).exec()
-    const result = []
-
-    for (const item of dump) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (item.suppliers.includes(id)) {
-        item.parent = (await this.categoryService.fetch(
-          item.parent.toString()
-        )) as IFinishingMaterialCategory
-        result.push(item)
-      }
-    }
-    return result
+  async getSuppliers(supplier: string): Promise<IFinishingMaterial[]> {
+    return await this.model.find({ status: 'Active', suppliers: supplier }).populate('parent').exec()
   }
 
   async remove(id: string): Promise<IFinishingMaterial> {
@@ -113,17 +81,10 @@ export class FinishingMaterialsService extends SimpleService<
   }
 
   async search(name: string, parent: string, supplier: string): Promise<IFinishingMaterial[]> {
-    const big = await this.model
+    return await this.model
       .find({ status: 'Active', parent, suppliers: supplier, name: { $regex: name, $options: 'i' } })
+      .populate('suppliers')
       .exec()
-    for (const data of big) {
-      for (let i = 0; i < data.suppliers.length; ++i) {
-        data.suppliers[i] = (await this.service.fetch(
-          data.suppliers[i].toString()
-        )) as IShopRegistration
-      }
-    }
-    return big
   }
 
   async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterial[]> {

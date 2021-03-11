@@ -20,16 +20,17 @@ export class ServiceRequestsService extends SimpleService<IServiceRequest> {
 
   async fetch(id?: string): Promise<IServiceRequest[] | IServiceRequest> {
     if (id) {
-      const data = await this.model
+      return await this.model
         .findById(id)
-        .populate('suppliers')
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
         .exec()
-      // @ts-ignore
-      data.suppliers.person = await this.personsService.fetch(
-        // @ts-ignore
-        data.suppliers.person
-      )
-      return data
     } else return this.getByStatus()
   }
 
@@ -60,25 +61,30 @@ export class ServiceRequestsService extends SimpleService<IServiceRequest> {
   }
 
   async getByStatus(status?: string): Promise<IServiceRequest[]> {
-    let all
     if (status)
-      all = await this.model
+      return await this.model
         .find({ status })
-        .populate('suppliers')
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
         .exec()
     else
-      all = await this.model
+      return await this.model
         .find()
-        .populate('suppliers')
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
         .exec()
-
-    for (let data of all) {
-      // @ts-ignore
-      data.suppliers.person = await this.personsService.fetch(
-        data.suppliers.person
-      )
-    }
-    return all
   }
 
   async updateByStatus(id: string, status: string): Promise<IServiceRequest> {
@@ -90,7 +96,7 @@ export class ServiceRequestsService extends SimpleService<IServiceRequest> {
   }
 
   async search(query: any): Promise<IServiceRequest[]>  {
-    const data = await this.model
+    return await this.model
       .find({
         $or: [
           { requestNo: { $regex: query.name, $options: 'i' } },
@@ -98,15 +104,14 @@ export class ServiceRequestsService extends SimpleService<IServiceRequest> {
         ],
         status: 'Pending'
       })
-      .populate('suppliers')
+      .populate({
+        path: 'suppliers',
+        model: 'shopregistration',
+        populate: {
+          path: 'person',
+          model: 'persons'
+        }
+      })
       .exec()
-    for (const item of data) {
-      // @ts-ignore
-      item.suppliers.person = await this.personsService.fetch(
-        // @ts-ignore
-        item.suppliers.person
-      )
-    }
-    return data
   }
 }

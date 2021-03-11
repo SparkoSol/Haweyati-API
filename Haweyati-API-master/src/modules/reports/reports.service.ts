@@ -8,26 +8,6 @@ import { IOrder, OrderStatus } from '../../data/interfaces/orders.interface'
 export class ReportsService {
   constructor(private readonly ordersService: OrdersService) {}
 
-  async getOrdersData(data: any): Promise<IOrder[]>{
-    return await this.ordersService.ordersAfterFilter(data)
-  }
-
-  async generateOrdersReport(data: any): Promise<any> {
-    const orders = await this.getOrdersData(data)
-    let total = 0
-    for (const order of orders) {
-      total += order.total
-    }
-
-    const dataForReport = {
-      title: ReportsService.title(data),
-      date: ReportsService.subTitle(data),
-      orders: orders,
-      total: total.toFixed(2)
-    }
-    return ReportUtils.renderReport('order_report', dataForReport)
-  }
-
   private static title(data: any): string{
     if (data.date)
       return data.dateTo ? 'Custom' : 'Daily'
@@ -53,6 +33,26 @@ export class ReportsService {
       return data.year
     else
       return ''
+  }
+
+  async getOrdersData(data: any): Promise<IOrder[]>{
+    return await this.ordersService.ordersAfterFilter(data)
+  }
+
+  async generateOrdersReport(data: any): Promise<any> {
+    const orders = await this.getOrdersData(data)
+    let total = 0
+    for (const order of orders) {
+      total += order.total
+    }
+
+    const dataForReport = {
+      title: ReportsService.title(data),
+      date: ReportsService.subTitle(data),
+      orders: orders,
+      total: total.toFixed(2)
+    }
+    return ReportUtils.renderReport('order_report', dataForReport)
   }
 
   async generateOrderInvoice(id: string): Promise<any> {

@@ -19,56 +19,34 @@ export class ScaffoldingService extends SimpleService<IScaffolding> {
   async fetch(
     id?: string
   ): Promise<IScaffolding[] | IScaffolding> {
-    if (id) {
-      const data = await this.model.findById(id).exec()
-      for (let i = 0; i < data.suppliers.length; ++i) {
-        data.suppliers[i] = (await this.service.fetch(
-          data.suppliers[i].toString()
-        )) as IShopRegistration
-      }
-      return data
-    } else {
-      const all = await this.model.find().exec()
-      for (const data of all) {
-        for (let i = 0; i < data.suppliers.length; ++i) {
-          data.suppliers[i] = (await this.service.fetch(
-            data.suppliers[i].toString()
-          )) as IShopRegistration
-        }
-      }
-      return all
-    }
+    if (id)
+      return await this.model
+        .findById(id)
+        .populate('suppliers')
+        .exec()
+    else
+      return await this.model
+        .find()
+        .populate('suppliers')
+        .exec()
   }
 
   async getSuppliers(id: string): Promise<IScaffolding[]> {
-    const dump = await this.model.find().exec()
-    const result = []
-    for (const item of dump) {
-      // @ts-ignore
-      if (item.suppliers.includes(id)) {
-            result.push(item)
-          }
-    }
-    return result as IScaffolding[]
+    return await this.model.find({suppliers: id}).exec()
   }
 
   async getByCity(city: string): Promise<IScaffolding[]> {
     if (city) {
-      const data = await this.service.getDataFromCityName(
+      const suppliers = await this.service.getSupplierIdsFromCityName(
         city,
         'Scaffolding'
       )
-      const scaffolding = await this.model.find().exec()
       const result = new Set()
 
-      for (const item of scaffolding) {
-        for (const supplier of data) {
-          // @ts-ignore
-          if (item.suppliers.includes(supplier)) {
-            result.add(item)
-          }
-        }
+      for (const supplier of suppliers){
+        result.add(await this.model.find({status: 'Active', suppliers: supplier}).exec())
       }
+
       return Array.from(result) as IScaffolding[]
     }
   }

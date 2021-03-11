@@ -212,28 +212,12 @@ export class OrdersService extends SimpleService<IOrder> {
     const order = (await this.model.findById(data.id)) as IOrder
     if (order.image) order.image.push(data.image)
     else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       order.image = [data.image]
     }
 
     // @ts-ignore
     return (await order.save()).image.name
-  }
-
-  async getPerson(all: any): Promise<any> {
-    if (Array.isArray(all)) {
-      for (const data of all) {
-        data.customer.profile = await this.personsService.fetch(
-          data.customer.profile
-        )
-      }
-    } else {
-      all.customer.profile = await this.personsService.fetch(
-        all.customer.profile
-      )
-    }
-    return all
   }
 
   async getByCustomerId(id: string): Promise<IOrder[]> {
@@ -244,10 +228,8 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async getSearchByCustomerId(id: string, name?: string): Promise<IOrder[]> {
-    let data: any
-
-    if (name) {
-      data = await this.model
+    if (name)
+      return await this.model
         .find({
           customer: id,
           $or: [
@@ -255,49 +237,75 @@ export class OrdersService extends SimpleService<IOrder> {
             { orderNo: { $regex: name, $options: 'i' } }
           ]
         })
-        .populate('customer')
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
         .sort({ createdAt: -1 })
         .exec()
-    } else {
-      data = await this.model
+    else
+      return await this.model
         .find({
           customer: id
         })
-        .populate('customer')
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
         .sort({ createdAt: -1 })
         .exec()
-    }
-    return this.getPerson(data)
   }
 
   async getByDriverId(id: string): Promise<IOrder[]> {
-    return this.getPerson(
-      await this.model
-        .find({ 'driver._id': id })
-        .populate('customer')
-        .sort({ createdAt: -1 })
-        .exec()
-    )
+    return await this.model
+      .find({ 'driver._id': id })
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .exec()
   }
 
   async completedDriverId(id: string): Promise<IOrder[]> {
-    return this.getPerson(
-      await this.model
-        .find({ 'driver._id': id, status: OrderStatus.Delivered })
-        .populate('customer')
-        .sort({ createdAt: -1 })
-        .exec()
-    )
+    return await this.model
+      .find({ 'driver._id': id, status: OrderStatus.Delivered })
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .exec()
   }
 
   async getBySupplierId(id: string): Promise<IOrder[]> {
-    return await this.getPerson(
-      await this.model
-        .find({ status: OrderStatus.Accepted })
-        .where('supplier._id: id')
-        .populate('customer')
-        .exec()
-    )
+    return await this.model
+      .find({ status: OrderStatus.Accepted, 'supplier._id': id })
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .exec()
   }
 
   async getAssignedOrdersBySupplierId(id: string): Promise<IOrder[]> {
@@ -316,36 +324,51 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async getOrdersBySupplierAndStatus(id: string, status: number): Promise<IOrder[]> {
-    return await this.getPerson(
-      await this.model
+    return await this.model
         .find({ status: status })
         .where('supplier._id', id)
-        .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
         .sort({createdAt: -1})
         .exec()
-    )
   }
 
   async getOrdersByDriverAndStatus(id: string, status: number): Promise<IOrder[]> {
-    return await this.getPerson(
-      await this.model
+    return await this.model
         .find({ status: status })
         .where('driver._id', id)
-        .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
         .sort({createdAt: -1})
         .exec()
-    )
   }
 
   async completedSupplierId(id: string): Promise<IOrder[]> {
     const result = new Set()
-    const orders = (await this.getPerson(
-      await this.model
+    const orders = await this.model
         .find({ status: OrderStatus.Delivered })
-        .populate('customer')
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrder[]
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
@@ -359,13 +382,18 @@ export class OrdersService extends SimpleService<IOrder> {
 
   async dispatchedSupplier(id: string): Promise<IOrder[]> {
     const result = new Set()
-    const orders = (await this.getPerson(
-      await this.model
+    const orders = await this.model
         .find({ status: OrderStatus.Dispatched })
-        .populate('customer')
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrder[]
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
@@ -378,51 +406,77 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async dispatchedDriver(id: string): Promise<IOrder[]> {
-    return (await this.getPerson(
-      await this.model
+    return await this.model
         .find({ status: OrderStatus.Dispatched, 'driver._id': id })
-        .populate('customer')
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrder[]
   }
 
   async preparingDriver(id: string): Promise<IOrder[]> {
-    return (await this.getPerson(
-      await this.model
+    return await this.model
         .find({ status: OrderStatus.Preparing, 'driver._id': id })
-        .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrder[]
   }
 
   async fetch(id?: string): Promise<IOrder[] | IOrder> {
     if (id) {
-      const data = await this.model
+      return await this.model
         .findById(id)
-        .populate('customer')
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
         .exec()
-      return await this.getPerson(data)
     } else {
-      let all = await this.model
+      return await this.model
         .find()
-        .populate('customer')
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
         .sort({ createdAt: -1 })
         .exec()
-      all = await this.getPerson(all)
-      return all
     }
   }
 
   async getByStatus(status: OrderStatus): Promise<IOrder[]> {
-    let all = await this.model
+    return await this.model
       .find({ status })
-      .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
       .sort({ createdAt: -1 })
       .exec()
-    all = await this.getPerson(all)
-    return all
   }
 
   async updateStatus(id: string, status: OrderStatus, message?: string): Promise<IOrder> {
@@ -518,7 +572,7 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async search(query: any): Promise<IOrder[]> {
-    const data = await this.model
+    return await this.model
       .find({
         $or: [
           { service: { $regex: query.name, $options: 'i' } },
@@ -526,11 +580,16 @@ export class OrdersService extends SimpleService<IOrder> {
         ],
         status: OrderStatus.Pending
       })
-      .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
       .sort({ createdAt: -1 })
       .exec()
-
-    return this.getPerson(data)
   }
 
   async viewOrders(data: any): Promise<IOrder[]> {
@@ -618,7 +677,17 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async AddSupplierToOrder(data: any): Promise<IOrder> {
-    const order = await this.getPerson(await this.model.findById(data._id).populate('customer').exec()) as IOrder
+    const order = await this.model
+      .findById(data._id)
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .exec() as IOrder
     if (data.flag) {
       //move these two statement below on your own risk
       if (!order.supplier) order.supplier = data.supplier
@@ -728,11 +797,17 @@ export class OrdersService extends SimpleService<IOrder> {
 
   async AddDriver(data: any): Promise<IOrder> {
     if (data.flag) {
-      const order = await this.getPerson(
-        await this.model
+      const order = await this.model
         .findById(data._id)
-        .populate('customer')
-        .exec())
+        .populate({
+          path: 'customer',
+          model: 'customers',
+          populate: {
+            path: 'profile',
+            model: 'persons'
+          }
+        })
+        .exec()
       if (!order.driver) {
         let result
         if (order.service == 'Scaffolding' || order.service == 'Building Material') {
@@ -763,14 +838,13 @@ export class OrdersService extends SimpleService<IOrder> {
           order.status = OrderStatus.Preparing
           result = await order.save()
 
-          // @ts-ignore
           await this.fcmService.sendSingle({
             id: data.driver.profile._id,
             title: 'You have been assigned an order!',
             body: 'Order #' + order.orderNo
           })
-          // @ts-ignore
           await this.fcmService.sendSingle({
+            // @ts-ignore
             id: order.customer.profile._id,
             title: 'You order has been assigned to a driver',
             body: 'Order #' + order.orderNo
@@ -838,13 +912,18 @@ export class OrdersService extends SimpleService<IOrder> {
 
   async filter(data: any): Promise<IOrder[]> {
     const result = new Set<any>()
-    const orders = await this.getPerson(
-      await this.model
+    const orders = await this.model
       .find({ city: data.city, status: OrderStatus.Pending, service: {$ne: 'Delivery Vehicle'} })
-      .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
       .sort({ createdAt: -1 })
       .exec()
-    )
     for (const order of orders) {
       if (data.services.includes(order.service)) {
         result.add(order)
@@ -854,13 +933,18 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async getDriverOrdersFromCity(city: string): Promise<IOrder[]> {
-    return await this.getPerson(
-      await this.model
+    return await this.model
         .find({ city, service: 'Delivery Vehicle' })
-        .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
         .sort({ createdAt: -1 })
         .exec()
-    )
   }
 
   async estimateDistanceAndPrice(data: any): Promise<any> {
@@ -882,7 +966,7 @@ export class OrdersService extends SimpleService<IOrder> {
   async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrder[]>{
     const driver  = await this.driverService.fetch(driverId) as IDriver
 
-    let orders = (await this.model.find(
+    const orders = (await this.model.find(
       {
         // @ts-ignore
         volumetricWeight: {$lte: driver.vehicle.type.volumetricWeight},
@@ -893,20 +977,41 @@ export class OrdersService extends SimpleService<IOrder> {
         city,
         service: {$nin: ['Delivery Vehicle', 'Building Material']}
       })
-      .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
       .sort({createdAt: -1})
       .exec()) as IOrder[]
 
     // @ts-ignore
     const dvOrders = await this.model
       .find({service: 'Delivery Vehicle', status: OrderStatus.Pending, city})
-      .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
       .sort({createdAt: -1})
       .exec() as IOrder[]
 
     const bmOrders = await this.model
       .find({service: 'Building Material', status: OrderStatus.Accepted, city})
-      .populate('customer')
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
       .sort({createdAt: -1})
       .exec() as IOrder[]
 
@@ -923,7 +1028,7 @@ export class OrdersService extends SimpleService<IOrder> {
    // @ts-ignore
     orders.sort((a,b) => (a.createdAt > b.createdAt) ? -1 : ((b.createdAt > a.createdAt) ? 1 : 0))
 
-    return await this.getPerson(orders)
+    return orders
   }
 
   async acceptItems(data: any): Promise<IOrder>{
