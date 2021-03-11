@@ -62,24 +62,18 @@ export class BuildingMaterialsService extends SimpleService<
 
   async getByCity(city: string, parent: string): Promise<IBuildingMaterials[]> {
     if (city) {
-      const data = await this.service.getSupplierIdsFromCityName(
+      const suppliers = await this.service.getSupplierIdsFromCityName(
         city,
         'Building Material'
       )
-      const dump = await this.model
-        .find({ status: 'Active' })
-        .where('parent', parent)
-        .exec()
 
       const result = new Set()
 
-      for (const item of dump) {
-        for (const supplier of data) {
-          // @ts-ignore
-          if (item.suppliers.includes(supplier)) {
-            result.add(item)
-          }
-        }
+      for (const supplier of suppliers){
+        const bm = await this.model
+          .find({ status: 'Active', parent, suppliers: supplier })
+          .exec()
+        bm.forEach(value => {result.add(value)})
       }
       return Array.from(result) as IBuildingMaterials[]
     }

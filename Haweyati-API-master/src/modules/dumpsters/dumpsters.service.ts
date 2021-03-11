@@ -45,7 +45,8 @@ export class DumpstersService extends SimpleService<IDumpster> {
     const result = new Set()
 
     for (const supplier of suppliers){
-      result.add(await this.model.find({status: 'Active', suppliers: supplier}).exec())
+      const dumpsters = await this.model.find({status: 'Active', suppliers: supplier}).exec()
+      dumpsters.forEach(value => {result.add(value)})
     }
 
     return Array.from(result) as IDumpster[]

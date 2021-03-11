@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IScaffolding } from '../../data/interfaces/scaffolding.interface'
-import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 
 @Injectable()
@@ -44,7 +43,8 @@ export class ScaffoldingService extends SimpleService<IScaffolding> {
       const result = new Set()
 
       for (const supplier of suppliers){
-        result.add(await this.model.find({status: 'Active', suppliers: supplier}).exec())
+        const scaffolding = await this.model.find({suppliers: supplier}).exec()
+        scaffolding.forEach(value => {result.add(value)})
       }
 
       return Array.from(result) as IScaffolding[]

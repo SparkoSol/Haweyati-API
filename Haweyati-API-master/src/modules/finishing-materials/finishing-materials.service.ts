@@ -51,7 +51,8 @@ export class FinishingMaterialsService extends SimpleService<
     const result = new Set()
 
     for (const supplier of suppliers){
-      result.add(await this.model.find({status: 'Active', parent, suppliers: supplier}).exec())
+      const fm = await this.model.find({status: 'Active', parent, suppliers: supplier}).exec()
+      fm.forEach(value => {result.add(value)})
     }
 
     return Array.from(result) as IFinishingMaterial[]
