@@ -6,16 +6,16 @@ import { LocationUtils } from '../../common/lib/location-utils'
 import { IPerson } from '../../data/interfaces/person.interface'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { ICustomerInterface } from '../../data/interfaces/customers.interface'
+import { ICustomer } from '../../data/interfaces/customer.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 import { FcmService } from '../fcm/fcm.service'
 import { IAdminNotification } from "../../data/interfaces/adminNotification.interface";
 
 @Injectable()
-export class CustomersService extends SimpleService<ICustomerInterface> {
+export class CustomersService extends SimpleService<ICustomer> {
   constructor(
     @InjectModel('customers')
-    protected readonly model: Model<ICustomerInterface>,
+    protected readonly model: Model<ICustomer>,
     protected readonly fcmService: FcmService,
     protected readonly personService: PersonsService,
     protected readonly adminNotificationsService: AdminNotificationsService
@@ -23,7 +23,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     super(model)
   }
 
-  async searchActive(query: any): Promise<ICustomerInterface[]>{
+  async searchActive(query: any): Promise<ICustomer[]>{
     const results = []
 
     const persons = await this.personService.search(query)
@@ -42,7 +42,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return results
   }
 
-  async searchGuest(query: any): Promise<ICustomerInterface[]>{
+  async searchGuest(query: any): Promise<ICustomer[]>{
     const results = []
 
     const persons = await this.personService.search(query)
@@ -61,7 +61,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return results
   }
 
-  async searchBlocked(query: any): Promise<ICustomerInterface[]>{
+  async searchBlocked(query: any): Promise<ICustomer[]>{
     const persons = await this.personService.search(query)
     const activeCustomers = await this.getWithScopeCustomer('Blocked')
     const results = []
@@ -80,23 +80,23 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return results
   }
 
-  async fetch(id?: string): Promise<ICustomerInterface | ICustomerInterface[]> {
+  async fetch(id?: string): Promise<ICustomer | ICustomer[]> {
     if (id) {
       return (await this.model
         .findById(id)
         .where('status', 'Active')
         .populate('profile')
-        .exec()) as ICustomerInterface
+        .exec()) as ICustomer
     } else {
       return (await this.model
         .find()
         .where('status', 'Active')
         .populate('profile')
-        .exec()) as ICustomerInterface[]
+        .exec()) as ICustomer[]
     }
   }
 
-  async createAdmin(document: any): Promise<ICustomerInterface>{
+  async createAdmin(document: any): Promise<ICustomer>{
     document.scope = 'customer'
 
     if (document.profile) {
@@ -124,7 +124,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       .exec()
   }
 
-  async create(document: any): Promise<ICustomerInterface> {
+  async create(document: any): Promise<ICustomer> {
     let customer: any
     document.scope = 'customer'
 
@@ -162,7 +162,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       .exec()
   }
 
-  async new(document: any): Promise<ICustomerInterface> {
+  async new(document: any): Promise<ICustomer> {
     document.profile.scope = 'customer'
 
     document.profile.username = document.profile.contact
@@ -189,7 +189,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return await this.createCustomer(document)
   }
 
-  async getGuest(): Promise<ICustomerInterface[]>{
+  async getGuest(): Promise<ICustomer[]>{
     const result = new Set()
     const persons = (await this.personService.fetch()) as IPerson[]
     for (const person of persons){
@@ -197,10 +197,10 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
         result.add(await this.model.findOne({profile : person._id}).populate('profile').exec())
       }
     }
-    return Array.from(result) as ICustomerInterface[]
+    return Array.from(result) as ICustomer[]
   }
 
-  async guestNew(document: any): Promise<ICustomerInterface> {
+  async guestNew(document: any): Promise<ICustomer> {
     document.profile.scope = 'guest'
     document.profile.name = 'HW-Guest-' + await NoGeneratorUtils.generateCode()
 
@@ -212,7 +212,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return await this.createCustomer(document)
   }
 
-  private async createCustomer(document: any): Promise<ICustomerInterface>{
+  private async createCustomer(document: any): Promise<ICustomer>{
     let customer: any
     const person = await this.personService.create(document.profile)
 
@@ -233,7 +233,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       .exec()
   }
 
-  async convertFromGuest(document: any): Promise<ICustomerInterface>{
+  async convertFromGuest(document: any): Promise<ICustomer>{
     const profile = await this.personService.scopeConversion(document.profile)
     //Generating referral code
     const referralCode = 'HW-Refer-' + await NoGeneratorUtils.generateCode()
@@ -300,12 +300,12 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return await this.fetch(document._id)
   }
 
-  async getWithScopeCustomer(status: string): Promise<ICustomerInterface[]>{
-    let activeOnes: ICustomerInterface[];
+  async getWithScopeCustomer(status: string): Promise<ICustomer[]>{
+    let activeOnes: ICustomer[];
     if (status == 'Blocked')
-      activeOnes = (await this.model.find({status: 'Blocked'}).populate('profile').exec()) as ICustomerInterface[]
+      activeOnes = (await this.model.find({status: 'Blocked'}).populate('profile').exec()) as ICustomer[]
     else
-      activeOnes = (await this.fetch()) as ICustomerInterface[]
+      activeOnes = (await this.fetch()) as ICustomer[]
 
     const result = new Set()
     for (const activeOne of activeOnes) {
@@ -313,15 +313,15 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       if (activeOne.profile.scope.includes('customer'))
         result.add(activeOne)
     }
-    return (Array.from(result)) as ICustomerInterface[]
+    return (Array.from(result)) as ICustomer[]
 
   }
 
-  async getUnblocked(id: string): Promise<ICustomerInterface> {
+  async getUnblocked(id: string): Promise<ICustomer> {
     return await this.model.findByIdAndUpdate(id, { status: 'Active' }).exec()
   }
 
-  async guestSignUp(document: any): Promise<ICustomerInterface> {
+  async guestSignUp(document: any): Promise<ICustomer> {
      document.name = "Guest " + document.contact
      document.username, document.password = document.contact
      document.guest = true
@@ -338,7 +338,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
      return await this.model.create(document)
   }
 
-  async getBlocked(id?: string, msg?: string): Promise<ICustomerInterface | ICustomerInterface[]> {
+  async getBlocked(id?: string, msg?: string): Promise<ICustomer | ICustomer[]> {
     if (id && msg)
       return await this.model
         .findByIdAndUpdate(id, { status: 'Blocked', message: msg })
@@ -366,7 +366,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     }
   }
 
-  async getProfile(contact: string): Promise<ICustomerInterface> {
+  async getProfile(contact: string): Promise<ICustomer> {
     const person = await this.personService.fetchFromContact(contact)
     if (person?.scope.includes('customer') || person?.scope.includes('guest')) {
       return await this.model
@@ -379,7 +379,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
 
   async getAll(
     id?: string
-  ): Promise<ICustomerInterface[] | ICustomerInterface> {
+  ): Promise<ICustomer[] | ICustomer> {
     if (id)
       return await this.model
         .findById(id)
@@ -392,7 +392,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
         .exec()
   }
 
-  async updatePointsFromReferral(referralCode: string, points: number, add: boolean): Promise<ICustomerInterface>{
+  async updatePointsFromReferral(referralCode: string, points: number, add: boolean): Promise<ICustomer>{
     let customer = await this.model.findOne({referralCode})
     if (customer.points)
       add ? customer.points += points : customer.points -= points
@@ -408,7 +408,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return customer
   }
   
-  async updatePointsFromId(id: string, points: number, add: boolean): Promise<ICustomerInterface>{
+  async updatePointsFromId(id: string, points: number, add: boolean): Promise<ICustomer>{
     const customer = await this.model.findById({_id: id})
     if (customer.points)
       add ? customer.points += points : customer.points -= points

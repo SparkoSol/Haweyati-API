@@ -3,7 +3,7 @@ import { IShopRegistration } from './shop-registration.interface'
 import { IImage } from './image.interface'
 import { IFinishingMaterialCategory } from './finishingMaterialCategory.interface'
 
-export interface IFinishingMaterials extends Document {
+export interface IFinishingMaterial extends Document {
   name: string
   description: string
   parent: IFinishingMaterialCategory | string

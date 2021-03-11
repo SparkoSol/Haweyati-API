@@ -1,19 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { ICoupons } from "../../data/interfaces/coupons.interface";
+import { ICoupon } from "../../data/interfaces/coupons.interface";
 import { SimpleService } from "../../common/lib/simple.service";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import * as moment from 'moment'
 
 @Injectable()
-export class CouponsService extends SimpleService<ICoupons> {
+export class CouponsService extends SimpleService<ICoupon> {
   constructor(
-    @InjectModel('coupons') protected readonly model: Model<ICoupons>
+    @InjectModel('coupons') protected readonly model: Model<ICoupon>
   ) {
     super(model)
   }
 
-  async create(document: ICoupons): Promise<ICoupons> {
+  async create(document: ICoupon): Promise<ICoupon> {
     if (await this.model.findOne({ code: document.code }).exec())
       throw new HttpException(
         'Coupon Code Already Exists!',
@@ -22,7 +22,7 @@ export class CouponsService extends SimpleService<ICoupons> {
     return super.create(document)
   }
 
-  async checkCouponValidity(code: string, userId: string): Promise<ICoupons> {
+  async checkCouponValidity(code: string, userId: string): Promise<ICoupon> {
     const coupon = await this.model.findOne({ code }).exec()
     if (coupon){
       if (coupon.isOneTime)
@@ -39,7 +39,7 @@ export class CouponsService extends SimpleService<ICoupons> {
     )
   }
 
-  async addUser(code: string, userId: string): Promise<ICoupons> {
+  async addUser(code: string, userId: string): Promise<ICoupon> {
     const coupon = await this.model.findOne({ code }).exec()
     if (coupon.isOneTime) {
       if (!coupon.usedBy.includes(userId)) {

@@ -4,21 +4,21 @@ import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
-import { IServicesRequests } from '../../data/interfaces/serviceRequests.interface'
+import { IServiceRequest } from "../../data/interfaces/serviceRequest.interface"
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
-export class ServiceRequestsService extends SimpleService<IServicesRequests> {
+export class ServiceRequestsService extends SimpleService<IServiceRequest> {
   constructor(
     @InjectModel('servicerequests')
-    protected readonly model: Model<IServicesRequests>,
+    protected readonly model: Model<IServiceRequest>,
     protected readonly personsService: PersonsService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
     super(model)
   }
 
-  async fetch(id?: string): Promise<IServicesRequests[] | IServicesRequests> {
+  async fetch(id?: string): Promise<IServiceRequest[] | IServiceRequest> {
     if (id) {
       const data = await this.model
         .findById(id)
@@ -33,7 +33,7 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests> {
     } else return this.getByStatus()
   }
 
-  async create(document: any): Promise<IServicesRequests> {
+  async create(document: any): Promise<IServiceRequest> {
     const { suppliers, note, type, image, description, ...data } = document
 
     const serviceReq = {
@@ -45,7 +45,7 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests> {
       image,
       requestNo: 'HW-SR-' + await NoGeneratorUtils.generateCode()
     }
-    const serviceRequest = await super.create(<IServicesRequests>serviceReq)
+    const serviceRequest = await super.create(<IServiceRequest>serviceReq)
 
     //notification for admin
     if (serviceRequest) {
@@ -59,7 +59,7 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests> {
     return serviceRequest
   }
 
-  async getByStatus(status?: string): Promise<IServicesRequests[]> {
+  async getByStatus(status?: string): Promise<IServiceRequest[]> {
     let all
     if (status)
       all = await this.model
@@ -81,15 +81,15 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests> {
     return all
   }
 
-  async updateByStatus(id: string, status: string): Promise<IServicesRequests> {
+  async updateByStatus(id: string, status: string): Promise<IServiceRequest> {
     return await this.model.findByIdAndUpdate(id, { status }).exec()
   }
 
-  async getBySupplier(id: string): Promise<IServicesRequests[]> {
+  async getBySupplier(id: string): Promise<IServiceRequest[]> {
     return this.model.find({ suppliers: id }).exec()
   }
 
-  async search(query: any): Promise<IServicesRequests[]>  {
+  async search(query: any): Promise<IServiceRequest[]>  {
     const data = await this.model
       .find({
         $or: [

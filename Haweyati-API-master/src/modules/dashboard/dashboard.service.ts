@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { OrdersService } from '../orders/orders.service'
 import { DriversService } from '../drivers/drivers.service'
 import { CustomersService } from '../customers/customers.service'
-import { IDriversInterface } from '../../data/interfaces/drivers.interface'
-import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
-import { ICustomerInterface } from '../../data/interfaces/customers.interface'
+import { IDriver } from '../../data/interfaces/drivers.interface'
+import { IOrder, OrderStatus } from '../../data/interfaces/orders.interface'
+import { ICustomer } from '../../data/interfaces/customer.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { BuildingMaterialsService } from '../building-materials/building-materials.service'
 import { FinishingMaterialsService } from '../finishing-materials/finishing-materials.service'
@@ -23,12 +23,12 @@ export class DashboardService {
   async allData(): Promise<any> {
     const drivers = ((await this.driversService.getByStatus(
       'Active'
-    )) as IDriversInterface[]).length
+    )) as IDriver[]).length
     const suppliers = await this.suppliersService.totalSuppliers()
     const orders = ((await this.ordersService.getByStatus(
       OrderStatus.Pending
-    )) as IOrders[]).length
-    const customers = ((await this.customersService.fetch()) as ICustomerInterface[])
+    )) as IOrder[]).length
+    const customers = ((await this.customersService.fetch()) as ICustomer[])
       .length
 
     const count: number =

@@ -10,22 +10,22 @@ import { CouponsService } from "../coupons/coupons.service"
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
 import { CustomersService } from '../customers/customers.service'
-import { IReviews } from '../../data/interfaces/reviews.interface'
+import { IReview } from '../../data/interfaces/reviews.interface'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { VehicleTypeService } from '../vehicle-type/vehicle-type.service'
 import { IVehicleType } from '../../data/interfaces/vehicleType.interface'
-import { IDriversInterface } from '../../data/interfaces/drivers.interface'
-import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
-import { ICustomerInterface } from '../../data/interfaces/customers.interface'
+import { IDriver } from '../../data/interfaces/drivers.interface'
+import { IOrder, OrderStatus } from '../../data/interfaces/orders.interface'
+import { ICustomer } from '../../data/interfaces/customer.interface'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
-export class OrdersService extends SimpleService<IOrders> {
+export class OrdersService extends SimpleService<IOrder> {
   constructor(
     @InjectModel('orders')
-    protected readonly model: Model<IOrders>,
+    protected readonly model: Model<IOrder>,
     protected readonly fcmService: FcmService,
     protected readonly unitService: UnitService,
     protected readonly reviewService: ReviewsService,
@@ -40,7 +40,7 @@ export class OrdersService extends SimpleService<IOrders> {
     super(model)
   }
 
-  async create(document: IOrders): Promise<any> {
+  async create(document: IOrder): Promise<any> {
     // @ts-ignore
     if (document.customer.status != 'Blocked') {
       document.orderNo =
@@ -61,7 +61,7 @@ export class OrdersService extends SimpleService<IOrders> {
             1)
         ).slice(-4)
 
-      const rewardPointsValue = (document.customer as ICustomerInterface).points * await this.unitService.getValue()
+      const rewardPointsValue = (document.customer as ICustomer).points * await this.unitService.getValue()
 
       if (document.service == 'Finishing Material'){
         const distance = await LocationUtils.getDistance(
@@ -127,7 +127,7 @@ export class OrdersService extends SimpleService<IOrders> {
       let orderCreated
 
       if (document.coupon){
-        if (await this.couponService.checkCouponValidity(document.coupon, (document.customer as ICustomerInterface)._id)){
+        if (await this.couponService.checkCouponValidity(document.coupon, (document.customer as ICustomer)._id)){
           orderCreated = await super.create(document)
         }
         else
@@ -142,15 +142,15 @@ export class OrdersService extends SimpleService<IOrders> {
       //notification for admin
       if (orderCreated) {
         if (document.coupon){
-          await this.couponService.addUser(document.coupon, (document.customer as ICustomerInterface)._id)
+          await this.couponService.addUser(document.coupon, (document.customer as ICustomer)._id)
         }
         else if (document.rewardPointsValue && document.rewardPointsValue != 0)
           if (rewardPointsValue >= document.rewardPointsValue){
             const usedPoints = document.rewardPointsValue / await this.unitService.getValue()
-            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, ~~usedPoints, false)
+            await this.customersService.updatePointsFromId((document.customer as ICustomer)._id, ~~usedPoints, false)
           }
           else
-            await this.customersService.updatePointsFromId((document.customer as ICustomerInterface)._id, ~~(orderCreated.total * 0.15), false)
+            await this.customersService.updatePointsFromId((document.customer as ICustomer)._id, ~~(orderCreated.total * 0.15), false)
 
         if (orderCreated.service == 'Finishing Material'){
           this.fcmService.sendSingle({
@@ -179,7 +179,7 @@ export class OrdersService extends SimpleService<IOrders> {
           }
         }
         else{
-          data = await this.driverService.getDataFromCityName(orderCreated.city) as IDriversInterface[]
+          data = await this.driverService.getDataFromCityName(orderCreated.city) as IDriver[]
           for (const item of data){
             if (item.profile.token)
               ids.add(item.profile.token?.toString())
@@ -208,8 +208,8 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
-  async addImage(data: any): Promise<IOrders> {
-    const order = (await this.model.findById(data.id)) as IOrders
+  async addImage(data: any): Promise<IOrder> {
+    const order = (await this.model.findById(data.id)) as IOrder
     if (order.image) order.image.push(data.image)
     else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -236,14 +236,14 @@ export class OrdersService extends SimpleService<IOrders> {
     return all
   }
 
-  async getByCustomerId(id: string): Promise<IOrders[]> {
+  async getByCustomerId(id: string): Promise<IOrder[]> {
     return await this.model
       .find({ customer: id })
       .sort({ createdAt: -1 })
       .exec()
   }
 
-  async getSearchByCustomerId(id: string, name?: string): Promise<IOrders[]> {
+  async getSearchByCustomerId(id: string, name?: string): Promise<IOrder[]> {
     let data: any
 
     if (name) {
@@ -270,7 +270,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return this.getPerson(data)
   }
 
-  async getByDriverId(id: string): Promise<IOrders[]> {
+  async getByDriverId(id: string): Promise<IOrder[]> {
     return this.getPerson(
       await this.model
         .find({ 'driver._id': id })
@@ -280,7 +280,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async completedDriverId(id: string): Promise<IOrders[]> {
+  async completedDriverId(id: string): Promise<IOrder[]> {
     return this.getPerson(
       await this.model
         .find({ 'driver._id': id, status: OrderStatus.Delivered })
@@ -290,7 +290,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async getBySupplierId(id: string): Promise<IOrders[]> {
+  async getBySupplierId(id: string): Promise<IOrder[]> {
     return await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Accepted })
@@ -300,9 +300,9 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async getAssignedOrdersBySupplierId(id: string): Promise<IOrders[]> {
+  async getAssignedOrdersBySupplierId(id: string): Promise<IOrder[]> {
     const result = new Set()
-    const orders = (await this.fetch()) as IOrders[]
+    const orders = (await this.fetch()) as IOrder[]
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
@@ -312,10 +312,10 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(result) as IOrders[]
+    return Array.from(result) as IOrder[]
   }
 
-  async getOrdersBySupplierAndStatus(id: string, status: number): Promise<IOrders[]> {
+  async getOrdersBySupplierAndStatus(id: string, status: number): Promise<IOrder[]> {
     return await this.getPerson(
       await this.model
         .find({ status: status })
@@ -326,7 +326,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async getOrdersByDriverAndStatus(id: string, status: number): Promise<IOrders[]> {
+  async getOrdersByDriverAndStatus(id: string, status: number): Promise<IOrder[]> {
     return await this.getPerson(
       await this.model
         .find({ status: status })
@@ -337,7 +337,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async completedSupplierId(id: string): Promise<IOrders[]> {
+  async completedSupplierId(id: string): Promise<IOrder[]> {
     const result = new Set()
     const orders = (await this.getPerson(
       await this.model
@@ -345,7 +345,7 @@ export class OrdersService extends SimpleService<IOrders> {
         .populate('customer')
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrders[]
+    )) as IOrder[]
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
@@ -354,10 +354,10 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(result) as IOrders[]
+    return Array.from(result) as IOrder[]
   }
 
-  async dispatchedSupplier(id: string): Promise<IOrders[]> {
+  async dispatchedSupplier(id: string): Promise<IOrder[]> {
     const result = new Set()
     const orders = (await this.getPerson(
       await this.model
@@ -365,7 +365,7 @@ export class OrdersService extends SimpleService<IOrders> {
         .populate('customer')
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrders[]
+    )) as IOrder[]
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
@@ -374,30 +374,30 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(result) as IOrders[]
+    return Array.from(result) as IOrder[]
   }
 
-  async dispatchedDriver(id: string): Promise<IOrders[]> {
+  async dispatchedDriver(id: string): Promise<IOrder[]> {
     return (await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Dispatched, 'driver._id': id })
         .populate('customer')
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrders[]
+    )) as IOrder[]
   }
 
-  async preparingDriver(id: string): Promise<IOrders[]> {
+  async preparingDriver(id: string): Promise<IOrder[]> {
     return (await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Preparing, 'driver._id': id })
         .populate('customer')
         .sort({ createdAt: -1 })
         .exec()
-    )) as IOrders[]
+    )) as IOrder[]
   }
 
-  async fetch(id?: string): Promise<IOrders[] | IOrders> {
+  async fetch(id?: string): Promise<IOrder[] | IOrder> {
     if (id) {
       const data = await this.model
         .findById(id)
@@ -415,7 +415,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
-  async getByStatus(status: OrderStatus): Promise<IOrders[]> {
+  async getByStatus(status: OrderStatus): Promise<IOrder[]> {
     let all = await this.model
       .find({ status })
       .populate('customer')
@@ -425,7 +425,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return all
   }
 
-  async updateStatus(id: string, status: OrderStatus, message?: string): Promise<IOrders> {
+  async updateStatus(id: string, status: OrderStatus, message?: string): Promise<IOrder> {
     const order = await this.model.findByIdAndUpdate(id, { status, reason: message }, {new: true}).exec()
 
     if (status == OrderStatus.Delivered){
@@ -433,10 +433,10 @@ export class OrdersService extends SimpleService<IOrders> {
 
       if (
         await this.model.find({customer: order.customer.toString(), status: OrderStatus.Delivered}).countDocuments().exec() == 1 &&
-        (await this.customersService.fetch(order.customer.toString()) as ICustomerInterface).fromReferralCode
+        (await this.customersService.fetch(order.customer.toString()) as ICustomer).fromReferralCode
       ){
         await this.customersService.updatePointsFromReferral(
-          (await this.customersService.fetch(order.customer.toString()) as ICustomerInterface).fromReferralCode, 500, true
+          (await this.customersService.fetch(order.customer.toString()) as ICustomer).fromReferralCode, 500, true
         )
       }
     }
@@ -517,7 +517,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return notificationStatus
   }
 
-  async search(query: any): Promise<IOrders[]> {
+  async search(query: any): Promise<IOrder[]> {
     const data = await this.model
       .find({
         $or: [
@@ -533,7 +533,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return this.getPerson(data)
   }
 
-  async viewOrders(data: any): Promise<IOrders[]> {
+  async viewOrders(data: any): Promise<IOrder[]> {
     const results = new Set()
     const orders = await this.model
       .find({ city: data.city })
@@ -546,10 +546,10 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(results) as IOrders[]
+    return Array.from(results) as IOrder[]
   }
 
-  async ordersAfterFilter(document: any): Promise<IOrders[]>{
+  async ordersAfterFilter(document: any): Promise<IOrder[]>{
     const condition = {}
 
     condition['status'] = OrderStatus.Delivered
@@ -617,8 +617,8 @@ export class OrdersService extends SimpleService<IOrders> {
       .exec()
   }
 
-  async AddSupplierToOrder(data: any): Promise<IOrders> {
-    const order = await this.getPerson(await this.model.findById(data._id).populate('customer').exec()) as IOrders
+  async AddSupplierToOrder(data: any): Promise<IOrder> {
+    const order = await this.getPerson(await this.model.findById(data._id).populate('customer').exec()) as IOrder
     if (data.flag) {
       //move these two statement below on your own risk
       if (!order.supplier) order.supplier = data.supplier
@@ -726,7 +726,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return await order.save()
   }
 
-  async AddDriver(data: any): Promise<IOrders> {
+  async AddDriver(data: any): Promise<IOrder> {
     if (data.flag) {
       const order = await this.getPerson(
         await this.model
@@ -796,7 +796,7 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
-  async processPayment(data: any): Promise<IOrders> {
+  async processPayment(data: any): Promise<IOrder> {
     const order = await this.model
       .findByIdAndUpdate(data._id, {
         paymentType: data.paymentType,
@@ -826,7 +826,7 @@ export class OrdersService extends SimpleService<IOrders> {
 
     const ids = new Set<string>()
 
-    data = await this.driverService.getDataFromCityName(order.city) as IDriversInterface[]
+    data = await this.driverService.getDataFromCityName(order.city) as IDriver[]
     for (const item of data){
       ids.add(item.profile.token?.toString())
     }
@@ -836,7 +836,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return order
   }
 
-  async filter(data: any): Promise<IOrders[]> {
+  async filter(data: any): Promise<IOrder[]> {
     const result = new Set<any>()
     const orders = await this.getPerson(
       await this.model
@@ -853,7 +853,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return Array.from(result)
   }
 
-  async getDriverOrdersFromCity(city: string): Promise<IOrders[]> {
+  async getDriverOrdersFromCity(city: string): Promise<IOrder[]> {
     return await this.getPerson(
       await this.model
         .find({ city, service: 'Delivery Vehicle' })
@@ -879,8 +879,8 @@ export class OrdersService extends SimpleService<IOrders> {
     }
   }
 
-  async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrders[]>{
-    const driver  = await this.driverService.fetch(driverId) as IDriversInterface
+  async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrder[]>{
+    const driver  = await this.driverService.fetch(driverId) as IDriver
 
     let orders = (await this.model.find(
       {
@@ -895,20 +895,20 @@ export class OrdersService extends SimpleService<IOrders> {
       })
       .populate('customer')
       .sort({createdAt: -1})
-      .exec()) as IOrders[]
+      .exec()) as IOrder[]
 
     // @ts-ignore
     const dvOrders = await this.model
       .find({service: 'Delivery Vehicle', status: OrderStatus.Pending, city})
       .populate('customer')
       .sort({createdAt: -1})
-      .exec() as IOrders[]
+      .exec() as IOrder[]
 
     const bmOrders = await this.model
       .find({service: 'Building Material', status: OrderStatus.Accepted, city})
       .populate('customer')
       .sort({createdAt: -1})
-      .exec() as IOrders[]
+      .exec() as IOrder[]
 
     for (const singleOrder of dvOrders){
       // @ts-ignore
@@ -926,7 +926,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return await this.getPerson(orders)
   }
 
-  async acceptItems(data: any): Promise<IOrders>{
+  async acceptItems(data: any): Promise<IOrder>{
     const order = await this.model.findById(data._id).exec()
     for (const index of data.selected) {
       // @ts-ignore
@@ -945,11 +945,11 @@ export class OrdersService extends SimpleService<IOrders> {
     return await this.model.findByIdAndUpdate(order._id, order).exec()
   }
 
-  async trip(data: any): Promise<IOrders>{
+  async trip(data: any): Promise<IOrder>{
     return await this.model.findByIdAndUpdate(data._id, {tripId: data.tripId, shareUrl: data.shareUrl}).exec()
   }
 
-  async rating(data: any): Promise<IOrders>{
+  async rating(data: any): Promise<IOrder>{
     const order = await this.model.findById(data._id).exec()
 
     // @ts-ignore
@@ -960,23 +960,23 @@ export class OrdersService extends SimpleService<IOrders> {
       await this.reviewService.create({
         customer: order.customer.toString(),
         supplier: order.supplier as IShopRegistration,
-        driver: order.driver as IDriversInterface,
+        driver: order.driver as IDriver,
         order: order,
         supplierFeedback: data.supplierReview,
         driverFeedback: data.driverReview,
         driverRating: data.driverRating,
         supplierRating: data.supplierRating
-      } as IReviews)
+      } as IReview)
       return this.model.findByIdAndUpdate(data._id, {rating: ((data.driverRating + data.supplierRating) / 2)}).exec()
     }
     else {
       await this.reviewService.create({
         customer: order.customer.toString(),
-        driver: order.driver as IDriversInterface,
+        driver: order.driver as IDriver,
         order: order,
         driverFeedback: data.driverReview,
         driverRating: data.driverRating,
-      } as IReviews)
+      } as IReview)
       return this.model.findByIdAndUpdate(order._id, {rating: data.driverRating}).exec()
     }
     try {

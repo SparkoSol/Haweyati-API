@@ -1,5 +1,5 @@
 import { Document } from 'mongoose'
-import { ICustomerInterface } from './customers.interface'
+import { ICustomer } from './customer.interface'
 import { IDropoffDetails } from './dropoffDetails.interface'
 
 export enum OrderStatus {
@@ -12,7 +12,7 @@ export enum OrderStatus {
   Cancelled
 }
 
-export interface IOrders extends Document {
+export interface IOrder extends Document {
   service: string
   dropoff: IDropoffDetails
   image: [
@@ -34,7 +34,7 @@ export interface IOrders extends Document {
   supplierCancellationReason: Object
   supplier: Object
   driver: Object
-  customer: ICustomerInterface | string
+  customer: ICustomer | string
   status: OrderStatus
   paymentType: string
   paymentIntentId: string

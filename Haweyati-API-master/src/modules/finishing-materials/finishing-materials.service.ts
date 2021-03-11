@@ -4,17 +4,17 @@ import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
-import { IFinishingMaterials } from '../../data/interfaces/finishingMaterials.interface'
+import { IFinishingMaterial } from '../../data/interfaces/finishingMaterials.interface'
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
 
 @Injectable()
 export class FinishingMaterialsService extends SimpleService<
-  IFinishingMaterials
+  IFinishingMaterial
 > {
   constructor(
     @InjectModel('finishingmaterials')
-    protected readonly model: Model<IFinishingMaterials>,
+    protected readonly model: Model<IFinishingMaterial>,
     private readonly service: ShopRegistrationService,
     private readonly categoryService: FinishingMaterialCategoryService
   ) {
@@ -23,7 +23,7 @@ export class FinishingMaterialsService extends SimpleService<
 
   async fetch(
     id?: string
-  ): Promise<IFinishingMaterials[] | IFinishingMaterials> {
+  ): Promise<IFinishingMaterial[] | IFinishingMaterial> {
     if (id) {
       const data = await this.model.findOne({ _id: id, status: 'Active' }).exec()
       for (let i = 0; i < data.suppliers.length; ++i) {
@@ -45,14 +45,14 @@ export class FinishingMaterialsService extends SimpleService<
     }
   }
 
-  fetchByParentId(id: string): Promise<IFinishingMaterials[]> {
+  fetchByParentId(id: string): Promise<IFinishingMaterial[]> {
     return this.model
       .find({ status: 'Active' })
       .where('parent', id)
       .exec()
   }
 
-  async getByCity(city: string, parent: string): Promise<IFinishingMaterials[]> {
+  async getByCity(city: string, parent: string): Promise<IFinishingMaterial[]> {
     const data = await this.service.getDataFromCityName(
       city,
       'Finishing Material'
@@ -73,16 +73,16 @@ export class FinishingMaterialsService extends SimpleService<
       }
     }
 
-    return Array.from(result) as IFinishingMaterials[]
+    return Array.from(result) as IFinishingMaterial[]
   }
 
-  async getByParentSupplier(parent: string, supplier: string): Promise<IFinishingMaterials[]> {
+  async getByParentSupplier(parent: string, supplier: string): Promise<IFinishingMaterial[]> {
     return await this.model
       .find({ status: 'Active', parent, suppliers: supplier})
       .exec()
   }
 
-  async getSuppliers(id: string): Promise<IFinishingMaterials[]> {
+  async getSuppliers(id: string): Promise<IFinishingMaterial[]> {
     const dump = await this.model.find({ status: 'Active' }).exec()
     const result = []
 
@@ -99,7 +99,7 @@ export class FinishingMaterialsService extends SimpleService<
     return result
   }
 
-  async remove(id: string): Promise<IFinishingMaterials> {
+  async remove(id: string): Promise<IFinishingMaterial> {
     return await this.model.findByIdAndUpdate(id, { status: 'Inactive' }).exec()
   }
 
@@ -112,7 +112,7 @@ export class FinishingMaterialsService extends SimpleService<
     return 'Category Deleted'
   }
 
-  async search(name: string, parent: string, supplier: string): Promise<IFinishingMaterials[]> {
+  async search(name: string, parent: string, supplier: string): Promise<IFinishingMaterial[]> {
     const big = await this.model
       .find({ status: 'Active', parent, suppliers: supplier, name: { $regex: name, $options: 'i' } })
       .exec()
@@ -126,7 +126,7 @@ export class FinishingMaterialsService extends SimpleService<
     return big
   }
 
-  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterials[]> {
+  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterial[]> {
     return await this.model
       .find({
         parent: id,
@@ -137,14 +137,14 @@ export class FinishingMaterialsService extends SimpleService<
   }
 
   //used in reward points module
-  async getDataForRewardPoints(data: any): Promise<IFinishingMaterials[]> {
+  async getDataForRewardPoints(data: any): Promise<IFinishingMaterial[]> {
     return await this.model.find({ _id: { $nin: data } }).exec()
   }
 
   async getCategoriesFromSupplier(id: string): Promise<IFinishingMaterialCategory[]>{
     const myResult = new Set()
     // @ts-ignore
-    const fm = await this.model.find({suppliers: id}).populate('parent').exec() as IFinishingMaterials[]
+    const fm = await this.model.find({suppliers: id}).populate('parent').exec() as IFinishingMaterial[]
     for (const item of fm){
       myResult.add(item.parent)
     }

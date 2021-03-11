@@ -1,14 +1,14 @@
 import { Document } from "mongoose";
-import { IOrders } from "./orders.interface";
-import { IDriversInterface } from "./drivers.interface";
-import { ICustomerInterface } from "./customers.interface";
+import { IOrder } from "./orders.interface";
+import { IDriver } from "./drivers.interface";
+import { ICustomer } from "./customer.interface";
 import { IShopRegistration } from "./shop-registration.interface";
 
-export interface IReviews extends Document{
-  customer: ICustomerInterface | string
+export interface IReview extends Document{
+  customer: ICustomer | string
   supplier: IShopRegistration | string
-  driver: IDriversInterface | string
-  order: IOrders | string
+  driver: IDriver | string
+  order: IOrder | string
   supplierFeedback: string
   driverFeedback: string
   supplierRating: number

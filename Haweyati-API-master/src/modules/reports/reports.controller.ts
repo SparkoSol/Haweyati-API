@@ -5,14 +5,14 @@ import {
   Controller, Param
 } from "@nestjs/common";
 import { ReportsService } from './reports.service'
-import { IOrders } from "../../data/interfaces/orders.interface";
+import { IOrder } from "../../data/interfaces/orders.interface";
 
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly service: ReportsService) {}
 
   @Get('orders')
-  async getOrdersData(@Query() data: any): Promise<IOrders[]>{
+  async getOrdersData(@Query() data: any): Promise<IOrder[]>{
     return await this.service.getOrdersData(data)
   }
 

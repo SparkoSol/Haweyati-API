@@ -2,13 +2,13 @@ import * as moment from 'moment'
 import { OrdersService } from '../orders/orders.service'
 import { ReportUtils } from '../../common/lib/report-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
+import { IOrder, OrderStatus } from '../../data/interfaces/orders.interface'
 
 @Injectable()
 export class ReportsService {
   constructor(private readonly ordersService: OrdersService) {}
 
-  async getOrdersData(data: any): Promise<IOrders[]>{
+  async getOrdersData(data: any): Promise<IOrder[]>{
     return await this.ordersService.ordersAfterFilter(data)
   }
 
@@ -56,7 +56,7 @@ export class ReportsService {
   }
 
   async generateOrderInvoice(id: string): Promise<any> {
-    const order = await this.ordersService.fetch(id) as IOrders
+    const order = await this.ordersService.fetch(id) as IOrder
     if (order.status == OrderStatus.Delivered){
       let subtotal = 0
       for (const item of order.items)

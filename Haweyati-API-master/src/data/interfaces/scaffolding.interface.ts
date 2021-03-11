@@ -2,7 +2,7 @@ import { Document } from 'mongoose'
 import { IImage } from "./image.interface"
 import { IShopRegistration } from './shop-registration.interface'
 
-export interface IScaffoldingInterface extends Document {
+export interface IScaffolding extends Document {
   suppliers: IShopRegistration[]
   description: string
   name: string

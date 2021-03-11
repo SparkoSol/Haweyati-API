@@ -2,7 +2,7 @@ import {Document} from "mongoose";
 import { IPerson } from './person.interface';
 import { ILocation } from './location.interface';
 
-export interface ICustomerInterface extends Document{
+export interface ICustomer extends Document{
    profile: IPerson | string,
    location: ILocation,
    status: string,

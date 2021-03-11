@@ -13,22 +13,22 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { FinishingMaterialsService } from './finishing-materials.service'
-import { IFinishingMaterials } from '../../data/interfaces/finishingMaterials.interface'
+import { IFinishingMaterial } from '../../data/interfaces/finishingMaterials.interface'
 import { IFinishingMaterialCategory } from "../../data/interfaces/finishingMaterialCategory.interface";
 
 @Controller('finishing-materials')
-export class FinishingMaterialsController extends ImageController<IFinishingMaterials> {
+export class FinishingMaterialsController extends ImageController<IFinishingMaterial> {
   constructor(protected readonly service: FinishingMaterialsService) {
     super(service)
   }
 
   @Get('available')
-  async Get(@Query() data): Promise<IFinishingMaterials[]> {
+  async Get(@Query() data): Promise<IFinishingMaterial[]> {
     return await this.service.getByCity(data.city, data.parent)
   }
 
   @Get('available-supplier')
-  async getByParentSupplier(@Query() data): Promise<IFinishingMaterials[]> {
+  async getByParentSupplier(@Query() data): Promise<IFinishingMaterial[]> {
     return await this.service.getByParentSupplier(data.parent, data.supplier)
   }
 
@@ -39,12 +39,12 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
   }
 
   @Get('search')
-  async search(@Query() data): Promise<IFinishingMaterials[]>{
+  async search(@Query() data): Promise<IFinishingMaterial[]>{
     return await this.service.search(data.name, data.parent, data.supplier)
   }
 
   @Get(':id')
-  getById(@Param('id') id: string, @Query() data: any): Promise<IFinishingMaterials[] | IFinishingMaterials> {
+  getById(@Param('id') id: string, @Query() data: any): Promise<IFinishingMaterial[] | IFinishingMaterial> {
     if (data.name)
       return this.service.fetchAndSearch(id , data)
     else
@@ -149,7 +149,7 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  post(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterials>  {
+  post(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterial>  {
     if (!file)
       throw new HttpException(
         'Image is Required!',
@@ -160,20 +160,20 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  patch(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterials> {
+  patch(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterial> {
     return super.patch(file, this.parseData(finishingMaterial))
   }
 
   @Get('getbyparent/:id')
   getByParentId(
     @Param('id') id: string
-  ): Promise<IFinishingMaterials[] | IFinishingMaterials> {
+  ): Promise<IFinishingMaterial[] | IFinishingMaterial> {
     return this.service.fetchByParentId(id)
   }
 
   //Admin Panel
   @Get('fromsupplier/:id')
-  async fromSupplier(@Param('id') id: string): Promise<IFinishingMaterials[]> {
+  async fromSupplier(@Param('id') id: string): Promise<IFinishingMaterial[]> {
     return await this.service.getSuppliers(id)
   }
 

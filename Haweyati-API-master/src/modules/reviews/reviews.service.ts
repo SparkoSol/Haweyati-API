@@ -2,18 +2,18 @@ import { Model } from "mongoose";
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { SimpleService } from "../../common/lib/simple.service";
-import { IReviews } from "../../data/interfaces/reviews.interface";
+import { IReview } from "../../data/interfaces/reviews.interface";
 
 @Injectable()
-export class ReviewsService extends SimpleService<IReviews> {
+export class ReviewsService extends SimpleService<IReview> {
   constructor(
     @InjectModel('reviews')
-    protected readonly model: Model<IReviews>
+    protected readonly model: Model<IReview>
   ) {
     super(model)
   }
 
-  async getReviews(data: any): Promise<IReviews[]>{
+  async getReviews(data: any): Promise<IReview[]>{
     switch (data.type){
       case 'customer':
         return await this.model
