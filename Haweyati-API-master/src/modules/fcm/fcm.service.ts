@@ -22,7 +22,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
     super(fcmHistoryModel);
   }
 
-  async sendAll(data: any){
+  async sendAll(data: any): Promise<IFcmAllHistory>{
     try {
       await this.http.post(
         "https://fcm.googleapis.com/fcm/send",
@@ -41,7 +41,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
         {
           headers: {
             "ContentType": "application/json",
-            "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+            "Authorization": "key=" + process.env.FCM_AUTHORIZATION_KEY
           }
         }
       ).subscribe(asd => console.log('Notifications successfully sent to /topics/news'));
@@ -57,7 +57,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
     }
   }
 
-  async sendSingle(data: any){
+  async sendSingle(data: any): Promise<IFcmHistory>{
     let flag = false;
 
     const person = (await this.personService.fetch(data.id)) as IPerson
@@ -79,7 +79,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
         {
           headers: {
             "ContentType": "application/json",
-            "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+            "Authorization": "key=" + process.env.FCM_AUTHORIZATION_KEY
           }
         }
       ).subscribe(asd => console.log('Notification successfully sent to #' + person.name));
@@ -105,7 +105,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
     }
   }
 
-  async sendMultiple(tokens: string[], title: string, body: string){
+  async sendMultiple(tokens: string[], title: string, body: string): Promise<void>{
     for (const token of tokens){
       let flag = false;
 
@@ -126,14 +126,14 @@ export class FcmService extends SimpleService<IFcmHistory>{
         {
           headers: {
             "ContentType": "application/json",
-            "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+            "Authorization": "key=" + process.env.FCM_AUTHORIZATION_KEY
           }
         }
       ).subscribe(asd => console.log('Notifications sent to multiple persons.'));
     }
   }
 
-  async sendPending(id: string){
+  async sendPending(id: string): Promise<void>{
     const pending = await this.fcmHistoryModel.find({person: id, status: FcmStatus.pending}).exec()
     if (pending.length > 0){
       const person = (await this.personService.fetch(id)) as IPerson
@@ -148,7 +148,6 @@ export class FcmService extends SimpleService<IFcmHistory>{
               },
               data: {
                 type: "order",
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 createdAt: item.createdAt
               },
@@ -157,7 +156,7 @@ export class FcmService extends SimpleService<IFcmHistory>{
             {
               headers: {
                 "ContentType": "application/json",
-                "Authorization": "key=AAAANmpktLI:APA91bGjuD7CywoTVk3nHkixfeWCeDPIfQFGBqmkEiZPCVxvXYcy4aqaZRvVgXeHqODAZkGDanw0ovVEcUjb79_1dOvT9M6DX0wlrlTE2Ku1HXEvKw5-K--yMeXR2j77nH4NrSfVxyr_"
+                "Authorization": "key=" + process.env.FCM_AUTHORIZATION_KEY
               }
             }
           ).subscribe(asd => console.log('Pending Notification sent to #' + person.name));
@@ -165,7 +164,6 @@ export class FcmService extends SimpleService<IFcmHistory>{
         }
       }
     }
-    return
   }
 
   async updateToken(data: any): Promise<IPerson>{

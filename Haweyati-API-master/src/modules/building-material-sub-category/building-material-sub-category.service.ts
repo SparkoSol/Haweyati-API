@@ -24,7 +24,7 @@ export class BuildingMaterialSubCategoryService extends SimpleService<IBuildingM
       .exec()
   }
 
-  async remove(id: string): Promise<any> {
+  async remove(id: string): Promise<IBuildingMaterialSubCategory> {
     return await this.model.findByIdAndUpdate(id, { status: 'Inactive' }).exec()
   }
 

@@ -24,7 +24,7 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   }
 
   @Get('guest')
-  async getGuest(): Promise<ICustomerInterface> {
+  async getGuest(): Promise<ICustomerInterface[]> {
     return await this.service.getGuest()
   }
 
@@ -58,40 +58,40 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   async getBlocked(
     @Param('id') id: string,
     @Body() message?: any
-  ): Promise<any> {
-    if (message) return await this.service.getBlocked(id, message.message)
-    else return await this.service.getBlocked(id)
+  ): Promise<ICustomerInterface> {
+    if (message) return await this.service.getBlocked(id, message.message) as ICustomerInterface
+    else return await this.service.getBlocked(id) as ICustomerInterface
   }
 
   @Get('getactive')
-  async getActive(): Promise<any> {
+  async getActive(): Promise<ICustomerInterface[]> {
     return await this.service.getWithScopeCustomer('Active')
   }
 
   @Get('active-search')
-  async search(@Query() query: any) {
+  async search(@Query() query: any): Promise<ICustomerInterface[]>{
     return await this.service.searchActive(query)
   }
 
   @Get('getblocked')
-  async getAllBlocked(): Promise<any> {
-    return await this.service.getBlocked()
+  async getAllBlocked(): Promise<ICustomerInterface[]> {
+    return await this.service.getBlocked() as ICustomerInterface[]
   }
 
   @Get('getprofile/:contact')
   async getProfile(
     @Param('contact') contact: string
-  ): Promise<ICustomerInterface | string> {
+  ): Promise<ICustomerInterface> {
     return await this.service.getProfile(contact)
   }
 
   @Get('blocked-search')
-  async searchBlocked(@Query() query: any) {
+  async searchBlocked(@Query() query: any): Promise<ICustomerInterface[]>{
     return await this.service.searchBlocked(query)
   }
 
   @Get('guest-search')
-  async searchGuest(@Query() query: any) {
+  async searchGuest(@Query() query: any): Promise<ICustomerInterface[]> {
     return await this.service.searchGuest(query)
   }
 
@@ -101,7 +101,7 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   }
 
   @Patch('getunblocked/:id')
-  async getUnblocked(@Param('id') id: string): Promise<any> {
+  async getUnblocked(@Param('id') id: string): Promise<ICustomerInterface> {
     return await this.service.getUnblocked(id)
   }
 
@@ -111,8 +111,8 @@ export class CustomersController extends ImageController<ICustomerInterface> {
   }
 
   @Get('getactive/:id')
-  async getActiveById(@Param('id') id: string): Promise<any> {
-    return await this.service.fetch(id)
+  async getActiveById(@Param('id') id: string): Promise<ICustomerInterface> {
+    return await this.service.fetch(id) as ICustomerInterface
   }
 
   @Get('getall/:id')

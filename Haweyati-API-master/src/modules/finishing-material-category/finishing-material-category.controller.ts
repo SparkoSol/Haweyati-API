@@ -14,7 +14,7 @@ export class FinishingMaterialCategoryController extends ImageController<
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  postOverride(@UploadedFile() file, @Body() data: any) {
+  postOverride(@UploadedFile() file, @Body() data: any): Promise<IFinishingMaterialCategory>{
     if (!file)
       throw new HttpException(
         'Image is Required!',

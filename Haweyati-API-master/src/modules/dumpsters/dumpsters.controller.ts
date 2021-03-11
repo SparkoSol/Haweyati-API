@@ -22,7 +22,7 @@ export class DumpstersController extends ImageController<IDumpster> {
   }
 
   @Get('available')
-  async Get(@Query() data): Promise<any> {
+  async Get(@Query() data): Promise<IDumpster[]> {
     return await this.service.getByCity(data.city)
   }
 
@@ -56,7 +56,7 @@ export class DumpstersController extends ImageController<IDumpster> {
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  postOverride(@UploadedFile() file, @Body() dumpster: any) {
+  postOverride(@UploadedFile() file, @Body() dumpster: any): Promise<IDumpster>{
     if (!file)
       throw new HttpException(
         'Image is Required!',
@@ -67,17 +67,17 @@ export class DumpstersController extends ImageController<IDumpster> {
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  patch(@UploadedFile() file, @Body() dumpster: any) {
+  patch(@UploadedFile() file, @Body() dumpster: any): Promise<IDumpster>{
     return super.patch(file, this.parseData(dumpster))
   }
 
   @Get('fromsuppliers/:id')
-  async getFromSupplier(@Param('id') id: string): Promise<any> {
+  async getFromSupplier(@Param('id') id: string): Promise<IDumpster[]> {
     return await this.service.fromSuppliers(id)
   }
 
   @Delete(':/id')
-  async deleteDumpster(@Param('id') id: string): Promise<any> {
+  async deleteDumpster(@Param('id') id: string): Promise<IDumpster> {
     return await this.service.remove(id)
   }
 }

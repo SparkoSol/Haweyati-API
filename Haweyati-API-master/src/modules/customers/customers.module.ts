@@ -21,6 +21,6 @@ import { FcmModule } from "../fcm/fcm.module";
   ],
   providers: [CustomersService],
   controllers: [CustomersController],
-   exports: [CustomersService]
+  exports: [CustomersService]
 })
 export class CustomersModule {}

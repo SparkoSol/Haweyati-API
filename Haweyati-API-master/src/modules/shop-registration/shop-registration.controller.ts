@@ -1,13 +1,9 @@
 import {
   Get,
-  Body,
   Patch,
   Param,
-  Controller,
-  UploadedFile,
-  UseInterceptors, Query
+  Controller, Query
 } from "@nestjs/common";
-import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { ShopRegistrationService } from './shop-registration.service'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
@@ -26,7 +22,7 @@ export class ShopRegistrationController extends ImageController<
   }
 
   @Get('available/:city')
-  async Get(@Param('city') city: string): Promise<any> {
+  async Get(@Param('city') city: string): Promise<string[]> {
     return this.service.getAvailableServices(city)
   }
 
@@ -38,7 +34,7 @@ export class ShopRegistrationController extends ImageController<
   }
 
   @Get('getbyservice/:name')
-  async getByService(@Param('name') name: string): Promise<any> {
+  async getByService(@Param('name') name: string): Promise<IShopRegistration[]> {
     return await this.service.getByService(name)
   }
 
@@ -48,33 +44,27 @@ export class ShopRegistrationController extends ImageController<
   }
 
   @Get('getrejected')
-  async getAllRejected(): Promise<any> {
+  async getAllRejected(): Promise<IShopRegistration[]> {
     return this.service.getSuppliersByStatus('Rejected')
   }
 
   @Patch('getrejected/:id')
-  async getRejected(@Param('id') id: string): Promise<any> {
+  async getRejected(@Param('id') id: string): Promise<IShopRegistration> {
     return this.service.changeSupplierStatus(id, 'Rejected')
   }
 
   @Get('getsubsuppliers/:id')
-  async subSuppliers(@Param('id') id: string): Promise<any> {
+  async subSuppliers(@Param('id') id: string): Promise<IShopRegistration[]> {
     return this.service.getSubSuppliers(id)
   }
 
   @Patch('approve/:id')
-  approve(@Param('id') id: string): Promise<any> {
+  approve(@Param('id') id: string): Promise<IShopRegistration> {
     return this.service.changeSupplierStatus(id, 'Active')
   }
 
-  @Patch()
-  @UseInterceptors(FileInterceptor('image'))
-  async Patch(@UploadedFile() file, @Body() data: any) {
-    return await super.patch(file, data);
-  }
-
   @Get('cities')
-  async getSupplierCities(): Promise<any> {
+  async getSupplierCities(): Promise<string[]> {
     return await this.service.getSupplierCities()
   }
 
@@ -84,16 +74,10 @@ export class ShopRegistrationController extends ImageController<
   }
 
   @Patch('block/:id')
-  async blockSupplier(@Param('id') id: string): Promise<any>{
+  async blockSupplier(@Param('id') id: string): Promise<IShopRegistration>{
     return await this.service.changeSupplierStatus(id, 'Blocked')
   }
 
-  @Get('cities')
-  async getCities(): Promise<string[]>{
-    return await this.service.suppliersCities()
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
   @Get('fm-suppliers')
   async finishingMaterialSuppliers(@Query() data: any): Promise<IShopRegistration[]>{
     return this.service.finishingMaterialSuppliers(data.city, data.lat, data.lng)

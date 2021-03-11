@@ -22,7 +22,7 @@ export class BuildingMaterialCategoryService extends SimpleService<
     else return this.model.find({ status: 'Active' }).exec()
   }
 
-  async remove(id: string): Promise<any> {
+  async remove(id: string): Promise<IBuildingMaterialCategory> {
     return await this.model.findByIdAndUpdate(id, { status: 'Inactive' }).exec()
   }
 }

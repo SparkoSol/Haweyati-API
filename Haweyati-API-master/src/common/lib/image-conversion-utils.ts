@@ -3,8 +3,7 @@ export class ImageConversionUtils {
 
   static imagePath = process.cwd() + '../../uploads'
 
-  static async toWebp(imagePath: string, destination?: string, quality?: number): Promise<void>{
-    //Default destination is imagePath and default quality is 20
-    await webpConverter.cwebp(imagePath, destination ?? imagePath, "-q "+ quality ?? 20);
+  static async toWebp(imagePath: string, destination = imagePath, quality = 20): Promise<void>{
+    await webpConverter.cwebp(imagePath, destination, "-q "+ quality);
   }
 }

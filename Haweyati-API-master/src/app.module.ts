@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from "@nestjs/config"
 import { AppController } from './app.controller'
 import { DbModule } from './common/db/db.module'
 import { FcmModule } from './modules/fcm/fcm.module'
@@ -27,6 +28,9 @@ import { BuildingMaterialSubCategoryModule } from './modules/building-material-s
 
 @Module({
   imports: [
+    //To use .env variables
+    ConfigModule.forRoot(),
+
     DbModule,
     FcmModule,
     AuthModule,

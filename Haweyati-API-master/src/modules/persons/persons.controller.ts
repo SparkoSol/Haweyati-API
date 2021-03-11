@@ -11,6 +11,8 @@ import { PersonsService } from './persons.service'
 import { IPerson } from 'src/data/interfaces/person.interface'
 import { ImageController } from '../../common/lib/image.controller'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { IAdminNotification } from "../../data/interfaces/adminNotification.interface";
+import { IAdminForgotPassword } from "../../data/interfaces/adminForgotPassword.interface";
 
 @Controller('persons')
 export class PersonsController extends ImageController<IPerson> {
@@ -23,7 +25,7 @@ export class PersonsController extends ImageController<IPerson> {
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  async patch(@UploadedFile() file: any, @Body() document: any){
+  async patch(@UploadedFile() file: any, @Body() document: any): Promise<IPerson>{
     if(document.contact)
       document.username = document.contact
     document.isVerified = undefined
@@ -31,12 +33,12 @@ export class PersonsController extends ImageController<IPerson> {
   }
 
   @Post('forgotpassword')
-  async forgotPassword(@Body() data: any) {
+  async forgotPassword(@Body() data: any): Promise<IAdminForgotPassword> {
     return await this.service.forgotPassword(data.email)
   }
 
   @Post('resetpassword')
-  async changePassword(@Body() data: any): Promise<any> {
+  async changePassword(@Body() data: any): Promise<IPerson> {
     return await this.service.changePassword(data)
   }
 
@@ -46,7 +48,7 @@ export class PersonsController extends ImageController<IPerson> {
   }
 
   @Post('contact/change-password')
-  async changePasswordWithContact(@Body() data: any): Promise<any>{
+  async changePasswordWithContact(@Body() data: any): Promise<IPerson>{
     return await this.service.changePasswordWithContact(data)
   }
 
@@ -61,7 +63,7 @@ export class PersonsController extends ImageController<IPerson> {
   }
 
   @Patch('update-token')
-  async updateToken(@Body() data: any): Promise<any>{
+  async updateToken(@Body() data: any): Promise<IPerson>{
     return await this.service.updateToken(data._id, data.token)
   }
 }

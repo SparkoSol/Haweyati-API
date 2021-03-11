@@ -163,7 +163,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return data
   }
 
-  async getDataFromCityName(city: string, service: string): Promise<any> {
+  async getDataFromCityName(city: string, service: string): Promise<string[]> {
     const data = await this.model
       .find({
         city: city,
@@ -177,7 +177,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         newSet.add(value._id)
       }
     })
-    return Array.from(newSet)
+    return Array.from(newSet) as string[]
   }
 
   async getSupplierFromCityName(city: string, service: string): Promise<IShopRegistration[]> {
@@ -197,7 +197,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return Array.from(newSet) as IShopRegistration[]
   }
 
-  async getByService(name: string): Promise<any> {
+  async getByService(name: string): Promise<IShopRegistration[]> {
     const data = await this.model
       .find({ status: 'Active' })
       .populate('person')
@@ -208,7 +208,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         newSet.add(value)
       }
     })
-    return Array.from(newSet)
+    return Array.from(newSet) as IShopRegistration[]
   }
 
   async getSubSuppliers(id: string): Promise<IShopRegistration[]> {
@@ -218,7 +218,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       .exec()
   }
 
-  async getSuppliersByStatus(status: string) {
+  async getSuppliersByStatus(status: string): Promise<IShopRegistration[]> {
     const data = await this.model
       .find({ status })
       .populate('person')
@@ -226,7 +226,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return await this.insertSubSupplierCount(data)
   }
 
-  async getBlockedSuppliersWithoutParent() {
+  async getBlockedSuppliersWithoutParent(): Promise<IShopRegistration[]> {
     const data = await this.model
       .find({ status: 'Blocked', parent: null })
       .populate('person')
@@ -238,11 +238,11 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     id: string,
     status: string,
     message?: string
-  ): Promise<any> {
+  ): Promise<IShopRegistration> {
     if (message)
       return await this.model.findByIdAndUpdate(id, { status, message }).exec()
     else {
-      await this.model.findByIdAndUpdate(id, { status }).exec()
+      const supplier  = await this.model.findByIdAndUpdate(id, { status }).exec()
       if (status == 'Blocked') {
         const subSuppliers = await this.getSubSuppliers(id)
         for (const child of subSuppliers) {
@@ -259,11 +259,11 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
           await this.model.findByIdAndUpdate(child._id, { status }).exec()
         }
       }
+    return supplier
     }
-    return 'Supplier and its child are Blocked'
   }
 
-  async getAvailableServices(city: string): Promise<any> {
+  async getAvailableServices(city: string): Promise<string[]> {
     const data = await this.model
       .find()
       .where('city', city)
@@ -278,7 +278,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       }
     }
 
-    return Array.from(newSet)
+    return Array.from(newSet) as string[]
   }
 
   async getByProfile(id: string): Promise<IShopRegistration> {
@@ -288,13 +288,13 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       .exec()
   }
 
-  async getSupplierCities(): Promise<any> {
+  async getSupplierCities(): Promise<string[]> {
     const suppliers = await this.model.find().exec()
     const result = new Set()
     for (const item of suppliers) {
       result.add(item.city)
     }
-    return Array.from(result)
+    return Array.from(result) as string[]
   }
 
   async totalSuppliers(): Promise<number> {
@@ -302,15 +302,6 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       .find({ status: 'Active' })
       .countDocuments()
       .exec()
-  }
-
-  async suppliersCities(): Promise<string[]> {
-    const suppliers = await this.model.find().exec()
-    const cities: string[] = []
-    for (const supplier of suppliers) {
-      cities.push(supplier.city)
-    }
-    return cities
   }
 
   //used in BuildingMaterial and Dumpster, creating here for code re-usability
@@ -355,7 +346,6 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       return document
   }
 
-  //-------------------------------------------------------------------------------------------//
   async finishingMaterialSuppliers(city: string, lat: string, lng: string): Promise<IShopRegistration[]>{
     const fmSupplier = await this.model
       .find({services: 'Finishing Material', parent: null})

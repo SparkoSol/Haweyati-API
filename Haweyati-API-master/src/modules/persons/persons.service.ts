@@ -23,7 +23,7 @@ export class PersonsService extends SimpleService<IPerson> {
     return await this.model.findOne({ contact: contact }).exec()
   }
 
-  async create(data: any): Promise<any> {
+  async create(data: any): Promise<IPerson> {
     if (!data.email) {
       data.email = undefined
       await this.model
@@ -49,7 +49,7 @@ export class PersonsService extends SimpleService<IPerson> {
       .exec()
   }
 
-  async change(document: any): Promise<any> {
+  async change(document: any): Promise<IPerson> {
     let person: IPerson
     if (document.old) {
       person = await this.model
@@ -143,7 +143,7 @@ export class PersonsService extends SimpleService<IPerson> {
     )
   }
 
-  async forgotPassword(email: string) {
+  async forgotPassword(email: string): Promise<IAdminForgotPassword> {
     const person = await this.model
       .findOne({ email: email, scope: 'admin' })
       .exec()
@@ -167,7 +167,7 @@ export class PersonsService extends SimpleService<IPerson> {
     }
   }
 
-  async changePassword(data: any): Promise<any> {
+  async changePassword(data: any): Promise<IPerson> {
     let verify, person
     if (data.hash) {
       verify = await this.forgotPasswordModel
@@ -192,7 +192,7 @@ export class PersonsService extends SimpleService<IPerson> {
     }
   }
 
-  async search(query: any) {
+  async search(query: any): Promise<IPerson[]> {
     return await this.model
       .find({
         $or: [
@@ -217,7 +217,7 @@ export class PersonsService extends SimpleService<IPerson> {
     }
   }
 
-  async changePasswordWithContact(data: any): Promise<any> {
+  async changePasswordWithContact(data: any): Promise<IPerson> {
     return this.model
       .updateOne({ contact: data.contact }, { password: data.password })
       .exec()
@@ -236,12 +236,12 @@ export class PersonsService extends SimpleService<IPerson> {
   }
 
   //changing token on logout
-  async logout(id: string) {
+  async logout(id: string): Promise<IPerson> {
     return await this.model.findByIdAndUpdate(id, { token: undefined }).exec()
   }
 
   //updating token on person login - not used in persons service because of circular dependency
-  async updateToken(id: string, token: string) {
+  async updateToken(id: string, token: string): Promise<IPerson> {
     return await this.model.findByIdAndUpdate(id, { token }).exec()
   }
 }

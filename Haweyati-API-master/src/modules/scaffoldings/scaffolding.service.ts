@@ -40,7 +40,7 @@ export class ScaffoldingService extends SimpleService<IScaffoldingInterface> {
     }
   }
 
-  async getSuppliers(id: string): Promise<any> {
+  async getSuppliers(id: string): Promise<IScaffoldingInterface[]> {
     const dump = await this.model.find().exec()
     const result = []
     for (const item of dump) {
@@ -49,10 +49,10 @@ export class ScaffoldingService extends SimpleService<IScaffoldingInterface> {
             result.push(item)
           }
     }
-    return result
+    return result as IScaffoldingInterface[]
   }
 
-  async getByCity(city: string): Promise<any> {
+  async getByCity(city: string): Promise<IScaffoldingInterface[]> {
     if (city) {
       const data = await this.service.getDataFromCityName(
         city,
@@ -63,12 +63,13 @@ export class ScaffoldingService extends SimpleService<IScaffoldingInterface> {
 
       for (const item of scaffolding) {
         for (const supplier of data) {
+          // @ts-ignore
           if (item.suppliers.includes(supplier)) {
             result.add(item)
           }
         }
       }
-      return Array.from(result)
+      return Array.from(result) as IScaffoldingInterface[]
     }
   }
 }

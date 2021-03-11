@@ -23,12 +23,12 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
   }
 
   @Get('available')
-  async Get(@Query() data): Promise<any> {
+  async Get(@Query() data): Promise<IFinishingMaterials[]> {
     return await this.service.getByCity(data.city, data.parent)
   }
 
   @Get('available-supplier')
-  async getByParentSupplier(@Query() data): Promise<any> {
+  async getByParentSupplier(@Query() data): Promise<IFinishingMaterials[]> {
     return await this.service.getByParentSupplier(data.parent, data.supplier)
   }
 
@@ -51,7 +51,7 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
       return this.service.fetch(id)
   }
 
-  protected parseData(finishingMaterial: any) {
+  protected parseData(finishingMaterial: any): any {
     if (finishingMaterial.price == '0') {
       const option = []
       if (Array.isArray(finishingMaterial.optionName)) {
@@ -149,7 +149,7 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  post(@UploadedFile() file, @Body() finishingMaterial: any) {
+  post(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterials>  {
     if (!file)
       throw new HttpException(
         'Image is Required!',
@@ -160,7 +160,7 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  patch(@UploadedFile() file, @Body() finishingMaterial: any) {
+  patch(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterials> {
     return super.patch(file, this.parseData(finishingMaterial))
   }
 
@@ -173,13 +173,13 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
 
   //Admin Panel
   @Get('fromsupplier/:id')
-  async fromSupplier(@Param('id') id: string): Promise<any> {
+  async fromSupplier(@Param('id') id: string): Promise<IFinishingMaterials[]> {
     return await this.service.getSuppliers(id)
   }
 
   //Deleting Building Material Category here because circular dependencies are not allowed
   @Delete('deletecategory/:id')
-  async deleteCategory(@Param('id') id: string): Promise<any> {
+  async deleteCategory(@Param('id') id: string): Promise<string> {
     return await this.service.deleteCategory(id)
   }
 }

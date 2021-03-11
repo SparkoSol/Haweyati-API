@@ -290,7 +290,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async getBySupplierId(id: string): Promise<any> {
+  async getBySupplierId(id: string): Promise<IOrders[]> {
     return await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Accepted })
@@ -300,7 +300,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async getAssignedOrdersBySupplierId(id: string): Promise<any> {
+  async getAssignedOrdersBySupplierId(id: string): Promise<IOrders[]> {
     const result = new Set()
     const orders = (await this.fetch()) as IOrders[]
     for (const order of orders) {
@@ -312,10 +312,10 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(result)
+    return Array.from(result) as IOrders[]
   }
 
-  async getOrdersBySupplierAndStatus(id: string, status: number): Promise<any> {
+  async getOrdersBySupplierAndStatus(id: string, status: number): Promise<IOrders[]> {
     return await this.getPerson(
       await this.model
         .find({ status: status })
@@ -326,7 +326,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async getOrdersByDriverAndStatus(id: string, status: number): Promise<any> {
+  async getOrdersByDriverAndStatus(id: string, status: number): Promise<IOrders[]> {
     return await this.getPerson(
       await this.model
         .find({ status: status })
@@ -337,7 +337,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )
   }
 
-  async completedSupplierId(id: string): Promise<any> {
+  async completedSupplierId(id: string): Promise<IOrders[]> {
     const result = new Set()
     const orders = (await this.getPerson(
       await this.model
@@ -354,10 +354,10 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(result)
+    return Array.from(result) as IOrders[]
   }
 
-  async dispatchedSupplier(id: string): Promise<any> {
+  async dispatchedSupplier(id: string): Promise<IOrders[]> {
     const result = new Set()
     const orders = (await this.getPerson(
       await this.model
@@ -374,10 +374,10 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(result)
+    return Array.from(result) as IOrders[]
   }
 
-  async dispatchedDriver(id: string): Promise<any> {
+  async dispatchedDriver(id: string): Promise<IOrders[]> {
     return (await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Dispatched, 'driver._id': id })
@@ -387,7 +387,7 @@ export class OrdersService extends SimpleService<IOrders> {
     )) as IOrders[]
   }
 
-  async preparingDriver(id: string): Promise<any> {
+  async preparingDriver(id: string): Promise<IOrders[]> {
     return (await this.getPerson(
       await this.model
         .find({ status: OrderStatus.Preparing, 'driver._id': id })
@@ -457,11 +457,12 @@ export class OrdersService extends SimpleService<IOrders> {
       }
     }
 
-    // @ts-ignore
     persons.add(
       (
         await this.customersService.fetch(order.customer.toString())
-      ).profile._id.toString()
+      )
+        // @ts-ignore
+        .profile._id.toString()
     )
 
 
@@ -532,7 +533,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return this.getPerson(data)
   }
 
-  async viewOrders(data: any): Promise<any> {
+  async viewOrders(data: any): Promise<IOrders[]> {
     const results = new Set()
     const orders = await this.model
       .find({ city: data.city })
@@ -545,7 +546,7 @@ export class OrdersService extends SimpleService<IOrders> {
         }
       }
     }
-    return Array.from(results)
+    return Array.from(results) as IOrders[]
   }
 
   async ordersAfterFilter(document: any): Promise<IOrders[]>{
@@ -566,8 +567,8 @@ export class OrdersService extends SimpleService<IOrders> {
       if (document.payment == paymentType.cod){
         condition['paymentType'] = 'COD';
       }
-      else if (document.payment == paymentType.op){
-        condition['paymentType'] = 'OP';
+      else if (document.payment == 'Mada' || document.payment == 'Stripe'){
+        condition['paymentType'] = 'Online';
       }
 
       if (document.date){
@@ -578,6 +579,7 @@ export class OrdersService extends SimpleService<IOrders> {
       }
 
       else if (document.week){
+        console.log(moment(document.week).toDate())
         condition['createdAt'] = {
           $gte: moment(document.week).toDate(),
           $lt: moment(document.week).add(1, 'week').toDate()
@@ -615,7 +617,7 @@ export class OrdersService extends SimpleService<IOrders> {
       .exec()
   }
 
-  async AddSupplierToOrder(data: any): Promise<any> {
+  async AddSupplierToOrder(data: any): Promise<IOrders> {
     const order = await this.getPerson(await this.model.findById(data._id).populate('customer').exec()) as IOrders
     if (data.flag) {
       //move these two statement below on your own risk
@@ -724,7 +726,7 @@ export class OrdersService extends SimpleService<IOrders> {
     return await order.save()
   }
 
-  async AddDriver(data: any): Promise<any> {
+  async AddDriver(data: any): Promise<IOrders> {
     if (data.flag) {
       const order = await this.getPerson(
         await this.model
@@ -732,11 +734,12 @@ export class OrdersService extends SimpleService<IOrders> {
         .populate('customer')
         .exec())
       if (!order.driver) {
+        let result
         if (order.service == 'Scaffolding' || order.service == 'Building Material') {
           order.driver = data.driver
 
           order.status = OrderStatus.Preparing
-          await order.save()
+          result = await order.save()
 
           // @ts-ignore
           await this.fcmService.sendSingle({
@@ -754,10 +757,11 @@ export class OrdersService extends SimpleService<IOrders> {
               'You order has been accepted by driver!',
             body: 'Order #' + order.orderNo
           })
-        } else {
+        }
+        else {
           order.driver = data.driver
           order.status = OrderStatus.Preparing
-          await order.save()
+          result = await order.save()
 
           // @ts-ignore
           await this.fcmService.sendSingle({
@@ -772,6 +776,7 @@ export class OrdersService extends SimpleService<IOrders> {
             body: 'Order #' + order.orderNo
           })
         }
+        return result
         // this.fcmService.sendSingle({id: order.customer.profile._id, title: "Your order status has been changed to "+ this.getStatusString(OrderStatus.Preparing), body: 'Order # '+ order.orderNo})
       }
       else {

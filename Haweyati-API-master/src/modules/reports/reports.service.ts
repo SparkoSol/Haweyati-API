@@ -1,7 +1,7 @@
 import * as moment from 'moment'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { OrdersService } from '../orders/orders.service'
 import { ReportUtils } from '../../common/lib/report-utils'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IOrders, OrderStatus } from '../../data/interfaces/orders.interface'
 
 @Injectable()
@@ -23,7 +23,7 @@ export class ReportsService {
       title: ReportsService.title(data),
       date: ReportsService.subTitle(data),
       orders: orders,
-      total: total.toFixed(0)
+      total: total.toFixed(2)
     }
     return ReportUtils.renderReport('order_report', dataForReport)
   }

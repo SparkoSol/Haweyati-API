@@ -58,7 +58,7 @@ export class DumpstersService extends SimpleService<IDumpster> {
     return result
   }
 
-  async getByCity(city: string): Promise<any> {
+  async getByCity(city: string): Promise<IDumpster[]> {
     if (city) {
       const data = await this.service.getDataFromCityName(
         city,
@@ -69,12 +69,13 @@ export class DumpstersService extends SimpleService<IDumpster> {
 
       for (const item of dump) {
         for (const supplier of data) {
+          // @ts-ignore
           if (item.suppliers.includes(supplier)) {
             result.add(item)
           }
         }
       }
-      return Array.from(result)
+      return Array.from(result) as IDumpster[]
     }
   }
 

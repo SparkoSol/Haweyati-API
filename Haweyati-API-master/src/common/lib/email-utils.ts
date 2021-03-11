@@ -3,12 +3,12 @@ import * as nodeMailer from 'nodemailer'
 export class EmailUtils {
   static async sendEmail(name: string, hash: string, toEmail: string): Promise<any>{
     const transporter = await nodeMailer.createTransport({
-      host: 'mail.haweyatiapp.com',
-      port: 465,
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
       secure: true,
       auth: {
-        user: 'support@haweyatiapp.com',
-        pass: 'ECA~z[6)zWM7'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
       }
     })
     return await transporter.sendMail({

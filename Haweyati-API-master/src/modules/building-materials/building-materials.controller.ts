@@ -24,7 +24,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
     super(service)
   }
 
-  protected parseData(buildingMaterial: any) {
+  private static parseData(buildingMaterial: any) {
     if (Array.isArray(buildingMaterial.city)) {
       const list = []
       let startingPoint = 0;
@@ -80,13 +80,13 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  post(@UploadedFile() file, @Body() buildingMaterial: any) {
+  post(@UploadedFile() file, @Body() buildingMaterial: any): Promise<IBuildingMaterials>{
     if (!file)
       throw new HttpException(
         'Image is Required!',
         HttpStatus.NOT_ACCEPTABLE
       );
-    return super.post(file, this.parseData(buildingMaterial))
+    return super.post(file, BuildingMaterialsController.parseData(buildingMaterial))
   }
 
   @Patch()
@@ -95,7 +95,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
     @UploadedFile() file,
     buildingMaterial: any
   ): Promise<IBuildingMaterials> {
-    return super.patch(file, this.parseData(buildingMaterial))
+    return super.patch(file, BuildingMaterialsController.parseData(buildingMaterial))
   }
 
   @Get('getbyparent/:id')
@@ -106,24 +106,24 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   }
 
   @Get('available')
-  async Get(@Query() data): Promise<any> {
+  async Get(@Query() data): Promise<IBuildingMaterials[]> {
     return await this.service.getByCity(data.city, data.parent)
   }
 
   //Admin Panel
   @Get('fromsupplier/:id')
-  async fromSupplier(@Param('id') id: string): Promise<any> {
+  async fromSupplier(@Param('id') id: string): Promise<IBuildingMaterials[]> {
     return await this.service.getSuppliers(id)
   }
 
   //Deleting Building Material Category here because circular dependencies are not allowed
   @Delete('delete-category/:id')
-  async deleteCategory(@Param('id') id: string): Promise<any> {
+  async deleteCategory(@Param('id') id: string): Promise<string> {
     return await this.service.deleteCategory(id)
   }
 
   @Delete('delete-sub-category/:id')
-  async deleteSubCategory(@Param('id') id: string): Promise<any> {
+  async deleteSubCategory(@Param('id') id: string): Promise<string> {
     return await this.service.deleteSubCategory(id)
   }
 }

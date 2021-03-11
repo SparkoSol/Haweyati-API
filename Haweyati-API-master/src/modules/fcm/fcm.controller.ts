@@ -12,12 +12,12 @@ export class FcmController extends SimpleController<IFcmHistory>{
   }
 
   @Post('send-all')
-  async sendAll(@Body() data: any){
+  async sendAll(@Body() data: any): Promise<IFcmAllHistory>{
     return await this.service.sendAll(data);
   }
 
   @Get('send-pending/:id')
-  async sendPendingNotifications(@Param('id') id: string){
+  async sendPendingNotifications(@Param('id') id: string): Promise<void>{
     return await this.service.sendPending(id)
   }
 
@@ -42,7 +42,7 @@ export class FcmController extends SimpleController<IFcmHistory>{
   }
 
   @Patch('seen-to-unseen/:id')
-  async seenToUnseenHistory(@Param('id') id: string): Promise<IFcmHistory[]>{
+  async seenToUnseenHistory(@Param('id') id: string): Promise<any>{
     return await this.service.seenToUnseenHistory(id)
   }
 }

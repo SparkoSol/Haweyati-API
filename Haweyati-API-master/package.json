@@ -24,6 +24,7 @@
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.1.13",
     "@nestjs/common": "^7.0.0",
+    "@nestjs/config": "^0.6.3",
     "@nestjs/core": "^7.0.0",
     "@nestjs/jwt": "^7.0.0",
     "@nestjs/mongoose": "^7.0.1",

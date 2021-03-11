@@ -76,23 +76,23 @@ export class OrdersController extends SimpleController<IOrders> {
   }
 
   @Get('search')
-  async search(@Query() query: string) {
+  async search(@Query() query: string): Promise<IOrders[]> {
     return await this.service.search(query)
   }
 
   @Post('view')
-  async viewOrders(@Body() data: any): Promise<any> {
+  async viewOrders(@Body() data: any): Promise<IOrders[]> {
     return await this.service.viewOrders(data)
   }
 
   //Order Progress Update
   @Patch('add-supplier-all')
-  async AddSupplierToAllItem(@Body() data: any): Promise<any> {
+  async AddSupplierToAllItem(@Body() data: any): Promise<IOrders> {
     return await this.service.AddSupplierToOrder(data)
   }
 
   @Patch('add-driver')
-  async AddDriver(@Body() data: any): Promise<any> {
+  async AddDriver(@Body() data: any): Promise<IOrders> {
     return await this.service.AddDriver(data)
   }
 
@@ -102,22 +102,22 @@ export class OrdersController extends SimpleController<IOrders> {
   }
 
   @Get('selected-supplier/:id')
-  async getBySupplierId(@Param('id') id: string): Promise<any> {
+  async getBySupplierId(@Param('id') id: string): Promise<IOrders[]> {
     return await this.service.getBySupplierId(id)
   }
 
   @Get('assigned-supplier/:id')
-  async getAssignedOrdersBySupplierId(@Param('id') id: string): Promise<any> {
+  async getAssignedOrdersBySupplierId(@Param('id') id: string): Promise<IOrders[]> {
     return await this.service.getAssignedOrdersBySupplierId(id)
   }
 
   @Get('supplier-status/:id/:status')
-  async getOrdersBySupplierAndStatus(@Param('id') id: string, @Param('status') status: number): Promise<any> {
+  async getOrdersBySupplierAndStatus(@Param('id') id: string, @Param('status') status: number): Promise<IOrders[]> {
     return await this.service.getOrdersBySupplierAndStatus(id, status)
   }
 
   @Get('driver-status/:id/:status')
-  async getOrdersByDriverAndStatus(@Param('id') id: string, @Param('status') status: number): Promise<any> {
+  async getOrdersByDriverAndStatus(@Param('id') id: string, @Param('status') status: number): Promise<IOrders[]> {
     return await this.service.getOrdersByDriverAndStatus(id, status)
   }
 
@@ -132,7 +132,7 @@ export class OrdersController extends SimpleController<IOrders> {
   }
 
   @Patch('update-order-status')
-  async updateOrderStatus(@Body() data: any): Promise<any> {
+  async updateOrderStatus(@Body() data: any): Promise<IOrders> {
     return await this.service.updateStatus(data._id, this.getStatusFromIndex(data.status))
   }
 
@@ -175,7 +175,7 @@ export class OrdersController extends SimpleController<IOrders> {
   }
 
   @Patch('getrejected/:id')
-  async getRejected(@Param('id') id: string, @Body() data: any): Promise<any> {
+  async getRejected(@Param('id') id: string, @Body() data: any): Promise<IOrders> {
     if (data.message)
       return await this.service.updateStatus(id, OrderStatus.Rejected, data.message)
     else
@@ -190,26 +190,26 @@ export class OrdersController extends SimpleController<IOrders> {
   }
 
   @Patch('getclosed/:id')
-  async getClosed(@Param('id') id: string): Promise<any> {
+  async getClosed(@Param('id') id: string): Promise<IOrders> {
     return this.service.updateStatus(id, OrderStatus.Delivered)
   }
 
   //-------------------- Approved routes ----------------------
 
   @Patch('approved/:id')
-  async approve_order(@Param('id') id: string): Promise<any> {
+  async approve_order(@Param('id') id: string): Promise<IOrders> {
     return await this.service.updateStatus(id, OrderStatus.Pending)
   }
 
   @Patch('cancel/:id')
-  async cancel_order(@Param('id') id: string): Promise<any> {
+  async cancel_order(@Param('id') id: string): Promise<IOrders> {
     return await this.service.updateStatus(id, OrderStatus.Cancelled)
   }
 
   //-------------------- Completed routes ----------------------
 
   @Get('completed-supplier/:id')
-  async completedSupplierId(@Param('id') id: string): Promise<any> {
+  async completedSupplierId(@Param('id') id: string): Promise<IOrders[]> {
     return await this.service.completedSupplierId(id)
   }
 
@@ -226,34 +226,34 @@ export class OrdersController extends SimpleController<IOrders> {
   //-------------------- Dispatched routes ----------------------
 
   @Get('dispatched-supplier/:id')
-  async dispatchedSupplier(@Param('id') id: string): Promise<any> {
+  async dispatchedSupplier(@Param('id') id: string): Promise<IOrders[]> {
     return await this.service.dispatchedSupplier(id)
   }
 
   @Get('dispatched-driver/:id')
-  async dispatchedDriver(@Param('id') id: string): Promise<any> {
+  async dispatchedDriver(@Param('id') id: string): Promise<IOrders[]> {
     return await this.service.dispatchedDriver(id)
   }
 
   @Get('dispatched')
-  async dispatched(): Promise<any> {
+  async dispatched(): Promise<IOrders[]> {
     return await this.service.getByStatus(OrderStatus.Dispatched)
   }
 
   //-------------------- Preparing routes ----------------------
 
   @Get('preparing-driver/:id')
-  async preparingSupplier(@Param('id') id: string): Promise<any> {
+  async preparingSupplier(@Param('id') id: string): Promise<IOrders[]> {
     return await this.service.preparingDriver(id)
   }
 
   @Get('preparing')
-  async preparing(): Promise<any> {
+  async preparing(): Promise<IOrders[]> {
     return await this.service.getByStatus(OrderStatus.Preparing)
   }
 
   @Get('cancelled')
-  async cancelled(): Promise<any> {
+  async cancelled(): Promise<IOrders[]> {
     return await this.service.getByStatus(OrderStatus.Cancelled)
   }
 

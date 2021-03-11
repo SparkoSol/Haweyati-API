@@ -52,7 +52,7 @@ export class FinishingMaterialsService extends SimpleService<
       .exec()
   }
 
-  async getByCity(city: string, parent: string): Promise<any> {
+  async getByCity(city: string, parent: string): Promise<IFinishingMaterials[]> {
     const data = await this.service.getDataFromCityName(
       city,
       'Finishing Material'
@@ -66,22 +66,23 @@ export class FinishingMaterialsService extends SimpleService<
 
     for (const item of dump) {
       for (const supplier of data) {
-        if (item.suppliers.includes(supplier)) {
+        // @ts-ignore
+        if ((item.suppliers).includes(supplier)) {
           result.add(item)
         }
       }
     }
 
-    return Array.from(result)
+    return Array.from(result) as IFinishingMaterials[]
   }
 
-  async getByParentSupplier(parent: string, supplier: string): Promise<any> {
+  async getByParentSupplier(parent: string, supplier: string): Promise<IFinishingMaterials[]> {
     return await this.model
       .find({ status: 'Active', parent, suppliers: supplier})
       .exec()
   }
 
-  async getSuppliers(id: string): Promise<any> {
+  async getSuppliers(id: string): Promise<IFinishingMaterials[]> {
     const dump = await this.model.find({ status: 'Active' }).exec()
     const result = []
 
@@ -98,11 +99,11 @@ export class FinishingMaterialsService extends SimpleService<
     return result
   }
 
-  async remove(id: string): Promise<any> {
+  async remove(id: string): Promise<IFinishingMaterials> {
     return await this.model.findByIdAndUpdate(id, { status: 'Inactive' }).exec()
   }
 
-  async deleteCategory(id: string): Promise<any> {
+  async deleteCategory(id: string): Promise<string> {
     await this.categoryService.remove(id)
     const data = await this.fetchByParentId(id)
     for (const item of data) {

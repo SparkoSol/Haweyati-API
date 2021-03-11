@@ -66,7 +66,7 @@ export class DriversService extends SimpleService<IDriversInterface> {
     document.location = {
       latitude: document.latitude,
       longitude: document.longitude,
-      address: await LocationUtils.getCity(document.latitude, document.longitude)
+      address: await LocationUtils.getAddress(document.latitude, document.longitude)
     }
     document.vehicle = {
       name: document.vehicleName,
@@ -237,16 +237,15 @@ export class DriversService extends SimpleService<IDriversInterface> {
       .exec()
   }
 
-  async updateByStatus(id: string, status: string): Promise<any> {
+  async updateByStatus(id: string, status: string): Promise<IDriversInterface> {
     const request = await this.requestModel.findById(id).exec()
     if (request && status == 'Active') {
-      await this.model.findByIdAndUpdate(request.driver, { status }).exec()
+      const driver = await this.model.findByIdAndUpdate(request.driver, { status }).exec()
       await this.requestModel.findByIdAndDelete(id)
-      return { message: 'Status Changed Successfully!' }
-    } else {
-      await this.model.findByIdAndUpdate(id, { status }).exec()
-      return { message: 'Status Changed Successfully!' }
+      return driver
     }
+    else
+      return await this.model.findByIdAndUpdate(id, { status }).exec()
   }
 
   async getVerifiedStandAloneDrivers(): Promise<IDriversInterface[]>{
@@ -256,18 +255,16 @@ export class DriversService extends SimpleService<IDriversInterface> {
       .exec()
   }
 
-  async getRejected(id: string, data?: any): Promise<any> {
+  async getRejected(id: string, data?: any): Promise<IDriversInterface> {
     const request = await this.requestModel.findOne({ driver: id }).exec()
-    await this.model
+    const driver = await this.model
       .findByIdAndUpdate(request.driver, { status: 'Rejected' })
       .exec()
     await this.requestModel.findOneAndUpdate(
       { driver: id },
       { status: 'Rejected' }
     )
-    return {
-      message: 'Request Rejected'
-    }
+    return driver
   }
 
   async getDataFromCityName(city: string): Promise<IDriversInterface[]>{

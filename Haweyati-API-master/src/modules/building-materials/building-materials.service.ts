@@ -59,7 +59,7 @@ export class BuildingMaterialsService extends SimpleService<
     return super.create(document)
   }
 
-  async getByCity(city: string, parent: string): Promise<any> {
+  async getByCity(city: string, parent: string): Promise<IBuildingMaterials[]> {
     if (city) {
       const data = await this.service.getDataFromCityName(
         city,
@@ -74,16 +74,17 @@ export class BuildingMaterialsService extends SimpleService<
 
       for (const item of dump) {
         for (const supplier of data) {
+          // @ts-ignore
           if (item.suppliers.includes(supplier)) {
             result.add(item)
           }
         }
       }
-      return Array.from(result)
+      return Array.from(result) as IBuildingMaterials[]
     }
   }
 
-  async getSuppliers(id: string): Promise<any> {
+  async getSuppliers(id: string): Promise<IBuildingMaterials[]> {
     const dump = await this.model.find({ status: 'Active' }).exec()
     const result = []
 
@@ -97,15 +98,15 @@ export class BuildingMaterialsService extends SimpleService<
         result.push(item)
       }
     }
-    return result
+    return result as IBuildingMaterials[]
   }
 
-  async remove(id: string): Promise<any> {
+  async remove(id: string): Promise<IBuildingMaterials> {
     return this.model.findByIdAndUpdate(id, { status: 'Inactive' })
   }
 
   //deleting building material category
-  async deleteCategory(id: string): Promise<any> {
+  async deleteCategory(id: string): Promise<string> {
     await this.categoryService.remove(id)
     const subCategories = await this.subCategoryService.fetchByParentId(id)
     for (const sc of subCategories) {
@@ -114,7 +115,7 @@ export class BuildingMaterialsService extends SimpleService<
     return 'Category Deleted'
   }
 
-  async deleteSubCategory(id: string): Promise<any> {
+  async deleteSubCategory(id: string): Promise<string> {
     await this.subCategoryService.remove(id)
     const data = await this.fetchByParentId(id)
     for (const item of data) {

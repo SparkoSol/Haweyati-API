@@ -8,7 +8,8 @@ import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { ICustomerInterface } from '../../data/interfaces/customers.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
-import { FcmService } from "../fcm/fcm.service";
+import { FcmService } from '../fcm/fcm.service'
+import { IAdminNotification } from "../../data/interfaces/adminNotification.interface";
 
 @Injectable()
 export class CustomersService extends SimpleService<ICustomerInterface> {
@@ -22,7 +23,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     super(model)
   }
 
-  async searchActive(query: any) {
+  async searchActive(query: any): Promise<ICustomerInterface[]>{
     const results = []
 
     const persons = await this.personService.search(query)
@@ -41,7 +42,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return results
   }
 
-  async searchGuest(query: any) {
+  async searchGuest(query: any): Promise<ICustomerInterface[]>{
     const results = []
 
     const persons = await this.personService.search(query)
@@ -60,7 +61,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return results
   }
 
-  async searchBlocked(query: any) {
+  async searchBlocked(query: any): Promise<ICustomerInterface[]>{
     const persons = await this.personService.search(query)
     const activeCustomers = await this.getWithScopeCustomer('Blocked')
     const results = []
@@ -79,7 +80,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return results
   }
 
-  async fetch(id?: string): Promise<any> {
+  async fetch(id?: string): Promise<ICustomerInterface | ICustomerInterface[]> {
     if (id) {
       return (await this.model
         .findById(id)
@@ -123,7 +124,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       .exec()
   }
 
-  async create(document: any): Promise<any> {
+  async create(document: any): Promise<ICustomerInterface> {
     let customer: any
     document.scope = 'customer'
 
@@ -161,7 +162,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
       .exec()
   }
 
-  async new(document: any): Promise<any> {
+  async new(document: any): Promise<ICustomerInterface> {
     document.profile.scope = 'customer'
 
     document.profile.username = document.profile.contact
@@ -188,7 +189,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return await this.createCustomer(document)
   }
 
-  async getGuest(): Promise<any>{
+  async getGuest(): Promise<ICustomerInterface[]>{
     const result = new Set()
     const persons = (await this.personService.fetch()) as IPerson[]
     for (const person of persons){
@@ -196,10 +197,10 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
         result.add(await this.model.findOne({profile : person._id}).populate('profile').exec())
       }
     }
-    return Array.from(result)
+    return Array.from(result) as ICustomerInterface[]
   }
 
-  async guestNew(document: any): Promise<any> {
+  async guestNew(document: any): Promise<ICustomerInterface> {
     document.profile.scope = 'guest'
     document.profile.name = 'HW-Guest-' + await NoGeneratorUtils.generateCode()
 
@@ -211,7 +212,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return await this.createCustomer(document)
   }
 
-  private async createCustomer(document: any): Promise<any>{
+  private async createCustomer(document: any): Promise<ICustomerInterface>{
     let customer: any
     const person = await this.personService.create(document.profile)
 
@@ -243,7 +244,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     }
   }
 
-  protected async sendAdminNotification(profile: any){
+  protected async sendAdminNotification(profile: any): Promise<IAdminNotification>{
     const notification = {
       type: 'Customer',
       title: 'New Customer',
@@ -316,7 +317,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
 
   }
 
-  async getUnblocked(id: string): Promise<any> {
+  async getUnblocked(id: string): Promise<ICustomerInterface> {
     return await this.model.findByIdAndUpdate(id, { status: 'Active' }).exec()
   }
 
@@ -337,7 +338,7 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
      return await this.model.create(document)
   }
 
-  async getBlocked(id?: string, msg?: string): Promise<any> {
+  async getBlocked(id?: string, msg?: string): Promise<ICustomerInterface | ICustomerInterface[]> {
     if (id && msg)
       return await this.model
         .findByIdAndUpdate(id, { status: 'Blocked', message: msg })
@@ -365,19 +366,15 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     }
   }
 
-  async getProfile(contact: string): Promise<ICustomerInterface | string> {
+  async getProfile(contact: string): Promise<ICustomerInterface> {
     const person = await this.personService.fetchFromContact(contact)
     if (person?.scope.includes('customer') || person?.scope.includes('guest')) {
-      const customer = await this.model
+      return await this.model
         .findOne({ profile: person._id })
         .populate('profile')
         .exec()
-      // @ts-ignore
-      // customer.profile.password = ''
-      return customer
-    } else {
+    } else
       throw new HttpException('No Customer Found', HttpStatus.NOT_ACCEPTABLE)
-    }
   }
 
   async getAll(
@@ -420,12 +417,11 @@ export class CustomersService extends SimpleService<ICustomerInterface> {
     return  await customer.save()
   }
   
-  async sendNotificationToCustomer(profile: string, title: string, message: string){
+  async sendNotificationToCustomer(profile: string, title: string, message: string): Promise<void>{
     await this.fcmService.sendSingle({
       id: profile,
       title: title,
       body: message
     })
-    return;
   }
 }

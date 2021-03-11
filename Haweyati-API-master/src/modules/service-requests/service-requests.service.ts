@@ -37,13 +37,13 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests> {
     const { suppliers, note, type, image, description, ...data } = document
 
     const serviceReq = {
-      suppliers: suppliers,
-      type: type,
-      description: description,
-      data: data,
-      note: note,
-      image: document.image,
-      requestNo: await NoGeneratorUtils.generateCode()
+      suppliers,
+      type,
+      description,
+      data,
+      note,
+      image,
+      requestNo: 'HW-SR-' + await NoGeneratorUtils.generateCode()
     }
     const serviceRequest = await super.create(<IServicesRequests>serviceReq)
 
@@ -85,11 +85,11 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests> {
     return await this.model.findByIdAndUpdate(id, { status }).exec()
   }
 
-  async getBySupplier(id: string) {
+  async getBySupplier(id: string): Promise<IServicesRequests[]> {
     return this.model.find({ suppliers: id }).exec()
   }
 
-  async search(query: any) {
+  async search(query: any): Promise<IServicesRequests[]>  {
     const data = await this.model
       .find({
         $or: [
@@ -100,7 +100,7 @@ export class ServiceRequestsService extends SimpleService<IServicesRequests> {
       })
       .populate('suppliers')
       .exec()
-    for (let item of data) {
+    for (const item of data) {
       // @ts-ignore
       item.suppliers.person = await this.personsService.fetch(
         // @ts-ignore

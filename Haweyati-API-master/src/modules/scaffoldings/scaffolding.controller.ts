@@ -12,12 +12,12 @@ export class ScaffoldingController extends ImageController<
   }
 
   @Get('getbysupplier/:id')
-  async getBySupplier(@Param('id') id: string): Promise<IScaffoldingInterface> {
+  async getBySupplier(@Param('id') id: string): Promise<IScaffoldingInterface[]> {
     return await this.service.getSuppliers(id)
   }
 
   @Get('available')
-  async Get(@Query() data): Promise<any> {
+  async Get(@Query() data): Promise<IScaffoldingInterface[]> {
     return await this.service.getByCity(data.city)
   }
 }

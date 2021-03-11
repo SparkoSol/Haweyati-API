@@ -29,7 +29,7 @@ export class BuildingMaterialSubCategoryController extends ImageController<IBuil
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  postOverride(@UploadedFile() file, @Body() data: any) {
+  postOverride(@UploadedFile() file, @Body() data: any): Promise<IBuildingMaterialSubCategory>{
     if (!file)
       throw new HttpException(
         'Image is Required!',

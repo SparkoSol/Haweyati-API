@@ -1,6 +1,5 @@
 import {
   Body,
-  Post,
   Patch,
   Controller
 } from '@nestjs/common'
@@ -16,6 +15,6 @@ export class TimeSlotsController extends SimpleController<ITimeSlots> {
 
   @Patch()
   async update(@Body() data: any): Promise<ITimeSlots[]> {
-    return await this.service.update1(data)
+    return await this.service.updateTimeSlots(data)
   }
 }

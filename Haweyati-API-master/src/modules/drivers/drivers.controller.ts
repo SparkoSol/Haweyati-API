@@ -38,39 +38,38 @@ export class DriversController extends ImageController<IDriversInterface> {
   async getBlockedDrivers(): Promise<IDriversInterface[]> {
     return await this.service.getByStatus('Blocked')
   }
-
   @Patch('getverified/:id')
-  async getVerified(@Param('id') id: string): Promise<any> {
+  async getVerified(@Param('id') id: string): Promise<IDriversInterface> {
     return await this.service.updateByStatus(id, 'Active')
   }
 
   @Patch('getrejected/:id')
-  async getRejected(@Param('id') id: string, @Body() data: any): Promise<any> {
+  async getRejected(@Param('id') id: string, @Body() data: any): Promise<IDriversInterface> {
     return await this.service.getRejected(id, data)
   }
 
   @Patch('getblocked/:id')
-  async getBlocked(@Param('id') id: string): Promise<any> {
+  async getBlocked(@Param('id') id: string): Promise<IDriversInterface> {
     return this.service.updateByStatus(id, 'Blocked')
   }
 
   @Patch('getunblocked/:id')
-  async getUnblocked(@Param('id') id: string): Promise<any> {
+  async getUnblocked(@Param('id') id: string): Promise<IDriversInterface> {
     return await this.service.updateByStatus(id, 'Active')
   }
 
   @Get('supplier/:id')
-  async getCompanyDrivers(@Param('id') id: string): Promise<any> {
+  async getCompanyDrivers(@Param('id') id: string): Promise<IDriversInterface[]>{
     return await this.service.getCompanyDrivers(id)
   }
 
   @Get('getbyperson/:id')
-  async getByPersonId(@Param('id') id: string) {
+  async getByPersonId(@Param('id') id: string): Promise<IDriversInterface>{
     return await this.service.getByPersonId(id)
   }
 
   @Patch('remove-device-id/:id')
-  async removeDeviceId(@Param('id') id: string) {
+  async removeDeviceId(@Param('id') id: string): Promise<IDriversInterface>{
     return await this.service.removeDeviceId(id)
   }
 }

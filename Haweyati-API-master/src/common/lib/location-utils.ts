@@ -11,7 +11,7 @@ export class LocationUtils {
       location = await client.reverseGeocode({
         params: {
           latlng: [lat, lng],
-          key: 'AIzaSyDSz2Q7d49FVjGoAW2k8eWFXSdQbbipVc8'
+          key: process.env.GOOGLE_MAPS_KEY
         },
         timeout: 1000
       })
@@ -55,7 +55,7 @@ export class LocationUtils {
           p2lat +
           ',' +
           p2lng +
-          '&key=AIzaSyDSz2Q7d49FVjGoAW2k8eWFXSdQbbipVc8'
+          '&key='+process.env.GOOGLE_MAPS_KEY
       )
       // @ts-ignore
       return data.rows[0].elements[0].distance.text.split(' ')[0]

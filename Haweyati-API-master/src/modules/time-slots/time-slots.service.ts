@@ -14,7 +14,7 @@ export class TimeSlotsService extends SimpleService<ITimeSlots> {
     super(model)
   }
 
-  async update1(document: any): Promise<ITimeSlots[]> {
+  async updateTimeSlots(document: any): Promise<ITimeSlots[]> {
     for (const item of document) {
       await super.change(item)
     }
