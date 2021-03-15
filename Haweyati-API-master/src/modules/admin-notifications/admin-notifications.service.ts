@@ -30,7 +30,7 @@ export class AdminNotificationsService extends SimpleService<
         .exec()
   }
 
-  async create(document: any): Promise<IAdminNotification> {
+  async create(document: IAdminNotification): Promise<IAdminNotification> {
     const note = await super.create(document)
     if (note) {
       if (AppGateway.socket) {

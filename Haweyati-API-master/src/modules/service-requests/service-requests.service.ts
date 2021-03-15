@@ -6,6 +6,7 @@ import { SimpleService } from '../../common/lib/simple.service'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { IServiceRequest } from "../../data/interfaces/serviceRequest.interface"
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { IAdminNotification } from "../../data/interfaces/adminNotification.interface";
 
 @Injectable()
 export class ServiceRequestsService extends SimpleService<IServiceRequest> {
@@ -55,7 +56,7 @@ export class ServiceRequestsService extends SimpleService<IServiceRequest> {
         title: 'New Service Request',
         message: 'New Service Request with Ref. # ' + serviceReq.requestNo + '.'
       }
-      await this.adminNotificationsService.create(notification)
+      await this.adminNotificationsService.create(notification as IAdminNotification)
     }
     return serviceRequest
   }

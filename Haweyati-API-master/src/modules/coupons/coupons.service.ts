@@ -1,9 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { ICoupon } from "../../data/interfaces/coupons.interface";
-import { SimpleService } from "../../common/lib/simple.service";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
 import * as moment from 'moment'
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { SimpleService } from '../../common/lib/simple.service'
+import { ICoupon } from '../../data/interfaces/coupons.interface'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 
 @Injectable()
 export class CouponsService extends SimpleService<ICoupon> {
@@ -24,19 +24,22 @@ export class CouponsService extends SimpleService<ICoupon> {
 
   async checkCouponValidity(code: string, userId: string): Promise<ICoupon> {
     const coupon = await this.model.findOne({ code }).exec()
-    if (coupon){
+    if (coupon) {
       if (coupon.isOneTime)
         if (!coupon.usedBy.includes(userId))
-          if (moment() <= moment(coupon.expiry))
-            return coupon
-          else throw new HttpException('Coupon expired!', HttpStatus.NOT_ACCEPTABLE)
-        else throw new HttpException('Coupon already used!', HttpStatus.NOT_ACCEPTABLE)
+          if (moment() <= moment(coupon.expiry)) return coupon
+          else
+            throw new HttpException(
+              'Coupon expired!',
+              HttpStatus.NOT_ACCEPTABLE
+            )
+        else
+          throw new HttpException(
+            'Coupon already used!',
+            HttpStatus.NOT_ACCEPTABLE
+          )
       else return coupon
-    }
-    else throw new HttpException(
-      'Invalid Coupon!',
-      HttpStatus.NOT_ACCEPTABLE
-    )
+    } else throw new HttpException('Invalid Coupon!', HttpStatus.NOT_ACCEPTABLE)
   }
 
   async addUser(code: string, userId: string): Promise<ICoupon> {

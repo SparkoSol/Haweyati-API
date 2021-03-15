@@ -1,18 +1,15 @@
 import { Model } from 'mongoose'
-import { Injectable } from "@nestjs/common"
+import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
-import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
-import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { dtoFinishingMaterialData } from '../../data/dtos/finishing-material.dto'
 import { IFinishingMaterial } from '../../data/interfaces/finishingMaterials.interface'
+import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 import { FinishingMaterialCategoryService } from '../finishing-material-category/finishing-material-category.service'
-import { IDumpster } from "../../data/interfaces/dumpster.interface";
 
 @Injectable()
-export class FinishingMaterialsService extends SimpleService<
-  IFinishingMaterial
-> {
+export class FinishingMaterialsService extends SimpleService<IFinishingMaterial> {
   constructor(
     @InjectModel('finishingmaterials')
     protected readonly model: Model<IFinishingMaterial>,
@@ -22,18 +19,77 @@ export class FinishingMaterialsService extends SimpleService<
     super(model)
   }
 
+  async new(id?: string, withSuppliers?: boolean, city?: string): Promise<IFinishingMaterial[] | IFinishingMaterial> {
+    const query = {}
+    const projection = {}
+    let populate: any = ''
+
+    query['status'] = 'Active'
+
+    if (city) {
+      projection['description'] = 1
+      projection['varient'] = 1
+      projection['status'] = 1
+      projection['parent'] = 1
+      projection['name'] = 1
+      projection['price'] = 1
+      projection['volumetricWeight'] = 1
+      projection['cbmLength'] = 1
+      projection['cbmWidth'] = 1
+      projection['cbmHeight'] = 1
+      projection['options'] = 1
+      projection['image'] = 1
+
+      const suppliers = await this.service.getSupplierIdsFromCityName(city, 'Finishing Material')
+      query['suppliers'] = {$in: suppliers}
+    }
+
+    if (withSuppliers) {
+      populate = {
+        path: 'suppliers',
+        model: 'shopregistration',
+        populate: {
+          path: 'person',
+          model: 'persons'
+        }
+      }
+    }
+    else if (Object.keys(projection).length === 0) {
+      projection['suppliers'] = 0
+    }
+
+    if (id) {
+      query['_id'] = id;
+      return this.model.findOne(query, projection).populate(populate).exec()
+    } else {
+      return this.model.find(query, projection).populate(populate).exec();
+    }
+  }
+
   async fetch(
-    id?: string
+    id?: string, withSuppliers?: boolean
   ): Promise<IFinishingMaterial[] | IFinishingMaterial> {
-    if (id)
+    if (id && withSuppliers)
       return await this.model
         .findOne({ _id: id, status: 'Active' })
-        .populate('suppliers')
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
+        .exec()
+    else if (id)
+      return await this.model
+        .findOne({ _id: id, status: 'Active' })
+        .select('-suppliers')
         .exec()
     else
       return await this.model
         .find({ status: 'Active' })
-        .populate('suppliers')
+        .select('-suppliers')
         .exec()
   }
 
@@ -50,9 +106,11 @@ export class FinishingMaterialsService extends SimpleService<
     )
     const result = new Set()
 
-    for (const supplier of suppliers){
-      const fm = await this.model.find({status: 'Active', parent, suppliers: supplier}).exec()
-      fm.forEach(value => {result.add(value)})
+    for (const supplier of suppliers) {
+      const fm = await this.model.find({ status: 'Active', parent, suppliers: supplier }).exec()
+      fm.forEach(value => {
+        result.add(value)
+      })
     }
 
     return Array.from(result) as IFinishingMaterial[]
@@ -60,7 +118,7 @@ export class FinishingMaterialsService extends SimpleService<
 
   async getByParentSupplier(parent: string, supplier: string): Promise<IFinishingMaterial[]> {
     return await this.model
-      .find({ status: 'Active', parent, suppliers: supplier})
+      .find({ status: 'Active', parent, suppliers: supplier })
       .exec()
   }
 
@@ -88,7 +146,7 @@ export class FinishingMaterialsService extends SimpleService<
       .exec()
   }
 
-  async fetchAndSearch(id: string, data: any): Promise<IFinishingMaterial[]> {
+  async fetchAndSearch(id: string, data: dtoFinishingMaterialData): Promise<IFinishingMaterial[]> {
     return await this.model
       .find({
         parent: id,
@@ -99,15 +157,14 @@ export class FinishingMaterialsService extends SimpleService<
   }
 
   //used in reward points module
-  async getDataForRewardPoints(data: any): Promise<IFinishingMaterial[]> {
+  async getDataForRewardPoints(data: any[]): Promise<IFinishingMaterial[]> {
     return await this.model.find({ _id: { $nin: data } }).exec()
   }
 
-  async getCategoriesFromSupplier(id: string): Promise<IFinishingMaterialCategory[]>{
+  async getCategoriesFromSupplier(id: string): Promise<IFinishingMaterialCategory[]> {
     const myResult = new Set()
-    // @ts-ignore
-    const fm = await this.model.find({suppliers: id}).populate('parent').exec() as IFinishingMaterial[]
-    for (const item of fm){
+    const fm = await this.model.find({ suppliers: id }).populate('parent').exec() as IFinishingMaterial[]
+    for (const item of fm) {
       myResult.add(item.parent)
     }
     return Array.from(myResult) as IFinishingMaterialCategory[]

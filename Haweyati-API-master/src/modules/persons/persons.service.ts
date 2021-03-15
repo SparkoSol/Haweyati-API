@@ -7,6 +7,7 @@ import { IPerson } from 'src/data/interfaces/person.interface'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
+import { dtoCustomerQuery } from "../../data/dtos/customer.dto";
 
 @Injectable()
 export class PersonsService extends SimpleService<IPerson> {
@@ -189,7 +190,7 @@ export class PersonsService extends SimpleService<IPerson> {
   }
 
   //Used in Customer Module
-  async searchOfSpecificScope(query: any, scope: string): Promise<IPerson[]> {
+  async searchOfSpecificScope(query: dtoCustomerQuery, scope: string): Promise<IPerson[]> {
     return await this.model
       .find({
         $or: [

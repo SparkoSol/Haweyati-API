@@ -1,37 +1,58 @@
 import {
-  Get,
   Body,
-  Post,
+  Controller,
+  Delete,
+  Get, Headers,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
+  Post,
   Query,
-  Delete,
-  Controller,
   UploadedFile,
-  UseInterceptors, HttpException, HttpStatus
-} from '@nestjs/common'
+  UseInterceptors
+} from "@nestjs/common";
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { BuildingMaterialsService } from './building-materials.service'
 import { IBuildingMaterials } from '../../data/interfaces/buildingMaterials.interface'
+import { dtoBuildingMaterialCreateUpdate, dtoBuildingMaterialAvailable } from "../../data/dtos/building-material.dto";
+import { IFinishingMaterial } from "../../data/interfaces/finishingMaterials.interface";
+import { IDumpster } from "../../data/interfaces/dumpster.interface";
 
 @Controller('building-materials')
 export class BuildingMaterialsController extends ImageController<IBuildingMaterials> {
   constructor(
     protected readonly service: BuildingMaterialsService
-  )
-  {
+  ) {
     super(service)
   }
 
-  private static parseData(buildingMaterial: any) {
+  @Get('new/:id')
+  async new(
+    @Param('id') id: string,
+    @Query('withSuppliers') withSuppliers: boolean,
+    @Headers('x-city') city: string
+  ): Promise<IBuildingMaterials[] | IBuildingMaterials> {
+    return this.service.new(id, withSuppliers, city)
+  }
+
+  @Get('new')
+  async newAll(
+    @Query('withSuppliers') withSuppliers: boolean,
+    @Headers('x-city') city: string
+  ): Promise<IBuildingMaterials[] | IBuildingMaterials> {
+    return await this.service.new(null, withSuppliers, city)
+  }
+
+  private static parseData(buildingMaterial: dtoBuildingMaterialCreateUpdate) {
     if (Array.isArray(buildingMaterial.city)) {
       const list = []
       let startingPoint = 0;
       for (let i = 0; i < buildingMaterial.city.length; ++i) {
         const priceList = []
-        const endPoint = startingPoint + (+buildingMaterial.count)
-        for (let j = startingPoint; j < endPoint; ++j){
+        const endPoint = startingPoint + buildingMaterial.count
+        for (let j = startingPoint; j < endPoint; ++j) {
           priceList.push({
             price: buildingMaterial.price[j],
             unit: buildingMaterial.unit[j]
@@ -44,11 +65,10 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
         })
       }
       buildingMaterial.pricing = list
-    }
-    else {
-      if (Array.isArray(buildingMaterial.price)){
+    } else {
+      if (Array.isArray(buildingMaterial.price)) {
         const priceList = []
-        for (let i = 0; i< buildingMaterial.price.length; ++i){
+        for (let i = 0; i < buildingMaterial.price.length; ++i) {
           priceList.push({
             price: buildingMaterial.price[i],
             unit: buildingMaterial.unit[i]
@@ -60,8 +80,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
             price: priceList
           }
         ]
-      }
-      else {
+      } else {
         buildingMaterial.pricing = [
           {
             city: buildingMaterial.city,
@@ -80,7 +99,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  post(@UploadedFile() file, @Body() buildingMaterial: any): Promise<IBuildingMaterials>{
+  post(@UploadedFile() file, @Body() buildingMaterial: dtoBuildingMaterialCreateUpdate): Promise<IBuildingMaterials> {
     if (!file)
       throw new HttpException(
         'Image is Required!',
@@ -93,7 +112,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   @UseInterceptors(FileInterceptor('image'))
   patch(
     @UploadedFile() file,
-    buildingMaterial: any
+    buildingMaterial: dtoBuildingMaterialCreateUpdate
   ): Promise<IBuildingMaterials> {
     return super.patch(file, BuildingMaterialsController.parseData(buildingMaterial))
   }
@@ -106,7 +125,7 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
   }
 
   @Get('available')
-  async Get(@Query() data): Promise<IBuildingMaterials[]> {
+  async Get(@Query() data: dtoBuildingMaterialAvailable): Promise<IBuildingMaterials[]> {
     return await this.service.getByCity(data.city, data.parent)
   }
 

@@ -4,9 +4,11 @@ import { AdminNotificationsService } from './admin-notifications.service'
 import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
 
 @Controller('admin-notifications')
-export class AdminNotificationsController extends SimpleController<IAdminNotification>{
+export class AdminNotificationsController extends SimpleController<
+  IAdminNotification
+> {
   constructor(protected readonly service: AdminNotificationsService) {
-    super(service);
+    super(service)
   }
 
   @Patch()

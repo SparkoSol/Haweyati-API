@@ -1,13 +1,18 @@
 import { Model } from 'mongoose'
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IBuildingMaterialSubCategory } from '../../data/interfaces/buildingMaterialSubCategory.interface'
 
 @Injectable()
-export class BuildingMaterialSubCategoryService extends SimpleService<IBuildingMaterialSubCategory>{
-  constructor(@InjectModel('buildingmaterialsubcategories') protected readonly model: Model<IBuildingMaterialSubCategory>) {
-    super(model);
+export class BuildingMaterialSubCategoryService extends SimpleService<
+  IBuildingMaterialSubCategory
+> {
+  constructor(
+    @InjectModel('buildingmaterialsubcategories')
+    protected readonly model: Model<IBuildingMaterialSubCategory>
+  ) {
+    super(model)
   }
 
   fetch(
@@ -27,5 +32,4 @@ export class BuildingMaterialSubCategoryService extends SimpleService<IBuildingM
   async remove(id: string): Promise<IBuildingMaterialSubCategory> {
     return await this.model.findByIdAndUpdate(id, { status: 'Inactive' }).exec()
   }
-
 }

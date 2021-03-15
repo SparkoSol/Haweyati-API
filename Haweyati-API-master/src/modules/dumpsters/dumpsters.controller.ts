@@ -1,19 +1,23 @@
 import {
-  Get,
-  Post,
   Body,
-  Query,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Headers,
   Param,
   Patch,
-  Delete,
-  Controller,
+  Post,
+  Query,
   UploadedFile,
-  UseInterceptors, HttpException, HttpStatus
+  UseInterceptors
 } from '@nestjs/common'
 import { DumpstersService } from './dumpsters.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
+import { dtoDumpster, dtoDumpsterQuery } from '../../data/dtos/dumpster.dto'
 
 @Controller('dumpsters')
 export class DumpstersController extends ImageController<IDumpster> {
@@ -21,12 +25,47 @@ export class DumpstersController extends ImageController<IDumpster> {
     super(service)
   }
 
+  @Get('new/:id')
+  async new(
+    @Param('id') id: string,
+    @Query('withSuppliers') withSuppliers: boolean,
+    @Headers('x-city') city: string
+  ): Promise<IDumpster[] | IDumpster> {
+    return this.service.new(id, withSuppliers, city)
+  }
+
+  @Get('new')
+  async newAll(
+    @Query('withSuppliers') withSuppliers: boolean,
+    @Headers('x-city') city: string
+  ): Promise<IDumpster[] | IDumpster> {
+    return await this.service.new(null, withSuppliers, city)
+  }
+
+  @Get(':id')
+  async get(@Param('id') id: string): Promise<IDumpster[] | IDumpster> {
+    return await this.service.fetch(id)
+  }
+
+  @Get()
+  async getAll(): Promise<IDumpster[] | IDumpster> {
+    return await this.service.fetch()
+  }
+
   @Get('available')
-  async Get(@Query() data): Promise<IDumpster[]> {
+  async Get(@Query() data: dtoDumpsterQuery): Promise<IDumpster[]> {
     return await this.service.getByCity(data.city)
   }
 
-  protected parseData(dumpster: any): any {
+  @Get(':id')
+  async getData(
+    @Param('id') id: string,
+    @Query('withSuppliers') withSuppliers: boolean
+  ): Promise<IDumpster[] | IDumpster> {
+    return this.service.fetch(id, withSuppliers)
+  }
+
+  protected parseData(dumpster: dtoDumpster): any {
     if (Array.isArray(dumpster.city)) {
       const list = []
       for (let i = 0; i < dumpster.city.length; ++i) {
@@ -56,18 +95,21 @@ export class DumpstersController extends ImageController<IDumpster> {
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  postOverride(@UploadedFile() file, @Body() dumpster: any): Promise<IDumpster>{
+  postOverride(
+    @UploadedFile() file,
+    @Body() dumpster: dtoDumpster
+  ): Promise<IDumpster> {
     if (!file)
-      throw new HttpException(
-        'Image is Required!',
-        HttpStatus.NOT_ACCEPTABLE
-      );
+      throw new HttpException('Image is Required!', HttpStatus.NOT_ACCEPTABLE)
     return super.post(file, this.parseData(dumpster))
   }
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  patch(@UploadedFile() file, @Body() dumpster: any): Promise<IDumpster>{
+  patch(
+    @UploadedFile() file,
+    @Body() dumpster: dtoDumpster
+  ): Promise<IDumpster> {
     return super.patch(file, this.parseData(dumpster))
   }
 

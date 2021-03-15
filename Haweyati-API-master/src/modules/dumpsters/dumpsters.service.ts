@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { Injectable } from "@nestjs/common"
+import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IDumpster } from '../../data/interfaces/dumpster.interface'
@@ -15,17 +15,67 @@ export class DumpstersService extends SimpleService<IDumpster> {
     super(model)
   }
 
-  async fetch(id?: string): Promise<IDumpster[] | IDumpster> {
-    if (id)
+  async fetch(id?: string, withSuppliers?: boolean): Promise<IDumpster[] | IDumpster> {
+    if (id && withSuppliers)
       return await this.model
         .findOne({ _id: id, status: 'Active' })
-        .populate('suppliers')
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
+        .exec()
+    else if (id)
+      return await this.model
+        .findOne({ _id: id, status: 'Active' })
+        .select('-suppliers')
         .exec()
     else
       return await this.model
         .find({ status: 'Active' })
-        .populate('suppliers')
+        .select('-suppliers')
         .exec()
+  }
+
+  async new(id?: string, withSuppliers?: boolean, city?: string): Promise<IDumpster[] | IDumpster> {
+    const query = {}
+    const projection = {}
+    let populate: any = ''
+
+    query['status'] = 'Active'
+
+    if (city) {
+      query['pricing.city'] = city
+
+      projection['description'] = 1
+      projection['status'] = 1
+      projection['image'] = 1
+      projection['name'] = 1
+      projection['pricing'] = { $elemMatch: { city: city } }
+    }
+
+    if (withSuppliers) {
+      populate = {
+        path: 'suppliers',
+        model: 'shopregistration',
+        populate: {
+          path: 'person',
+          model: 'persons'
+        }
+      }
+    } else if (Object.keys(projection).length === 0) {
+      projection['suppliers'] = 0
+    }
+
+    if (id) {
+      query['_id'] = id;
+      return this.model.findOne(query, projection).populate(populate).exec()
+    } else {
+      return this.model.find(query, projection).populate(populate).exec();
+    }
   }
 
   async create(document: IDumpster): Promise<IDumpster> {
@@ -44,9 +94,11 @@ export class DumpstersService extends SimpleService<IDumpster> {
     )
     const result = new Set()
 
-    for (const supplier of suppliers){
-      const dumpsters = await this.model.find({status: 'Active', suppliers: supplier}).exec()
-      dumpsters.forEach(value => {result.add(value)})
+    for (const supplier of suppliers) {
+      const dumpsters = await this.model.find({ status: 'Active', suppliers: supplier }).exec()
+      dumpsters.forEach(value => {
+        result.add(value)
+      })
     }
 
     return Array.from(result) as IDumpster[]

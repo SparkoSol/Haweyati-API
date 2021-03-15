@@ -9,15 +9,16 @@ import { ReviewsService } from '../reviews/reviews.service'
 import { CouponsService } from "../coupons/coupons.service"
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
+import { IDriver } from '../../data/interfaces/drivers.interface'
 import { CustomersService } from '../customers/customers.service'
 import { IReview } from '../../data/interfaces/reviews.interface'
+import { ICustomer } from '../../data/interfaces/customer.interface'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { VehicleTypeService } from '../vehicle-type/vehicle-type.service'
 import { IVehicleType } from '../../data/interfaces/vehicleType.interface'
-import { IDriver } from '../../data/interfaces/drivers.interface'
 import { IOrder, OrderStatus } from '../../data/interfaces/orders.interface'
-import { ICustomer } from '../../data/interfaces/customer.interface'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
+import { IAdminNotification } from "../../data/interfaces/adminNotification.interface"
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
@@ -61,7 +62,7 @@ export class OrdersService extends SimpleService<IOrder> {
             1)
         ).slice(-4)
 
-      const rewardPointsValue = (document.customer as ICustomer).points * await this.unitService.getValue()
+      const rewardPointsValue = (document.customer as ICustomer).points * (await this.unitService.getValue()).value
 
       if (document.service == 'Finishing Material'){
         const distance = await LocationUtils.getDistance(
@@ -146,11 +147,11 @@ export class OrdersService extends SimpleService<IOrder> {
         }
         else if (document.rewardPointsValue && document.rewardPointsValue != 0)
           if (rewardPointsValue >= document.rewardPointsValue){
-            const usedPoints = document.rewardPointsValue / await this.unitService.getValue()
+            const usedPoints = document.rewardPointsValue / (await this.unitService.getValue()).value
             await this.customersService.updatePointsFromId((document.customer as ICustomer)._id, ~~usedPoints, false)
           }
           else
-            await this.customersService.updatePointsFromId((document.customer as ICustomer)._id, ~~(orderCreated.total * 0.15), false)
+            await this.customersService.updatePointsFromId((document.customer as ICustomer)._id, ~~(orderCreated.total * (await this.unitService.getValue()).pointPercentage), false)
 
         if (orderCreated.service == 'Finishing Material'){
           this.fcmService.sendSingle({
@@ -166,7 +167,7 @@ export class OrdersService extends SimpleService<IOrder> {
           title: 'New Order',
           message: 'New Order with Ref. # ' + orderCreated.orderNo + '.'
         }
-        await this.adminNotificationsService.create(notification)
+        await this.adminNotificationsService.create(notification as IAdminNotification)
 
         let data
         const ids = new Set<string>()
@@ -483,14 +484,14 @@ export class OrdersService extends SimpleService<IOrder> {
     const order = await this.model.findByIdAndUpdate(id, { status, reason: message }, {new: true}).exec()
 
     if (status == OrderStatus.Delivered){
-      await this.customersService.updatePointsFromId(order.customer.toString(), ~~(order.total * 0.05), true)
+      await this.customersService.updatePointsFromId(order.customer.toString(), ~~(order.total * (await this.unitService.getValue()).pointPercentage), true)
 
       if (
         await this.model.find({customer: order.customer.toString(), status: OrderStatus.Delivered}).countDocuments().exec() == 1 &&
         (await this.customersService.fetch(order.customer.toString()) as ICustomer).fromReferralCode
       ){
         await this.customersService.updatePointsFromReferral(
-          (await this.customersService.fetch(order.customer.toString()) as ICustomer).fromReferralCode, 500, true
+          (await this.customersService.fetch(order.customer.toString()) as ICustomer).fromReferralCode, (await this.unitService.getValue()).invitationPoints, true
         )
       }
     }

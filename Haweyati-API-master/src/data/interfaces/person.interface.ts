@@ -8,5 +8,4 @@ export interface IPerson extends IUser {
   image: IImage
   scope: [string]
   token: string
-  points: number
 }

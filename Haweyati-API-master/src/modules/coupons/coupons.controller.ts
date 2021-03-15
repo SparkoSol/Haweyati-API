@@ -1,7 +1,8 @@
-import { SimpleController } from "../../common/lib/simple.controller";
-import { Body, Controller, Get, Post, Query } from "@nestjs/common";
-import { ICoupon } from "../../data/interfaces/coupons.interface";
-import { CouponsService } from "./coupons.service";
+import { CouponsService } from './coupons.service'
+import { dtoCoupon } from '../../data/dtos/coupon.dto'
+import { ICoupon } from '../../data/interfaces/coupons.interface'
+import { Body, Controller, Get, Post, Query } from '@nestjs/common'
+import { SimpleController } from '../../common/lib/simple.controller'
 
 @Controller('coupons')
 export class CouponsController extends SimpleController<ICoupon> {
@@ -10,14 +11,12 @@ export class CouponsController extends SimpleController<ICoupon> {
   }
 
   @Post('check-coupon-validity')
-  async checkCouponsValidity(
-    @Body() data: any
-  ): Promise<ICoupon> {
+  async checkCouponsValidity(@Body() data: dtoCoupon): Promise<ICoupon> {
     return await this.service.checkCouponValidity(data.code, data.user)
   }
 
   @Get('use-coupon')
-  async useCoupon(@Query() data: any): Promise<ICoupon> {
+  async useCoupon(@Query() data: dtoCoupon): Promise<ICoupon> {
     return await this.service.addUser(data.code, data.user)
   }
 }

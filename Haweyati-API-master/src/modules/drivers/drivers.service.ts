@@ -1,14 +1,15 @@
-import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
-import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
-import { VehicleTypeService } from "../vehicle-type/vehicle-type.service"
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { IDriver } from '../../data/interfaces/drivers.interface'
-import { IPerson } from '../../data/interfaces/person.interface'
-import { LocationUtils } from '../../common/lib/location-utils'
-import { SimpleService } from '../../common/lib/simple.service'
-import { PersonsService } from '../persons/persons.service'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { dtoDriver } from '../../data/dtos/driver.dto'
+import { PersonsService } from '../persons/persons.service'
+import { SimpleService } from '../../common/lib/simple.service'
+import { LocationUtils } from '../../common/lib/location-utils'
+import { IPerson } from '../../data/interfaces/person.interface'
+import { IDriver } from '../../data/interfaces/drivers.interface'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { IDriverRequest } from '../../data/interfaces/driverRequest.interface'
+import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
 @Injectable()
 export class DriversService extends SimpleService<IDriver> {
@@ -17,9 +18,7 @@ export class DriversService extends SimpleService<IDriver> {
     protected readonly model: Model<IDriver>,
     @InjectModel('driverRequest')
     protected readonly requestModel: Model<IDriverRequest>,
-
     protected readonly personsService: PersonsService,
-    protected readonly vehicleTypeService: VehicleTypeService,
     protected readonly adminNotificationsService: AdminNotificationsService
   ) {
     super(model)
@@ -41,13 +40,13 @@ export class DriversService extends SimpleService<IDriver> {
     }
   }
 
-  async create(document: any): Promise<IDriver> {
-    if (await this.model.findOne({'vehicle.identificationNo': document.identificationNo}).exec())
+  async createDriver(document: dtoDriver): Promise<IDriver> {
+    if (await this.model.findOne({ 'vehicle.identificationNo': document.identificationNo }).exec())
       throw new HttpException(
         'Vehicle with this Identification No already exists!',
         HttpStatus.NOT_ACCEPTABLE
       )
-    if (await this.model.findOne({license: document.license}).exec())
+    if (await this.model.findOne({ license: document.license }).exec())
       throw new HttpException(
         'Driver with this license already exists!',
         HttpStatus.NOT_ACCEPTABLE
@@ -69,8 +68,8 @@ export class DriversService extends SimpleService<IDriver> {
     let driver: any
 
     if (document.profile) {
-      await this.personsService.addScope(document.profile, document.scope)
-      driver = await super.create(document)
+      await this.personsService.addScope(document.profile.toString(), document.scope)
+      driver = await this.model.create(document)
     } else {
       const personObject = {
         scope: document.scope,
@@ -87,7 +86,7 @@ export class DriversService extends SimpleService<IDriver> {
         document.profile = person
 
         document.city = await LocationUtils.getCity(document.latitude, document.longitude)
-        driver = await super.create(document)
+        driver = await this.model.create(document)
       }
     }
 
@@ -110,7 +109,7 @@ export class DriversService extends SimpleService<IDriver> {
           ).profile as IPerson).name +
           '.'
       }
-      await this.adminNotificationsService.create(notification)
+      await this.adminNotificationsService.create(notification as IAdminNotification)
     } else {
       await this.personsService.delete(person)
       throw new HttpException(
@@ -126,19 +125,22 @@ export class DriversService extends SimpleService<IDriver> {
       .exec()
   }
 
-  async change(document: any): Promise<IDriver> {
-    if (await this.model.findOne({'vehicle.identificationNo': document.identificationNo, _id: {$ne: document._id}}).exec())
+  async changeDriver(document: dtoDriver): Promise<IDriver> {
+    if (await this.model.findOne({
+      'vehicle.identificationNo': document.identificationNo,
+      _id: { $ne: document._id }
+    }).exec())
       throw new HttpException(
         'Vehicle with this Identification No already exists!',
         HttpStatus.NOT_ACCEPTABLE
       )
-    if (await this.model.findOne({license: document.license, _id: {$ne: document._id}}).exec())
+    if (await this.model.findOne({ license: document.license, _id: { $ne: document._id } }).exec())
       throw new HttpException(
         'Driver with this license already exists!',
         HttpStatus.NOT_ACCEPTABLE
       )
 
-    let personObject = undefined
+    let personObject
 
     if (document.image) {
       personObject = {
@@ -158,7 +160,7 @@ export class DriversService extends SimpleService<IDriver> {
     document.profile = await this.personsService.change(personObject)
     const person = document.profile
     if (person) {
-      if (document.latitude){
+      if (document.latitude) {
         document.city = await LocationUtils.getCity(
           document.latitude,
           document.longitude
@@ -200,13 +202,13 @@ export class DriversService extends SimpleService<IDriver> {
         })
       }
 
-      if (!document.isAdmin){
+      if (!document.isAdmin) {
         const notification = {
           type: 'Driver',
           title: 'Driver Updated',
           message: 'Driver Updated with name : ' + document.name + '.'
         }
-        await this.adminNotificationsService.create(notification)
+        await this.adminNotificationsService.create(notification as IAdminNotification)
       }
     }
 
@@ -226,19 +228,18 @@ export class DriversService extends SimpleService<IDriver> {
       const driver = await this.model.findByIdAndUpdate(request.driver, { status }).exec()
       await this.requestModel.findByIdAndDelete(id)
       return driver
-    }
-    else
+    } else
       return await this.model.findByIdAndUpdate(id, { status }).exec()
   }
 
-  async getVerifiedStandAloneDrivers(): Promise<IDriver[]>{
+  async getVerifiedStandAloneDrivers(): Promise<IDriver[]> {
     return await this.model
-      .find({status: 'Active', supplier: undefined})
+      .find({ status: 'Active', supplier: undefined })
       .populate('profile')
       .exec()
   }
 
-  async getRejected(id: string, data?: any): Promise<IDriver> {
+  async getRejected(id: string): Promise<IDriver> {
     const request = await this.requestModel.findOne({ driver: id }).exec()
     const driver = await this.model
       .findByIdAndUpdate(request.driver, { status: 'Rejected' })
@@ -250,8 +251,8 @@ export class DriversService extends SimpleService<IDriver> {
     return driver
   }
 
-  async getDataFromCityName(city: string): Promise<IDriver[]>{
-    return await this.model.find({city})
+  async getDataFromCityName(city: string): Promise<IDriver[]> {
+    return await this.model.find({ city })
       .populate('profile')
       .exec()
   }
@@ -265,7 +266,7 @@ export class DriversService extends SimpleService<IDriver> {
       .exec()
   }
 
-  async getByPersonId(id: string): Promise<IDriver>{
+  async getByPersonId(id: string): Promise<IDriver> {
     return await this.model
       .findOne({ profile: id })
       .populate('vehicle.type')
@@ -275,15 +276,15 @@ export class DriversService extends SimpleService<IDriver> {
 
   //used while logging out in auth.service
   async removeDeviceId(id: string): Promise<IDriver> {
-    return await this.model.findByIdAndUpdate(id, {deviceId: undefined}).exec()
+    return await this.model.findByIdAndUpdate(id, { deviceId: undefined }).exec()
   }
 
-  async updateRating(id: string, rating: number): Promise<IDriver>{
+  async updateRating(id: string, rating: number): Promise<IDriver> {
     const driver = await this.model.findById(id).exec()
-    if (driver.rating){
+    if (driver.rating) {
       rating += driver.rating
       rating /= 2
     }
-    return await this.model.findByIdAndUpdate(id, {rating}).exec()
+    return await this.model.findByIdAndUpdate(id, { rating }).exec()
   }
 }

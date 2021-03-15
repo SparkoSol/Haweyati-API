@@ -10,14 +10,15 @@ import { FinishingMaterialsModule } from '../finishing-materials/finishing-mater
 
 @Module({
   imports: [
-    DriversModule,
-    ShopRegistrationModule,
     OrdersModule,
+    DriversModule,
     CustomersModule,
+    ShopRegistrationModule,
     BuildingMaterialsModule,
     FinishingMaterialsModule
   ],
   providers: [DashboardService],
   controllers: [DashboardController]
 })
-export class DashboardModule {}
+export class DashboardModule {
+}

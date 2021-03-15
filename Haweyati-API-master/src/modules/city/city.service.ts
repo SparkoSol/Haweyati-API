@@ -1,8 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
-import { SimpleService } from "../../common/lib/simple.service"
-import { ICity } from "../../data/interfaces/city.interface"
-import { InjectModel } from "@nestjs/mongoose"
-import { Model } from "mongoose";
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { ICity } from '../../data/interfaces/city.interface'
+import { SimpleService } from '../../common/lib/simple.service'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 
 @Injectable()
 export class CityService extends SimpleService<ICity> {

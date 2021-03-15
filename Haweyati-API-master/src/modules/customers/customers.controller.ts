@@ -1,16 +1,19 @@
 import {
-  Get,
-  Post,
   Body,
-  Patch,
-  Query,
+  Controller,
+  Get,
   Param,
-  Controller, UseInterceptors, UploadedFile
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors
 } from '@nestjs/common'
 import { CustomersService } from './customers.service'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { ICustomer } from '../../data/interfaces/customer.interface'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { dtoCustomer, dtoCustomerQuery } from '../../data/dtos/customer.dto'
 
 @Controller('customers')
 export class CustomersController extends ImageController<ICustomer> {
@@ -19,7 +22,7 @@ export class CustomersController extends ImageController<ICustomer> {
   }
 
   @Post()
-  async post(@Body() data: any): Promise<ICustomer> {
+  async post(@Body() data: dtoCustomer): Promise<ICustomer> {
     return await this.service.create(data)
   }
 
@@ -29,18 +32,21 @@ export class CustomersController extends ImageController<ICustomer> {
   }
 
   @Post('guest')
-  async postGuest(@Body() data: any): Promise<ICustomer> {
+  async postGuest(@Body() data: ICustomer): Promise<ICustomer> {
     return await this.service.guestNew(data)
   }
 
   @Post('new')
-  async createCustomer(@Body() data: any): Promise<ICustomer> {
+  async createCustomer(@Body() data: ICustomer): Promise<ICustomer> {
     return await this.service.new(data)
   }
 
   @Post('new-admin')
   @UseInterceptors(FileInterceptor('image'))
-  async createAdmin(@UploadedFile() file, @Body() data: any): Promise<ICustomer>{
+  async createAdmin(
+    @UploadedFile() file,
+    @Body() data: dtoCustomer
+  ): Promise<ICustomer> {
     if (file)
       data.image = {
         name: file.filename,
@@ -50,17 +56,18 @@ export class CustomersController extends ImageController<ICustomer> {
   }
 
   @Post('convert-guest')
-  async convertFromGuest(@Body() data: any): Promise<ICustomer>{
+  async convertFromGuest(@Body() data: dtoCustomer): Promise<ICustomer> {
     return await this.service.convertFromGuest(data)
   }
 
   @Patch('getblocked/:id')
   async getBlocked(
     @Param('id') id: string,
-    @Body() message?: any
+    @Body() message?: { message: string }
   ): Promise<ICustomer> {
-    if (message) return await this.service.getBlocked(id, message.message) as ICustomer
-    else return await this.service.getBlocked(id) as ICustomer
+    if (message)
+      return (await this.service.getBlocked(id, message.message)) as ICustomer
+    else return (await this.service.getBlocked(id)) as ICustomer
   }
 
   @Get('getactive')
@@ -69,29 +76,27 @@ export class CustomersController extends ImageController<ICustomer> {
   }
 
   @Get('active-search')
-  async search(@Query() query: any): Promise<ICustomer[]>{
+  async search(@Query() query: dtoCustomerQuery): Promise<ICustomer[]> {
     return await this.service.search(query, 'Active', 'customer')
   }
 
   @Get('getblocked')
   async getAllBlocked(): Promise<ICustomer[]> {
-    return await this.service.getBlocked() as ICustomer[]
+    return (await this.service.getBlocked()) as ICustomer[]
   }
 
   @Get('getprofile/:contact')
-  async getProfile(
-    @Param('contact') contact: string
-  ): Promise<ICustomer> {
+  async getProfile(@Param('contact') contact: string): Promise<ICustomer> {
     return await this.service.getProfile(contact)
   }
 
   @Get('blocked-search')
-  async searchBlocked(@Query() query: any): Promise<ICustomer[]>{
+  async searchBlocked(@Query() query: dtoCustomerQuery): Promise<ICustomer[]> {
     return await this.service.search(query, 'Blocked', 'customer')
   }
 
   @Get('guest-search')
-  async searchGuest(@Query() query: any): Promise<ICustomer[]> {
+  async searchGuest(@Query() query: dtoCustomerQuery): Promise<ICustomer[]> {
     return await this.service.search(query, 'Active', 'guest')
   }
 
@@ -107,13 +112,11 @@ export class CustomersController extends ImageController<ICustomer> {
 
   @Get('getactive/:id')
   async getActiveById(@Param('id') id: string): Promise<ICustomer> {
-    return await this.service.fetch(id) as ICustomer
+    return (await this.service.fetch(id)) as ICustomer
   }
 
   @Get('getall/:id')
-  async getById(
-    @Param('id') id: string
-  ): Promise<ICustomer[] | ICustomer> {
+  async getById(@Param('id') id: string): Promise<ICustomer[] | ICustomer> {
     return await this.service.getAll(id)
   }
 }

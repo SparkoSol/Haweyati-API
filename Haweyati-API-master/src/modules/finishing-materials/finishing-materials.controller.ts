@@ -1,20 +1,23 @@
 import {
-  Get,
   Body,
-  Post,
+  Controller,
+  Delete,
+  Get, Headers,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
+  Post,
   Query,
-  Delete,
-  Controller,
   UploadedFile,
-  UseInterceptors, HttpException, HttpStatus
-} from '@nestjs/common'
+  UseInterceptors
+} from "@nestjs/common";
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageController } from '../../common/lib/image.controller'
 import { FinishingMaterialsService } from './finishing-materials.service'
 import { IFinishingMaterial } from '../../data/interfaces/finishingMaterials.interface'
-import { IFinishingMaterialCategory } from "../../data/interfaces/finishingMaterialCategory.interface";
+import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
+import { dtoFinishingMaterial, dtoFinishingMaterialQuery } from "../../data/dtos/finishing-material.dto"
 
 @Controller('finishing-materials')
 export class FinishingMaterialsController extends ImageController<IFinishingMaterial> {
@@ -22,36 +25,57 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
     super(service)
   }
 
+  @Get('new/:id')
+  async new(
+    @Param('id') id: string,
+    @Query('withSuppliers') withSuppliers: boolean,
+    @Headers('x-city') city: string
+  ): Promise<IFinishingMaterial[] | IFinishingMaterial> {
+    return this.service.new(id, withSuppliers, city)
+  }
+
+  @Get('new')
+  async newAll(
+    @Query('withSuppliers') withSuppliers: boolean,
+    @Headers('x-city') city: string
+  ): Promise<IFinishingMaterial[] | IFinishingMaterial> {
+    return await this.service.new(null, withSuppliers, city)
+  }
+
+  @Get(':id')
+  async getData(@Param('id') id: string, @Query('withSuppliers') withSuppliers: boolean): Promise<IFinishingMaterial[] | IFinishingMaterial> {
+    return this.service.fetch(id, withSuppliers)
+  }
+
   @Get('available')
-  async Get(@Query() data): Promise<IFinishingMaterial[]> {
+  async Get(@Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[]> {
     return await this.service.getByCity(data.city, data.parent)
   }
 
   @Get('available-supplier')
-  async getByParentSupplier(@Query() data): Promise<IFinishingMaterial[]> {
+  async getByParentSupplier(@Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[]> {
     return await this.service.getByParentSupplier(data.parent, data.supplier)
   }
 
-  //-----------------------------------------------------------------//
   @Get('categories-supplier/:id')
-  async getCategoriesFromSupplier(@Param('id') id: string): Promise<IFinishingMaterialCategory[]>{
+  async getCategoriesFromSupplier(@Param('id') id: string): Promise<IFinishingMaterialCategory[]> {
     return await this.service.getCategoriesFromSupplier(id)
   }
 
   @Get('search')
-  async search(@Query() data): Promise<IFinishingMaterial[]>{
+  async search(@Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[]> {
     return await this.service.search(data.name, data.parent, data.supplier)
   }
 
   @Get(':id')
-  getById(@Param('id') id: string, @Query() data: any): Promise<IFinishingMaterial[] | IFinishingMaterial> {
+  getById(@Param('id') id: string, @Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[] | IFinishingMaterial> {
     if (data.name)
-      return this.service.fetchAndSearch(id , data)
+      return this.service.fetchAndSearch(id, data)
     else
       return this.service.fetch(id)
   }
 
-  protected parseData(finishingMaterial: any): any {
+  protected parseData(finishingMaterial: dtoFinishingMaterial): any {
     if (finishingMaterial.price == '0') {
       const option = []
       if (Array.isArray(finishingMaterial.optionName)) {
@@ -61,8 +85,7 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
             optionValues: finishingMaterial.optionValues[i]
           }
         }
-      }
-      else {
+      } else {
         option[0] = {
           optionName: finishingMaterial.optionName,
           optionValues: finishingMaterial.optionValues
@@ -78,20 +101,17 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
             : finishingMaterial.varientName[i]
 
           const pricingObj = {}
-          if (Array.isArray(finishingMaterial.optionName)){
-            if (Array.isArray(data)){
+          if (Array.isArray(finishingMaterial.optionName)) {
+            if (Array.isArray(data)) {
               for (let j = 0; j < data.length; ++j)
                 pricingObj[finishingMaterial.optionName[j]] = data[j]
-            }
-            else
-              pricingObj[finishingMaterial.optionName] = data
-          }
-          else {
-            if (Array.isArray(data)){
+            } else
+              pricingObj[finishingMaterial.optionName.toString()] = data
+          } else {
+            if (Array.isArray(data)) {
               for (let j = 0; j < data.length; ++j)
                 pricingObj[finishingMaterial.optionName] = data[j]
-            }
-            else
+            } else
               pricingObj[finishingMaterial.optionName] = data
           }
 
@@ -102,22 +122,20 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
           pricingObj['cbmHeight'] = finishingMaterial.varientHeight[i]
           pricing.push(pricingObj)
         }
-      }
-      else {
+      } else {
         const priceObj = {}
         const data = finishingMaterial.varientName.includes('/')
           ? finishingMaterial.varientName.split('/')
           : finishingMaterial.varientName
 
-        if (Array.isArray(finishingMaterial.optionName)){
+        if (Array.isArray(finishingMaterial.optionName)) {
           if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++)
               priceObj[finishingMaterial.optionName[j]] = data[j]
           } else {
-            priceObj[finishingMaterial.optionName] = data
+            priceObj[finishingMaterial.optionName.toString()] = data
           }
-        }
-        else {
+        } else {
           if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++)
               priceObj[finishingMaterial.optionName] = data[j]
@@ -135,12 +153,11 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
       }
 
       finishingMaterial.varient = pricing
-    }
-    else {
+    } else {
       finishingMaterial.varient = []
       finishingMaterial.options = []
     }
-    if (finishingMaterial.price == 0){
+    if (finishingMaterial.price == 0) {
       finishingMaterial.volume = undefined
       finishingMaterial.webassembly = undefined
     }
@@ -149,7 +166,7 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  post(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterial>  {
+  post(@UploadedFile() file, @Body() finishingMaterial: dtoFinishingMaterial): Promise<IFinishingMaterial> {
     if (!file)
       throw new HttpException(
         'Image is Required!',
@@ -160,7 +177,7 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
 
   @Patch()
   @UseInterceptors(FileInterceptor('image'))
-  patch(@UploadedFile() file, @Body() finishingMaterial: any): Promise<IFinishingMaterial> {
+  patch(@UploadedFile() file, @Body() finishingMaterial: dtoFinishingMaterial): Promise<IFinishingMaterial> {
     return super.patch(file, this.parseData(finishingMaterial))
   }
 

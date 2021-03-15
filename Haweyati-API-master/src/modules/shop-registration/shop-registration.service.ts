@@ -8,6 +8,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 import { IBuildingMaterials } from "../../data/interfaces/buildingMaterials.interface"
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
+import { IAdminNotification } from "../../data/interfaces/adminNotification.interface";
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<IShopRegistration> {
@@ -95,7 +96,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         title: 'New Supplier',
         message: 'New Supplier SignUp with name : ' + document.name + '.'
       }
-      await this.adminNotificationsService.create(notification)
+      await this.adminNotificationsService.create(notification as IAdminNotification)
     } else {
       await this.personService.delete(person)
       throw new HttpException(

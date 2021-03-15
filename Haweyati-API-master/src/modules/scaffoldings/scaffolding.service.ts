@@ -15,18 +15,73 @@ export class ScaffoldingService extends SimpleService<IScaffolding> {
     super(model)
   }
 
+  async new(id?: string, withSuppliers?: boolean, city?: string): Promise<IScaffolding[] | IScaffolding> {
+    const query = {}
+    const projection = {}
+    let populate: any = ''
+
+    if (city) {
+      query['pricing.city'] = city
+
+      projection['description'] = 1
+      projection['name'] = 1
+      projection['volumetricWeight'] = 1
+      projection['cbmLength'] = 1
+      projection['cbmWidth'] = 1
+      projection['cbmHeight'] = 1
+      projection['pricing'] = { $elemMatch: { city: city } }
+    }
+
+    if (withSuppliers) {
+      populate = {
+        path: 'suppliers',
+        model: 'shopregistration',
+        populate: {
+          path: 'person',
+          model: 'persons'
+        }
+      }
+    }
+    else if (Object.keys(projection).length === 0) {
+      projection['suppliers'] = 0
+    }
+
+    console.log(query)
+    console.log(projection)
+    console.log(populate)
+
+    if (id) {
+      query['_id'] = id;
+      return this.model.findOne(query, projection).populate(populate).exec()
+    } else {
+      return this.model.find(query, projection).populate(populate).exec();
+    }
+  }
+
   async fetch(
-    id?: string
+    id?: string, withSuppliers?: boolean
   ): Promise<IScaffolding[] | IScaffolding> {
-    if (id)
+    if (id && withSuppliers)
       return await this.model
-        .findById(id)
-        .populate('suppliers')
+        .findOne({ _id: id })
+        .populate({
+          path: 'suppliers',
+          model: 'shopregistration',
+          populate: {
+            path: 'person',
+            model: 'persons'
+          }
+        })
+        .exec()
+    else if (id)
+      return await this.model
+        .findOne({ _id: id })
+        .select('-suppliers')
         .exec()
     else
       return await this.model
         .find()
-        .populate('suppliers')
+        .select('-suppliers')
         .exec()
   }
 

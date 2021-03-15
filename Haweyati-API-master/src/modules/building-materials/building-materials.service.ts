@@ -1,16 +1,15 @@
 import { Model } from 'mongoose'
-import { Injectable } from "@nestjs/common"
+import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { SimpleService } from '../../common/lib/simple.service'
 import { IBuildingMaterials } from '../../data/interfaces/buildingMaterials.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { BuildingMaterialCategoryService } from '../building-material-category/building-material-category.service'
 import { BuildingMaterialSubCategoryService } from '../building-material-sub-category/building-material-sub-category.service'
+import { IDumpster } from "../../data/interfaces/dumpster.interface";
 
 @Injectable()
-export class BuildingMaterialsService extends SimpleService<
-  IBuildingMaterials
-> {
+export class BuildingMaterialsService extends SimpleService<IBuildingMaterials> {
   constructor(
     @InjectModel('buildingmaterials')
     protected readonly model: Model<IBuildingMaterials>,
@@ -21,8 +20,48 @@ export class BuildingMaterialsService extends SimpleService<
     super(model)
   }
 
-  async fetch(id?: string): Promise<IBuildingMaterials[] | IBuildingMaterials> {
-    if (id)
+  async new(id?: string, withSuppliers?: boolean, city?: string): Promise<IBuildingMaterials[] | IBuildingMaterials> {
+    const query = {}
+    const projection = {}
+    let populate: any = ''
+
+    query['status'] = 'Active'
+
+    if (city) {
+      query['pricing.city'] = city
+
+      projection['description'] = 1
+      projection['status'] = 1
+      projection['image'] = 1
+      projection['parent'] = 1
+      projection['name'] = 1
+      projection['pricing'] = { $elemMatch: { city: city } }
+    }
+
+    if (withSuppliers) {
+      populate = {
+        path: 'suppliers',
+        model: 'shopregistration',
+        populate: {
+          path: 'person',
+          model: 'persons'
+        }
+      }
+    }
+    else if (Object.keys(projection).length === 0) {
+      projection['suppliers'] = 0
+    }
+
+    if (id) {
+      query['_id'] = id;
+      return this.model.findOne(query, projection).populate(populate).exec()
+    } else {
+      return this.model.find(query, projection).populate(populate).exec();
+    }
+  }
+
+  async fetch(id?: string, withSuppliers?: boolean): Promise<IBuildingMaterials[] | IBuildingMaterials> {
+    if (id && withSuppliers)
       return await this.model
         .findOne({ _id: id, status: 'Active' })
         .populate({
@@ -34,17 +73,15 @@ export class BuildingMaterialsService extends SimpleService<
           }
         })
         .exec()
+    else if (id)
+      return await this.model
+        .findOne({ _id: id, status: 'Active' })
+        .select('-suppliers')
+        .exec()
     else
       return await this.model
         .find({ status: 'Active' })
-        .populate({
-          path: 'suppliers',
-          model: 'shopregistration',
-          populate: {
-            path: 'person',
-            model: 'persons'
-          }
-        })
+        .select('-suppliers')
         .exec()
   }
 
@@ -69,11 +106,13 @@ export class BuildingMaterialsService extends SimpleService<
 
       const result = new Set()
 
-      for (const supplier of suppliers){
+      for (const supplier of suppliers) {
         const bm = await this.model
           .find({ status: 'Active', parent, suppliers: supplier })
           .exec()
-        bm.forEach(value => {result.add(value)})
+        bm.forEach(value => {
+          result.add(value)
+        })
       }
       return Array.from(result) as IBuildingMaterials[]
     }
@@ -107,10 +146,5 @@ export class BuildingMaterialsService extends SimpleService<
       await this.remove(item._id)
     }
     return 'Sub Category Deleted'
-  }
-
-  //used in reward points module
-  async getDataForRewardPoints(data: any): Promise<IBuildingMaterials[]> {
-    return await this.model.find({ _id: { $nin: data } }).exec()
   }
 }

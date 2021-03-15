@@ -4,8 +4,8 @@ import { VehicleTypeService } from './vehicle-type.service'
 import { Controller } from '@nestjs/common'
 
 @Controller('vehicle-type')
-export class VehicleTypeController extends ImageController<IVehicleType>{
+export class VehicleTypeController extends ImageController<IVehicleType> {
   constructor(protected readonly service: VehicleTypeService) {
-    super(service);
+    super(service)
   }
 }

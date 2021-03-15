@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { DumpstersService } from './dumpsters.service';
-import { MulterModule } from '@nestjs/platform-express';
-import { DumpstersController } from './dumpsters.controller';
-import { DumpstersSchema } from '../../data/schemas/dumpsters.schema';
+import { Module } from '@nestjs/common'
+import { MongooseModule } from '@nestjs/mongoose'
+import { DumpstersService } from './dumpsters.service'
+import { MulterModule } from '@nestjs/platform-express'
+import { DumpstersController } from './dumpsters.controller'
+import { DumpstersSchema } from '../../data/schemas/dumpsters.schema'
 import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
-import { ShopRegistrationModule } from '../shop-registration/shop-registration.module';
+import { ShopRegistrationModule } from '../shop-registration/shop-registration.module'
 
 @Module({
   imports: [
@@ -23,5 +23,6 @@ import { ShopRegistrationModule } from '../shop-registration/shop-registration.m
   controllers: [DumpstersController],
   providers: [DumpstersService]
 })
-export class DumpstersModule {}
+export class DumpstersModule {
+}
 

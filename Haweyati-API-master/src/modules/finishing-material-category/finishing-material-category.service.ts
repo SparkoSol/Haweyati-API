@@ -5,9 +5,7 @@ import { SimpleService } from '../../common/lib/simple.service'
 import { IFinishingMaterialCategory } from '../../data/interfaces/finishingMaterialCategory.interface'
 
 @Injectable()
-export class FinishingMaterialCategoryService extends SimpleService<
-  IFinishingMaterialCategory
-> {
+export class FinishingMaterialCategoryService extends SimpleService<IFinishingMaterialCategory> {
   constructor(
     @InjectModel('finishingmaterialcategory')
     protected readonly model: Model<IFinishingMaterialCategory>
