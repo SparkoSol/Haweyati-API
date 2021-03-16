@@ -25,6 +25,16 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
     super(service)
   }
 
+  @Get('available')
+  async Get(@Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[]> {
+    return await this.service.getByCity(data.city, data.parent)
+  }
+
+  @Get('available-supplier')
+  async getByParentSupplier(@Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[]> {
+    return await this.service.getByParentSupplier(data.parent, data.supplier)
+  }
+
   @Get('new/:id')
   async new(
     @Param('id') id: string,
@@ -45,16 +55,6 @@ export class FinishingMaterialsController extends ImageController<IFinishingMate
   @Get(':id')
   async getData(@Param('id') id: string, @Query('withSuppliers') withSuppliers: boolean): Promise<IFinishingMaterial[] | IFinishingMaterial> {
     return this.service.fetch(id, withSuppliers)
-  }
-
-  @Get('available')
-  async Get(@Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[]> {
-    return await this.service.getByCity(data.city, data.parent)
-  }
-
-  @Get('available-supplier')
-  async getByParentSupplier(@Query() data: dtoFinishingMaterialQuery): Promise<IFinishingMaterial[]> {
-    return await this.service.getByParentSupplier(data.parent, data.supplier)
   }
 
   @Get('categories-supplier/:id')

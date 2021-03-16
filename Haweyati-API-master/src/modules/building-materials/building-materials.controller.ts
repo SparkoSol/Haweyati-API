@@ -28,6 +28,11 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
     super(service)
   }
 
+  @Get('available')
+  async Get(@Query() data: dtoBuildingMaterialAvailable): Promise<IBuildingMaterials[]> {
+    return await this.service.getByCity(data.city, data.parent)
+  }
+
   @Get('new/:id')
   async new(
     @Param('id') id: string,
@@ -122,11 +127,6 @@ export class BuildingMaterialsController extends ImageController<IBuildingMateri
     @Param('id') id: string
   ): Promise<IBuildingMaterials[] | IBuildingMaterials> {
     return this.service.fetchByParentId(id)
-  }
-
-  @Get('available')
-  async Get(@Query() data: dtoBuildingMaterialAvailable): Promise<IBuildingMaterials[]> {
-    return await this.service.getByCity(data.city, data.parent)
   }
 
   //Admin Panel

@@ -25,6 +25,11 @@ export class DumpstersController extends ImageController<IDumpster> {
     super(service)
   }
 
+  @Get('available')
+  async getAvailable(@Query() data: dtoDumpsterQuery): Promise<IDumpster[]> {
+    return await this.service.getByCity(data.city)
+  }
+
   @Get('new/:id')
   async new(
     @Param('id') id: string,

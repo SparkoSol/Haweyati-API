@@ -186,7 +186,6 @@ export class OrdersService extends SimpleService<IOrder> {
               ids.add(item.profile.token?.toString())
           }
         }
-
         this.fcmService.sendMultiple(Array.from(ids), 'New ' + orderCreated.service + ' order.', 'City: ' + orderCreated.city)
 
         orderCreated.customer = await this.customersService.fetch(
