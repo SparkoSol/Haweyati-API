@@ -27,4 +27,5 @@ import { AdminForgotPasswordSchema } from '../../data/schemas/adminForgotPasswor
   providers: [PersonsService],
   exports: [PersonsService]
 })
-export class PersonsModule {}
+export class PersonsModule {
+}

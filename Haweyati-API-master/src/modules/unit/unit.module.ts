@@ -16,4 +16,5 @@ import { PointValueSchema } from '../../data/schemas/pointValue.schema'
   controllers: [UnitController],
   exports: [UnitService]
 })
-export class UnitModule {}
+export class UnitModule {
+}

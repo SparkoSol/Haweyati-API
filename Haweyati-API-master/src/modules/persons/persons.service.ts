@@ -4,10 +4,10 @@ import { InjectModel } from '@nestjs/mongoose'
 import { EmailUtils } from '../../common/lib/email-utils'
 import { SimpleService } from 'src/common/lib/simple.service'
 import { IPerson } from 'src/data/interfaces/person.interface'
+import { dtoCustomerQuery } from '../../data/dtos/customer.dto'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IAdminForgotPassword } from '../../data/interfaces/adminForgotPassword.interface'
-import { dtoCustomerQuery } from "../../data/dtos/customer.dto";
 
 @Injectable()
 export class PersonsService extends SimpleService<IPerson> {
@@ -27,8 +27,7 @@ export class PersonsService extends SimpleService<IPerson> {
         .updateOne({ _id: data._id }, { $unset: { email: 1 } })
         .exec()
       delete data.email
-    }
-    else if (await this.model.findOne({email: data.email}).exec())
+    } else if (await this.model.findOne({ email: data.email }).exec())
       throw new HttpException(
         "Email Already Exists!",
         HttpStatus.NOT_ACCEPTABLE
@@ -203,16 +202,15 @@ export class PersonsService extends SimpleService<IPerson> {
   }
 
   async guestAndCustomerFromContact(contact: string): Promise<IPerson> {
-    return await this.model.findOne({ contact, $or: [{scope: 'guest'}, {scope: 'customer'}]}).exec()
+    return await this.model.findOne({ contact, $or: [{ scope: 'guest' }, { scope: 'customer' }] }).exec()
   }
 
-  async personsFromSpecificScope(scope: string): Promise<IPerson[]>{
-    return await this.model.find({scope}).exec()
+  async personsFromSpecificScope(scope: string): Promise<IPerson[]> {
+    return await this.model.find({ scope }).exec()
   }
 
   async updatePassword(document: any): Promise<IPerson> {
     const person = (await this.model.findById(document._id).exec()) as IPerson
-    // @ts-ignore
     if (person.password == document.old) {
       person.password = document.password
       return await super.change(person)

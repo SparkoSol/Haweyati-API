@@ -1,11 +1,7 @@
-import {
-  Body,
-  Patch,
-  Controller
-} from '@nestjs/common'
+import { TimeSlotsService } from './time-slots.service'
+import { Body, Controller, Patch } from '@nestjs/common'
 import { SimpleController } from '../../common/lib/simple.controller'
 import { ITimeSlots } from '../../data/interfaces/timeSlots.interface'
-import { TimeSlotsService } from './time-slots.service'
 
 @Controller('time-slots')
 export class TimeSlotsController extends SimpleController<ITimeSlots> {

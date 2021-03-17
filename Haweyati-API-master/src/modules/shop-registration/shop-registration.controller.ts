@@ -1,17 +1,10 @@
-import {
-  Get,
-  Patch,
-  Param,
-  Controller, Query
-} from "@nestjs/common";
 import { ImageController } from '../../common/lib/image.controller'
+import { Controller, Get, Param, Patch, Query } from '@nestjs/common'
 import { ShopRegistrationService } from './shop-registration.service'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
 
 @Controller('suppliers')
-export class ShopRegistrationController extends ImageController<
-  IShopRegistration
-> {
+export class ShopRegistrationController extends ImageController<IShopRegistration> {
   constructor(protected readonly service: ShopRegistrationService) {
     super(service)
   }
@@ -69,17 +62,17 @@ export class ShopRegistrationController extends ImageController<
   }
 
   @Get('block')
-  async blockedSuppliers(): Promise<IShopRegistration[]>{
+  async blockedSuppliers(): Promise<IShopRegistration[]> {
     return await this.service.getBlockedSuppliersWithoutParent()
   }
 
   @Patch('block/:id')
-  async blockSupplier(@Param('id') id: string): Promise<IShopRegistration>{
+  async blockSupplier(@Param('id') id: string): Promise<IShopRegistration> {
     return await this.service.changeSupplierStatus(id, 'Blocked')
   }
 
   @Get('fm-suppliers')
-  async finishingMaterialSuppliers(@Query() data: any): Promise<IShopRegistration[]>{
+  async finishingMaterialSuppliers(@Query() data: any): Promise<IShopRegistration[]> {
     return this.service.finishingMaterialSuppliers(data.city, data.lat, data.lng)
   }
 }

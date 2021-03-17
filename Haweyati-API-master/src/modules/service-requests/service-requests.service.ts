@@ -4,9 +4,9 @@ import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { NoGeneratorUtils } from '../../common/lib/no-generator-utils'
-import { IServiceRequest } from "../../data/interfaces/serviceRequest.interface"
+import { IServiceRequest } from '../../data/interfaces/serviceRequest.interface'
+import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
-import { IAdminNotification } from "../../data/interfaces/adminNotification.interface";
 
 @Injectable()
 export class ServiceRequestsService extends SimpleService<IServiceRequest> {
@@ -96,7 +96,7 @@ export class ServiceRequestsService extends SimpleService<IServiceRequest> {
     return this.model.find({ suppliers: id }).exec()
   }
 
-  async search(query: any): Promise<IServiceRequest[]>  {
+  async search(query: any): Promise<IServiceRequest[]> {
     return await this.model
       .find({
         $or: [

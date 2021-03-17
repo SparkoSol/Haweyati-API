@@ -1,16 +1,10 @@
-import {
-  Get,
-  Param,
-  Query,
-  Patch,
-  Controller
-} from '@nestjs/common'
-import {IServiceRequest} from "../../data/interfaces/serviceRequest.interface";
-import {ServiceRequestsService} from "./service-requests.service";
 import { ImageController } from '../../common/lib/image.controller'
+import { ServiceRequestsService } from './service-requests.service'
+import { Controller, Get, Param, Patch, Query } from '@nestjs/common'
+import { IServiceRequest } from '../../data/interfaces/serviceRequest.interface'
 
 @Controller('service-requests')
-export class ServiceRequestsController extends ImageController<IServiceRequest>{
+export class ServiceRequestsController extends ImageController<IServiceRequest> {
   constructor(
     protected readonly service: ServiceRequestsService
   ) {
@@ -28,7 +22,7 @@ export class ServiceRequestsController extends ImageController<IServiceRequest>{
   }
 
   @Patch('rejected/:id')
-  async rejected(@Param('id') id: string) : Promise<IServiceRequest>{
+  async rejected(@Param('id') id: string): Promise<IServiceRequest> {
     return await this.service.updateByStatus(id, 'Rejected');
   }
 
@@ -38,7 +32,7 @@ export class ServiceRequestsController extends ImageController<IServiceRequest>{
   }
 
   @Patch('completed/:id')
-  async completed(@Param('id') id: string) : Promise<IServiceRequest>{
+  async completed(@Param('id') id: string): Promise<IServiceRequest> {
     return await this.service.updateByStatus(id, 'Completed');
   }
 
@@ -48,7 +42,7 @@ export class ServiceRequestsController extends ImageController<IServiceRequest>{
   }
 
   @Get('search')
-  async search(@Query() query:string): Promise<IServiceRequest[]> {
+  async search(@Query() query: string): Promise<IServiceRequest[]> {
     return await this.service.search(query)
   }
 }

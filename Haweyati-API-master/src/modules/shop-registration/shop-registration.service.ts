@@ -3,12 +3,12 @@ import { InjectModel } from '@nestjs/mongoose'
 import { PersonsService } from '../persons/persons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
-import { IDumpster } from "../../data/interfaces/dumpster.interface"
+import { IDumpster } from '../../data/interfaces/dumpster.interface'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
-import { IBuildingMaterials } from "../../data/interfaces/buildingMaterials.interface"
+import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
+import { IBuildingMaterials } from '../../data/interfaces/buildingMaterials.interface'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
-import { IAdminNotification } from "../../data/interfaces/adminNotification.interface";
 
 @Injectable()
 export class ShopRegistrationService extends SimpleService<IShopRegistration> {
@@ -74,13 +74,13 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         const cities = []
         if (document.cities && Array.isArray(document.cities))
           for (const city of document.cities)
-            cities.push({'name': city})
+            cities.push({ 'name': city })
         else if (document.cities)
-          cities.push({'name': document.cities})
+          cities.push({ 'name': document.cities })
         document.cities = cities
         try {
           supplier = await this.model.create(document)
-        } catch (e){
+        } catch (e) {
           await this.personService.delete(person)
           throw new HttpException(
             'Unable to sign up, Please contact admin support!',
@@ -112,16 +112,16 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     let personUpdate;
     if (document.image)
       personUpdate = {
-        _id : document.personId,
+        _id: document.personId,
         image: document.image,
-        name : document.name,
-        email : document.email
+        name: document.name,
+        email: document.email
       }
     else
       personUpdate = {
-        _id : document.personId,
-        name : document.name,
-        email : document.email
+        _id: document.personId,
+        name: document.name,
+        email: document.email
       }
 
     document.person = await this.personService.change(personUpdate)
@@ -142,9 +142,9 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     const cities = []
     if (document.cities && Array.isArray(document.cities))
       for (const city of document.cities)
-        cities.push({'name': city})
+        cities.push({ 'name': city })
     else if (document.cities)
-      cities.push({'name': document.cities})
+      cities.push({ 'name': document.cities })
     document.cities = cities
     return await super.change(document)
   }
@@ -157,8 +157,8 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return await this.insertSubSupplierCount(data)
   }
 
-  async insertSubSupplierCount(data: IShopRegistration[]): Promise<IShopRegistration[]>{
-    for (const supplier of data){
+  async insertSubSupplierCount(data: IShopRegistration[]): Promise<IShopRegistration[]> {
+    for (const supplier of data) {
       supplier.__v = ((await this.getSubSuppliers(supplier._id)) as []).length
     }
     return data
@@ -173,7 +173,9 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         services: service
       })
       .populate('person')
-      .exec()).forEach(value => {result.push(value._id)})
+      .exec()).forEach(value => {
+      result.push(value._id)
+    })
 
     return result
   }
@@ -187,7 +189,9 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
         services: service
       })
       .populate('person')
-      .exec()).forEach(value => {result.push(value)})
+      .exec()).forEach(value => {
+      result.push(value)
+    })
 
     return result
   }
@@ -229,7 +233,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     if (message)
       return await this.model.findByIdAndUpdate(id, { status, message }).exec()
     else {
-      const supplier  = await this.model.findByIdAndUpdate(id, { status }).exec()
+      const supplier = await this.model.findByIdAndUpdate(id, { status }).exec()
       if (status == 'Blocked') {
         const subSuppliers = await this.getSubSuppliers(id)
         for (const child of subSuppliers) {
@@ -246,7 +250,7 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
           await this.model.findByIdAndUpdate(child._id, { status }).exec()
         }
       }
-    return supplier
+      return supplier
     }
   }
 
@@ -292,34 +296,34 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
   }
 
   //used in BuildingMaterial and Dumpster, creating here for code re-usability
-  async checkPricingAccordingToSuppliers(document: IBuildingMaterials | IDumpster): Promise<IDumpster | IBuildingMaterials>{
+  async checkPricingAccordingToSuppliers(document: IBuildingMaterials | IDumpster): Promise<IDumpster | IBuildingMaterials> {
     const objArr = []
-    if (Array.isArray(document.suppliers)){
-      for (let supplier of document.suppliers){
+    if (Array.isArray(document.suppliers)) {
+      for (let supplier of document.suppliers) {
         supplier = (await this.fetch(supplier.toString())) as IShopRegistration
         let flag = false
-        for (const price of document.pricing){
+        for (const price of document.pricing) {
           // @ts-ignore
-          if (price.city == supplier.city){
+          if (price.city == supplier.city) {
             flag = true
             break
           }
         }
-        if (!flag){
+        if (!flag) {
           objArr.push(supplier.city)
         }
       }
-    }else {
+    } else {
       const supplier = (await this.fetch(document.suppliers)) as IShopRegistration
       let flag = false
-      for (const price of document.pricing){
+      for (const price of document.pricing) {
         // @ts-ignore
-        if (price.city == supplier.city){
+        if (price.city == supplier.city) {
           flag = true
           break
         }
       }
-      if (!flag){
+      if (!flag) {
         objArr.push(supplier.city)
       }
     }
@@ -333,39 +337,39 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
       return document
   }
 
-  async finishingMaterialSuppliers(city: string, lat: string, lng: string): Promise<IShopRegistration[]>{
+  async finishingMaterialSuppliers(city: string, lat: string, lng: string): Promise<IShopRegistration[]> {
     const fmSupplier = await this.model
-      .find({services: 'Finishing Material', parent: null})
+      .find({ services: 'Finishing Material', parent: null })
       .populate('person')
       .exec()
     const result: IShopRegistration[] = []
 
-    for (const supplier of fmSupplier){
+    for (const supplier of fmSupplier) {
       const sameCity: IShopRegistration[] = []
 
       const subSuppliers = await this.model
-        .find({services: 'Finishing Material', parent: supplier._id})
+        .find({ services: 'Finishing Material', parent: supplier._id })
         .populate('person')
         .exec() as IShopRegistration[]
 
-      if (subSuppliers.length != 0){
-        for (const oneSubSupplier of subSuppliers){
-          if (oneSubSupplier.city == city || oneSubSupplier.cities.includes(city)){
+      if (subSuppliers.length != 0) {
+        for (const oneSubSupplier of subSuppliers) {
+          if (oneSubSupplier.city == city || oneSubSupplier.cities.includes(city)) {
             sameCity.push(oneSubSupplier)
           }
         }
       }
 
-      if (supplier.city == city || supplier.cities.includes(city)){
+      if (supplier.city == city || supplier.cities.includes(city)) {
         sameCity.push(supplier)
       }
 
-      if (sameCity.length != 0){
+      if (sameCity.length != 0) {
         if (sameCity.length == 1)
           result.push(sameCity[0])
-        else{
+        else {
           const coordinates = []
-          for (const single of sameCity){
+          for (const single of sameCity) {
             coordinates.push({
               'lat': single.location.longitude,
               'lng': single.location.longitude,
@@ -381,12 +385,12 @@ export class ShopRegistrationService extends SimpleService<IShopRegistration> {
     return result
   }
 
-  async updateRating(id: string, rating: number): Promise<IShopRegistration>{
+  async updateRating(id: string, rating: number): Promise<IShopRegistration> {
     const supplier = await this.model.findById(id).exec()
-    if (supplier.rating){
+    if (supplier.rating) {
       rating += supplier.rating
       rating /= 2
     }
-    return await this.model.findByIdAndUpdate(id, {rating}).exec()
+    return await this.model.findByIdAndUpdate(id, { rating }).exec()
   }
 }

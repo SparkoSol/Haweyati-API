@@ -11,4 +11,5 @@ import { TimeSlotsSchema } from '../../data/schemas/timeSlots.schema'
   providers: [TimeSlotsService],
   controllers: [TimeSlotsController]
 })
-export class TimeSlotsModule {}
+export class TimeSlotsModule {
+}

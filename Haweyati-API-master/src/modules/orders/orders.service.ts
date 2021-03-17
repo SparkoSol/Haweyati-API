@@ -6,9 +6,10 @@ import { UnitService } from '../unit/unit.service'
 import { PersonsService } from '../persons/persons.service'
 import { DriversService } from '../drivers/drivers.service'
 import { ReviewsService } from '../reviews/reviews.service'
-import { CouponsService } from "../coupons/coupons.service"
+import { CouponsService } from '../coupons/coupons.service'
 import { SimpleService } from '../../common/lib/simple.service'
 import { LocationUtils } from '../../common/lib/location-utils'
+import { IPerson } from '../../data/interfaces/person.interface'
 import { IDriver } from '../../data/interfaces/drivers.interface'
 import { CustomersService } from '../customers/customers.service'
 import { IReview } from '../../data/interfaces/reviews.interface'
@@ -18,7 +19,7 @@ import { VehicleTypeService } from '../vehicle-type/vehicle-type.service'
 import { IVehicleType } from '../../data/interfaces/vehicleType.interface'
 import { IOrder, OrderStatus } from '../../data/interfaces/orders.interface'
 import { IShopRegistration } from '../../data/interfaces/shop-registration.interface'
-import { IAdminNotification } from "../../data/interfaces/adminNotification.interface"
+import { IAdminNotification } from '../../data/interfaces/adminNotification.interface'
 import { ShopRegistrationService } from '../shop-registration/shop-registration.service'
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service'
 
@@ -42,8 +43,7 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async create(document: IOrder): Promise<any> {
-    // @ts-ignore
-    if (document.customer.status != 'Blocked') {
+    if ((document.customer as ICustomer).status != 'Blocked') {
       document.orderNo =
         'HW' +
         moment().format('YY') +
@@ -64,36 +64,35 @@ export class OrdersService extends SimpleService<IOrder> {
 
       const rewardPointsValue = (document.customer as ICustomer).points * (await this.unitService.getValue()).value
 
-      if (document.service == 'Finishing Material'){
+      if (document.service == 'Finishing Material') {
         const distance = await LocationUtils.getDistance(
           document.dropoff.dropoffLocation.latitude,
           document.dropoff.dropoffLocation.longitude,
-          // @ts-ignore
-          document.supplier.location.latitude,
-          // @ts-ignore
-          document.supplier.location.longitude
+
+          (document.supplier as IShopRegistration).location.latitude,
+          (document.supplier as IShopRegistration).location.longitude
         )
         let volumetricWeight = 0
         let cbm = 0
 
         let check = false;
-        for (const item of document.items){
+        for (const item of document.items) {
           // @ts-ignore
-          if (item.item.varients){
+          if (item.item.varients) {
             check = true
             break
           }
         }
 
-        if (check){
-          for (const item of document.items){
+        if (check) {
+          for (const item of document.items) {
             // @ts-ignore
             volumetricWeight += (item.item.variants.volumetricWeight * item.item.qty)
             // @ts-ignore
             cbm += ((item.item.variants.cbmLength * item.item.variants.cbmHeight * item.item.variants.cbmWidth) * item.item.qty)
           }
         } else {
-          for (const item of document.items){
+          for (const item of document.items) {
             // @ts-ignore
             volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
             // @ts-ignore
@@ -103,13 +102,12 @@ export class OrdersService extends SimpleService<IOrder> {
 
         let rounds = 1
         let vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
-        if (document.service == 'Finishing Material' && !vehicle){
+        if (document.service == 'Finishing Material' && !vehicle) {
           rounds++
           vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight / rounds, cbm / rounds) as IVehicleType
         }
 
-        if (!vehicle)
-        {
+        if (!vehicle) {
           throw new HttpException(
             'No Vehicle present to carry this order.',
             HttpStatus.NOT_ACCEPTABLE
@@ -127,35 +125,30 @@ export class OrdersService extends SimpleService<IOrder> {
 
       let orderCreated
 
-      if (document.coupon){
-        if (await this.couponService.checkCouponValidity(document.coupon, (document.customer as ICustomer)._id)){
+      if (document.coupon) {
+        if (await this.couponService.checkCouponValidity(document.coupon, (document.customer as ICustomer)._id)) {
           orderCreated = await super.create(document)
-        }
-        else
+        } else
           throw new HttpException(
             'Invalid Coupon',
             HttpStatus.NOT_ACCEPTABLE
           )
-      }
-      else
+      } else
         orderCreated = await super.create(document)
 
       //notification for admin
       if (orderCreated) {
-        if (document.coupon){
+        if (document.coupon) {
           await this.couponService.addUser(document.coupon, (document.customer as ICustomer)._id)
-        }
-        else if (document.rewardPointsValue && document.rewardPointsValue != 0)
-          if (rewardPointsValue >= document.rewardPointsValue){
+        } else if (document.rewardPointsValue && document.rewardPointsValue != 0)
+          if (rewardPointsValue >= document.rewardPointsValue) {
             const usedPoints = document.rewardPointsValue / (await this.unitService.getValue()).value
             await this.customersService.updatePointsFromId((document.customer as ICustomer)._id, ~~usedPoints, false)
-          }
-          else
+          } else
             await this.customersService.updatePointsFromId((document.customer as ICustomer)._id, ~~(orderCreated.total * (await this.unitService.getValue()).pointPercentage), false)
 
-        if (orderCreated.service == 'Finishing Material'){
+        if (orderCreated.service == 'Finishing Material') {
           this.fcmService.sendSingle({
-            // @ts-ignore
             id: orderCreated.supplier.person._id,
             title: 'You have been assigned an order.',
             body: 'Order #' + orderCreated.orderNo
@@ -172,16 +165,15 @@ export class OrdersService extends SimpleService<IOrder> {
         let data
         const ids = new Set<string>()
 
-        if (orderCreated.service != 'Delivery Vehicle'){
+        if (orderCreated.service != 'Delivery Vehicle') {
           data = await this.supplierService.getSupplierFromCityName(orderCreated.city, orderCreated.service) as IShopRegistration[]
-          for (const item of data){
+          for (const item of data) {
             if (item.person.token)
               ids.add(item.person.token.toString())
           }
-        }
-        else{
+        } else {
           data = await this.driverService.getDataFromCityName(orderCreated.city) as IDriver[]
-          for (const item of data){
+          for (const item of data) {
             if (item.profile.token)
               ids.add(item.profile.token?.toString())
           }
@@ -189,13 +181,11 @@ export class OrdersService extends SimpleService<IOrder> {
         this.fcmService.sendMultiple(Array.from(ids), 'New ' + orderCreated.service + ' order.', 'City: ' + orderCreated.city)
 
         orderCreated.customer = await this.customersService.fetch(
-          // @ts-ignore
-          document.customer
+          document.customer.toString()
         )
 
         return orderCreated
-      }
-      else
+      } else
         throw new HttpException(
           'No vehicle present to carry your order',
           HttpStatus.NOT_ACCEPTABLE
@@ -325,8 +315,8 @@ export class OrdersService extends SimpleService<IOrder> {
 
   async getOrdersBySupplierAndStatus(id: string, status: number): Promise<IOrder[]> {
     return await this.model
-        .find({ status: status })
-        .where('supplier._id', id)
+      .find({ status: status })
+      .where('supplier._id', id)
       .populate({
         path: 'customer',
         model: 'customers',
@@ -335,14 +325,14 @@ export class OrdersService extends SimpleService<IOrder> {
           model: 'persons'
         }
       })
-        .sort({createdAt: -1})
-        .exec()
+      .sort({ createdAt: -1 })
+      .exec()
   }
 
   async getOrdersByDriverAndStatus(id: string, status: number): Promise<IOrder[]> {
     return await this.model
-        .find({ status: status })
-        .where('driver._id', id)
+      .find({ status: status })
+      .where('driver._id', id)
       .populate({
         path: 'customer',
         model: 'customers',
@@ -351,24 +341,24 @@ export class OrdersService extends SimpleService<IOrder> {
           model: 'persons'
         }
       })
-        .sort({createdAt: -1})
-        .exec()
+      .sort({ createdAt: -1 })
+      .exec()
   }
 
   async completedSupplierId(id: string): Promise<IOrder[]> {
     const result = new Set()
     const orders = await this.model
-        .find({ status: OrderStatus.Delivered })
-        .populate({
-          path: 'customer',
-          model: 'customers',
-          populate: {
-            path: 'profile',
-            model: 'persons'
-          }
-        })
-        .sort({ createdAt: -1 })
-        .exec()
+      .find({ status: OrderStatus.Delivered })
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .exec()
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
@@ -383,17 +373,17 @@ export class OrdersService extends SimpleService<IOrder> {
   async dispatchedSupplier(id: string): Promise<IOrder[]> {
     const result = new Set()
     const orders = await this.model
-        .find({ status: OrderStatus.Dispatched })
-        .populate({
-          path: 'customer',
-          model: 'customers',
-          populate: {
-            path: 'profile',
-            model: 'persons'
-          }
-        })
-        .sort({ createdAt: -1 })
-        .exec()
+      .find({ status: OrderStatus.Dispatched })
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .exec()
     for (const order of orders) {
       for (const one of order.items) {
         // @ts-ignore
@@ -407,22 +397,7 @@ export class OrdersService extends SimpleService<IOrder> {
 
   async dispatchedDriver(id: string): Promise<IOrder[]> {
     return await this.model
-        .find({ status: OrderStatus.Dispatched, 'driver._id': id })
-        .populate({
-          path: 'customer',
-          model: 'customers',
-          populate: {
-            path: 'profile',
-            model: 'persons'
-          }
-        })
-        .sort({ createdAt: -1 })
-        .exec()
-  }
-
-  async preparingDriver(id: string): Promise<IOrder[]> {
-    return await this.model
-        .find({ status: OrderStatus.Preparing, 'driver._id': id })
+      .find({ status: OrderStatus.Dispatched, 'driver._id': id })
       .populate({
         path: 'customer',
         model: 'customers',
@@ -431,8 +406,23 @@ export class OrdersService extends SimpleService<IOrder> {
           model: 'persons'
         }
       })
-        .sort({ createdAt: -1 })
-        .exec()
+      .sort({ createdAt: -1 })
+      .exec()
+  }
+
+  async preparingDriver(id: string): Promise<IOrder[]> {
+    return await this.model
+      .find({ status: OrderStatus.Preparing, 'driver._id': id })
+      .populate({
+        path: 'customer',
+        model: 'customers',
+        populate: {
+          path: 'profile',
+          model: 'persons'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .exec()
   }
 
   async fetch(id?: string): Promise<IOrder[] | IOrder> {
@@ -480,43 +470,44 @@ export class OrdersService extends SimpleService<IOrder> {
   }
 
   async updateStatus(id: string, status: OrderStatus, message?: string): Promise<IOrder> {
-    const order = await this.model.findByIdAndUpdate(id, { status, reason: message }, {new: true}).exec()
+    const order = await this.model.findByIdAndUpdate(id, { status, reason: message }, { new: true }).exec()
 
-    if (status == OrderStatus.Delivered){
+    if (status == OrderStatus.Delivered) {
       await this.customersService.updatePointsFromId(order.customer.toString(), ~~(order.total * (await this.unitService.getValue()).pointPercentage), true)
 
       if (
-        await this.model.find({customer: order.customer.toString(), status: OrderStatus.Delivered}).countDocuments().exec() == 1 &&
+        await this.model.find({
+          customer: order.customer.toString(),
+          status: OrderStatus.Delivered
+        }).countDocuments().exec() == 1 &&
         (await this.customersService.fetch(order.customer.toString()) as ICustomer).fromReferralCode
-      ){
+      ) {
         await this.customersService.updatePointsFromReferral(
           (await this.customersService.fetch(order.customer.toString()) as ICustomer).fromReferralCode, (await this.unitService.getValue()).invitationPoints, true
         )
       }
     }
-    
+
     const persons = new Set<string>()
 
-    if (order.service != 'Delivery Vehicle'){
-      if (order.status == OrderStatus.Delivered){
-        if (order.supplier){
-          // @ts-ignore
-          persons.add(order.supplier.person._id.toString())
+    if (order.service != 'Delivery Vehicle') {
+      if (order.status == OrderStatus.Delivered) {
+        if (order.supplier) {
+          persons.add(((order.supplier as IShopRegistration).person as IPerson)._id.toString())
         }
       } else {
         if (order.driver) {
-          // @ts-ignore
-          persons.add(order.driver.profile._id.toString())
+          persons.add(((order.driver as IDriver).profile as IPerson)._id.toString())
         }
       }
     }
 
     persons.add(
-      (
-        await this.customersService.fetch(order.customer.toString())
+      (((
+          await this.customersService.fetch(order.customer.toString())
+        ) as ICustomer
       )
-        // @ts-ignore
-        .profile._id.toString()
+        .profile as IPerson)._id.toString()
     )
 
 
@@ -528,16 +519,16 @@ export class OrdersService extends SimpleService<IOrder> {
         title: status == OrderStatus.Delivered
           ? 'Your order has been delivered!'
           : status == OrderStatus.Dispatched ?
-          'Your order has been dispatched!' : 'Order Status Update',
+            'Your order has been dispatched!' : 'Order Status Update',
         body:
           status == OrderStatus.Delivered
             ? 'Order #' + order.orderNo
             : status == OrderStatus.Dispatched ?
-             'Order #' + order.orderNo
+            'Order #' + order.orderNo
             : 'Your Order Status has been changed to ' +
-              notificationStatus +
-              ' Order #' +
-              order.orderNo
+            notificationStatus +
+            ' Order #' +
+            order.orderNo
       })
     }
     return order
@@ -608,11 +599,11 @@ export class OrdersService extends SimpleService<IOrder> {
     return Array.from(results) as IOrder[]
   }
 
-  async ordersAfterFilter(document: any): Promise<IOrder[]>{
+  async ordersAfterFilter(document: any): Promise<IOrder[]> {
     const condition = {}
 
     condition['status'] = OrderStatus.Delivered
-    if (document){
+    if (document) {
       if (document.customer) {
         condition['customer'] = document.customer;
       }
@@ -623,36 +614,29 @@ export class OrdersService extends SimpleService<IOrder> {
         condition['driver._id'] = document.driver;
       }
 
-      if (document.payment == paymentType.cod){
+      if (document.payment == paymentType.cod) {
         condition['paymentType'] = 'COD';
-      }
-      else if (document.payment == 'Mada' || document.payment == 'Stripe'){
+      } else if (document.payment == 'Mada' || document.payment == 'Stripe') {
         condition['paymentType'] = 'Online';
       }
 
-      if (document.date){
+      if (document.date) {
         condition['createdAt'] = {
           $gte: moment(document.date).toDate(),
           $lt: document.dateTo ? moment(document.dateTo).add(1, 'day').toDate() : moment(document.date).add(1, 'day').toDate()
         }
-      }
-
-      else if (document.week){
+      } else if (document.week) {
         console.log(moment(document.week).toDate())
         condition['createdAt'] = {
           $gte: moment(document.week).toDate(),
           $lt: moment(document.week).add(1, 'week').toDate()
         }
-      }
-
-      else if (document.month){
+      } else if (document.month) {
         condition['createdAt'] = {
           $gte: moment(document.month).toDate(),
           $lt: moment(document.month).add(1, 'month').toDate()
         }
-      }
-
-      else if (document.year){
+      } else if (document.year) {
         condition['createdAt'] = {
           $gte: moment(document.year).toDate(),
           $lt: moment(document.year).add(1, 'year').toDate()
@@ -692,20 +676,18 @@ export class OrdersService extends SimpleService<IOrder> {
       //move these two statement below on your own risk
       if (!order.supplier) order.supplier = data.supplier
       order.status = OrderStatus.Accepted
-      if (order.service != 'Construction Dumpster'){
+      if (order.service != 'Construction Dumpster') {
         const distance = await LocationUtils.getDistance(
           order.dropoff.dropoffLocation.latitude,
           order.dropoff.dropoffLocation.longitude,
-          // @ts-ignore
-          order.supplier.location.latitude,
-          // @ts-ignore
-          order.supplier.location.longitude
+          (order.supplier as IShopRegistration).location.latitude,
+          (order.supplier as IShopRegistration).location.longitude
         )
         let volumetricWeight = 0
         let cbm = 0
 
-        if (order.service == 'Building Material'){
-          for (const item of order.items){
+        if (order.service == 'Building Material') {
+          for (const item of order.items) {
             // @ts-ignore
             const unit = await this.unitService.findFromName(item.item.price.unit.toString())
             // @ts-ignore
@@ -714,7 +696,7 @@ export class OrdersService extends SimpleService<IOrder> {
             cbm += ((unit.cbmLength * unit.cbmHeight * unit.cbmWidth) * item.item.qty)
           }
         } else {
-          for (const item of order.items){
+          for (const item of order.items) {
             // @ts-ignore
             volumetricWeight += (item.item.product.volumetricWeight * item.item.qty)
             // @ts-ignore
@@ -725,7 +707,7 @@ export class OrdersService extends SimpleService<IOrder> {
         const rounds = 1
         const vehicle = await this.vehicleTypeService.findClosestVehicle(volumetricWeight, cbm) as IVehicleType
 
-        if (!vehicle){
+        if (!vehicle) {
           throw new HttpException(
             'No Vehicle present to carry this order.',
             HttpStatus.NOT_ACCEPTABLE
@@ -738,36 +720,32 @@ export class OrdersService extends SimpleService<IOrder> {
         order.vehicleRounds = rounds
 
         let subtotal = 0
-        if (order.service == 'Building Material'){
-          for (const item of order.items){
+        if (order.service == 'Building Material') {
+          for (const item of order.items) {
             subtotal += +item.subtotal
           }
           subtotal += order.deliveryFee
           order.vat = (subtotal * 0.15)
           order.total = subtotal + order.vat
-        }
-        else
+        } else
           order.total += order.deliveryFee
       } else {
         //sending notification to customer
         this.fcmService.sendSingle({
-          // @ts-ignore
-          id: order.customer.profile._id,
-          // @ts-ignore
-          title: 'Your order has been accepted by ' + order.supplier.person.name,
-          body: order.service == 'Construction Dumpster' ? 'Order #' + order.orderNo :  'Please proceed with payment for Order #' + order.orderNo
+          id: ((order.customer as ICustomer).profile as IPerson)._id,
+          title: 'Your order has been accepted by ' + ((order.supplier as IShopRegistration).person as IPerson).name,
+          body: order.service == 'Construction Dumpster' ? 'Order #' + order.orderNo : 'Please proceed with payment for Order #' + order.orderNo
         })
       }
-    }
-    else {
-      if (order.service != 'Construction Dumpster' && order.service != 'Delivery Vehicle'){
+    } else {
+      if (order.service != 'Construction Dumpster' && order.service != 'Delivery Vehicle') {
         order.paymentType = null
         order.deliveryFee = null
       }
 
       order.supplier = undefined
       order.status = order.service == 'Finishing Material' ? OrderStatus.Rejected : OrderStatus.Pending
-      
+
       if (order.service == 'Building Material') {
         let sub = 0
         for (const item of order.items) {
@@ -783,9 +761,7 @@ export class OrdersService extends SimpleService<IOrder> {
       }
       //sending notification to customer
       this.fcmService.sendSingle({
-        // @ts-ignore
-        id: order.customer.profile._id,
-        // @ts-ignore
+        id: ((order.customer as ICustomer).profile as IPerson)._id,
         title: 'Your order has been cancelled by supplier',
         body: 'Order #' + order.orderNo
       })
@@ -816,24 +792,20 @@ export class OrdersService extends SimpleService<IOrder> {
           order.status = OrderStatus.Preparing
           result = await order.save()
 
-          // @ts-ignore
           await this.fcmService.sendSingle({
-            // @ts-ignore
-            id: order.customer.profile._id,
+            id: ((order.customer as ICustomer).profile as IPerson)._id,
             title:
               'You order has been accepted by driver!',
             body: order.service == 'Scaffolding' ? 'Order #' + order.orderNo : 'Your order is awaiting payment response. Order #' + order.orderNo
           })
-          // @ts-ignore
+
           await this.fcmService.sendSingle({
-            // @ts-ignore
-            id: order.supplier.person._id,
+            id: ((order.supplier as IShopRegistration).person as IPerson)._id,
             title:
               'You order has been accepted by driver!',
             body: 'Order #' + order.orderNo
           })
-        }
-        else {
+        } else {
           order.driver = data.driver
           order.status = OrderStatus.Preparing
           result = await order.save()
@@ -844,23 +816,20 @@ export class OrdersService extends SimpleService<IOrder> {
             body: 'Order #' + order.orderNo
           })
           await this.fcmService.sendSingle({
-            // @ts-ignore
-            id: order.customer.profile._id,
+            id: ((order.customer as ICustomer).profile as IPerson)._id,
             title: 'You order has been assigned to a driver',
             body: 'Order #' + order.orderNo
           })
         }
         return result
         // this.fcmService.sendSingle({id: order.customer.profile._id, title: "Your order status has been changed to "+ this.getStatusString(OrderStatus.Preparing), body: 'Order # '+ order.orderNo})
-      }
-      else {
+      } else {
         throw new HttpException(
           'Order Not Available!',
           HttpStatus.NOT_ACCEPTABLE
         )
       }
-    }
-    else {
+    } else {
       return await this.model
         .findOneAndUpdate(
           { _id: data._id },
@@ -878,20 +847,16 @@ export class OrdersService extends SimpleService<IOrder> {
       })
       .exec()
 
-    // @ts-ignore
     await this.fcmService.sendSingle({
-      // @ts-ignore
-      id: order.supplier.person._id,
+      id: ((order.supplier as IShopRegistration).person as IPerson)._id,
       title:
         'Order #' + order.orderNo + ' payment is confirmed!',
       body: 'Please proceed with the order.'
     })
 
-    if (order.driver){
-      // @ts-ignore
+    if (order.driver) {
       await this.fcmService.sendSingle({
-        // @ts-ignore
-        id: order.driver.profile._id,
+        id: ((order.driver as IDriver).profile as IPerson)._id,
         title:
           'Order #' + order.orderNo + ' payment is confirmed!',
         body: 'Please proceed with the order.'
@@ -901,7 +866,7 @@ export class OrdersService extends SimpleService<IOrder> {
     const ids = new Set<string>()
 
     data = await this.driverService.getDataFromCityName(order.city) as IDriver[]
-    for (const item of data){
+    for (const item of data) {
       ids.add(item.profile.token?.toString())
     }
 
@@ -913,7 +878,7 @@ export class OrdersService extends SimpleService<IOrder> {
   async filter(data: any): Promise<IOrder[]> {
     const result = new Set<any>()
     const orders = await this.model
-      .find({ city: data.city, status: OrderStatus.Pending, service: {$ne: 'Delivery Vehicle'} })
+      .find({ city: data.city, status: OrderStatus.Pending, service: { $ne: 'Delivery Vehicle' } })
       .populate({
         path: 'customer',
         model: 'customers',
@@ -934,7 +899,7 @@ export class OrdersService extends SimpleService<IOrder> {
 
   async getDriverOrdersFromCity(city: string): Promise<IOrder[]> {
     return await this.model
-        .find({ city, service: 'Delivery Vehicle' })
+      .find({ city, service: 'Delivery Vehicle' })
       .populate({
         path: 'customer',
         model: 'customers',
@@ -943,8 +908,8 @@ export class OrdersService extends SimpleService<IOrder> {
           model: 'persons'
         }
       })
-        .sort({ createdAt: -1 })
-        .exec()
+      .sort({ createdAt: -1 })
+      .exec()
   }
 
   async estimateDistanceAndPrice(data: any): Promise<any> {
@@ -963,19 +928,20 @@ export class OrdersService extends SimpleService<IOrder> {
     }
   }
 
-  async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrder[]>{
-    const driver  = await this.driverService.fetch(driverId) as IDriver
+  async ordersFromVolumetricWeight(city: string, driverId: string): Promise<IOrder[]> {
+    const driver = await this.driverService.fetch(driverId) as IDriver
+
+    driver.vehicle.type = driver.vehicle.type as IVehicleType
 
     const orders = (await this.model.find(
       {
-        // @ts-ignore
-        volumetricWeight: {$lte: driver.vehicle.type.volumetricWeight},
-        // @ts-ignore
-        cbm: {$lte: (driver.vehicle.type.cbmLength * driver.vehicle.type.cbmWidth * driver.vehicle.type.cbmHeight)},
-        driver: {$eq: null},
-        paymentType: {$ne: null},
+        volumetricWeight: { $lte: driver.vehicle.type.volumetricWeight },
+
+        cbm: { $lte: (driver.vehicle.type.cbmLength * driver.vehicle.type.cbmWidth * driver.vehicle.type.cbmHeight) },
+        driver: { $eq: null },
+        paymentType: { $ne: null },
         city,
-        service: {$nin: ['Delivery Vehicle', 'Building Material']}
+        service: { $nin: ['Delivery Vehicle', 'Building Material'] }
       })
       .populate({
         path: 'customer',
@@ -985,12 +951,11 @@ export class OrdersService extends SimpleService<IOrder> {
           model: 'persons'
         }
       })
-      .sort({createdAt: -1})
+      .sort({ createdAt: -1 })
       .exec()) as IOrder[]
 
-    // @ts-ignore
     const dvOrders = await this.model
-      .find({service: 'Delivery Vehicle', status: OrderStatus.Pending, city})
+      .find({ service: 'Delivery Vehicle', status: OrderStatus.Pending, city })
       .populate({
         path: 'customer',
         model: 'customers',
@@ -999,11 +964,11 @@ export class OrdersService extends SimpleService<IOrder> {
           model: 'persons'
         }
       })
-      .sort({createdAt: -1})
+      .sort({ createdAt: -1 })
       .exec() as IOrder[]
 
     const bmOrders = await this.model
-      .find({service: 'Building Material', status: OrderStatus.Accepted, city})
+      .find({ service: 'Building Material', status: OrderStatus.Accepted, city })
       .populate({
         path: 'customer',
         model: 'customers',
@@ -1012,32 +977,32 @@ export class OrdersService extends SimpleService<IOrder> {
           model: 'persons'
         }
       })
-      .sort({createdAt: -1})
+      .sort({ createdAt: -1 })
       .exec() as IOrder[]
 
-    for (const singleOrder of dvOrders){
+    for (const singleOrder of dvOrders) {
       // @ts-ignore
-      if (singleOrder.items[0].item.product._id == driver.vehicle.type._id){
+      if (singleOrder.items[0].item.product._id == driver.vehicle.type._id) {
         orders.push(singleOrder)
       }
     }
-    for (const singleOrder of bmOrders){
+    for (const singleOrder of bmOrders) {
       orders.push(singleOrder)
     }
 
-   // @ts-ignore
-    orders.sort((a,b) => (a.createdAt > b.createdAt) ? -1 : ((b.createdAt > a.createdAt) ? 1 : 0))
+    // @ts-ignore
+    orders.sort((a, b) => (a.createdAt > b.createdAt) ? -1 : ((b.createdAt > a.createdAt) ? 1 : 0))
 
     return orders
   }
 
-  async acceptItems(data: any): Promise<IOrder>{
+  async acceptItems(data: any): Promise<IOrder> {
     const order = await this.model.findById(data._id).exec()
     for (const index of data.selected) {
       // @ts-ignore
       order.items[index].item.selected = true
     }
-    for (const item of order.items){
+    for (const item of order.items) {
       // @ts-ignore
       if (!item.item.selected) {
         // @ts-ignore
@@ -1050,18 +1015,16 @@ export class OrdersService extends SimpleService<IOrder> {
     return await this.model.findByIdAndUpdate(order._id, order).exec()
   }
 
-  async trip(data: any): Promise<IOrder>{
-    return await this.model.findByIdAndUpdate(data._id, {tripId: data.tripId, shareUrl: data.shareUrl}).exec()
+  async trip(data: any): Promise<IOrder> {
+    return await this.model.findByIdAndUpdate(data._id, { tripId: data.tripId, shareUrl: data.shareUrl }).exec()
   }
 
-  async rating(data: any): Promise<IOrder>{
+  async rating(data: any): Promise<IOrder> {
     const order = await this.model.findById(data._id).exec()
 
-    // @ts-ignore
-    await this.driverService.updateRating(order.driver._id, data.driverRating)
-    if (data.supplierRating){
-      // @ts-ignore
-      await this.supplierService.updateRating(order.supplier._id, data.supplierRating)
+    await this.driverService.updateRating((order.driver as IDriver)._id, data.driverRating)
+    if (data.supplierRating) {
+      await this.supplierService.updateRating((order.supplier as IShopRegistration)._id, data.supplierRating)
       await this.reviewService.create({
         customer: order.customer.toString(),
         supplier: order.supplier as IShopRegistration,
@@ -1072,9 +1035,8 @@ export class OrdersService extends SimpleService<IOrder> {
         driverRating: data.driverRating,
         supplierRating: data.supplierRating
       } as IReview)
-      return this.model.findByIdAndUpdate(data._id, {rating: ((data.driverRating + data.supplierRating) / 2)}).exec()
-    }
-    else {
+      return this.model.findByIdAndUpdate(data._id, { rating: ((data.driverRating + data.supplierRating) / 2) }).exec()
+    } else {
       await this.reviewService.create({
         customer: order.customer.toString(),
         driver: order.driver as IDriver,
@@ -1082,7 +1044,7 @@ export class OrdersService extends SimpleService<IOrder> {
         driverFeedback: data.driverReview,
         driverRating: data.driverRating,
       } as IReview)
-      return this.model.findByIdAndUpdate(order._id, {rating: data.driverRating}).exec()
+      return this.model.findByIdAndUpdate(order._id, { rating: data.driverRating }).exec()
     }
     try {
 

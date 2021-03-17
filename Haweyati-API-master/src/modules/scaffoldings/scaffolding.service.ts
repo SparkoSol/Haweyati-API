@@ -41,14 +41,9 @@ export class ScaffoldingService extends SimpleService<IScaffolding> {
           model: 'persons'
         }
       }
-    }
-    else if (Object.keys(projection).length === 0) {
+    } else if (Object.keys(projection).length === 0) {
       projection['suppliers'] = 0
     }
-
-    console.log(query)
-    console.log(projection)
-    console.log(populate)
 
     if (id) {
       query['_id'] = id;
@@ -86,7 +81,7 @@ export class ScaffoldingService extends SimpleService<IScaffolding> {
   }
 
   async getSuppliers(id: string): Promise<IScaffolding[]> {
-    return await this.model.find({suppliers: id}).exec()
+    return await this.model.find({ suppliers: id }).exec()
   }
 
   async getByCity(city: string): Promise<IScaffolding[]> {
@@ -97,9 +92,11 @@ export class ScaffoldingService extends SimpleService<IScaffolding> {
       )
       const result = new Set()
 
-      for (const supplier of suppliers){
-        const scaffolding = await this.model.find({suppliers: supplier}).exec()
-        scaffolding.forEach(value => {result.add(value)})
+      for (const supplier of suppliers) {
+        const scaffolding = await this.model.find({ suppliers: supplier }).exec()
+        scaffolding.forEach(value => {
+          result.add(value)
+        })
       }
 
       return Array.from(result) as IScaffolding[]

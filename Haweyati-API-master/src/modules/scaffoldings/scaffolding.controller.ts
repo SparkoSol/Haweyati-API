@@ -1,12 +1,10 @@
 import { ScaffoldingService } from './scaffolding.service'
 import { ImageController } from '../../common/lib/image.controller'
-import { Get, Param, Controller, Query, Headers } from "@nestjs/common";
+import { Controller, Get, Headers, Param, Query } from '@nestjs/common'
 import { IScaffolding } from '../../data/interfaces/scaffolding.interface'
 
 @Controller('scaffoldings')
-export class ScaffoldingController extends ImageController<
-  IScaffolding
-> {
+export class ScaffoldingController extends ImageController<IScaffolding> {
   constructor(protected readonly service: ScaffoldingService) {
     super(service)
   }

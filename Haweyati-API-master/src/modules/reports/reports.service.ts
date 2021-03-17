@@ -6,9 +6,10 @@ import { IOrder, OrderStatus } from '../../data/interfaces/orders.interface'
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) {
+  }
 
-  private static title(data: any): string{
+  private static title(data: any): string {
     if (data.date)
       return data.dateTo ? 'Custom' : 'Daily'
     else if (data.week)
@@ -21,21 +22,21 @@ export class ReportsService {
       return 'All'
   }
 
-  private static subTitle(data: any): string{
+  private static subTitle(data: any): string {
     if (data.date)
       return data.date + (data.dateTo ? (' - ' + data.dateTo) : '')
     else if (data.week)
       return moment(data.week).format('WW of YYYY')
     else if (data.month)
       return moment(data.month).format('MMMM YYYY')
-      // return data.month.toString().slice(data.month.toString().length - 2)
+    // return data.month.toString().slice(data.month.toString().length - 2)
     else if (data.year)
       return data.year
     else
       return ''
   }
 
-  async getOrdersData(data: any): Promise<IOrder[]>{
+  async getOrdersData(data: any): Promise<IOrder[]> {
     return await this.ordersService.ordersAfterFilter(data)
   }
 
@@ -57,7 +58,7 @@ export class ReportsService {
 
   async generateOrderInvoice(id: string): Promise<any> {
     const order = await this.ordersService.fetch(id) as IOrder
-    if (order.status == OrderStatus.Delivered){
+    if (order.status == OrderStatus.Delivered) {
       let subtotal = 0
       for (const item of order.items)
         subtotal += +item.subtotal
@@ -94,16 +95,14 @@ export class ReportsService {
               values: values.join(' - ').toString()
             })
         }
-      }
-      else if (order.service == 'Delivery Vehicle'){
+      } else if (order.service == 'Delivery Vehicle') {
         for (const item of order.items) {
           variants.push({
             // @ts-ignore
             values: item.item.distance.toString() + ' KM'
           })
         }
-      }
-      else {
+      } else {
         for (const item of order.items) {
           variants.push({
             values: ''
@@ -118,8 +117,7 @@ export class ReportsService {
       }
 
       return ReportUtils.renderReport('order_invoice', dataForReport)
-    }
-    else throw new HttpException(
+    } else throw new HttpException(
       'Order is not completed yet!',
       HttpStatus.NOT_ACCEPTABLE
     )

@@ -9,8 +9,7 @@ export class TimeSlotsService extends SimpleService<ITimeSlots> {
   constructor(
     @InjectModel('timeslots')
     protected readonly model: Model<ITimeSlots>
-  )
-  {
+  ) {
     super(model)
   }
 

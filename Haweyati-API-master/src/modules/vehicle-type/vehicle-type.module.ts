@@ -1,10 +1,10 @@
-import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
-import { VehicleTypeSchema } from '../../data/schemas/vehicleType.schema'
-import { VehicleTypeController } from './vehicle-type.controller'
-import { VehicleTypeService } from './vehicle-type.service'
-import { MulterModule } from '@nestjs/platform-express'
-import { MongooseModule } from '@nestjs/mongoose'
 import { Module } from '@nestjs/common'
+import { MongooseModule } from '@nestjs/mongoose'
+import { MulterModule } from '@nestjs/platform-express'
+import { VehicleTypeService } from './vehicle-type.service'
+import { VehicleTypeController } from './vehicle-type.controller'
+import { VehicleTypeSchema } from '../../data/schemas/vehicleType.schema'
+import { ImageConversionUtils } from '../../common/lib/image-conversion-utils'
 
 @Module({
   imports: [

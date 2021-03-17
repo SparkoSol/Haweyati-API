@@ -1,8 +1,8 @@
 import { Model } from 'mongoose'
+import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { IUnit } from '../../data/interfaces/unit.interface'
 import { SimpleService } from '../../common/lib/simple.service'
-import { Injectable } from '@nestjs/common'
 import { IPointValue } from '../../data/interfaces/pointValue.interface'
 
 @Injectable()
@@ -24,12 +24,9 @@ export class UnitService extends SimpleService<IUnit> {
   }
 
   async updateValue(value: IPointValue): Promise<IPointValue> {
-    console.log(value)
     const x = await this.pointValueModel.findOne().exec()
     if (x)
-      return await this.pointValueModel
-        .findByIdAndUpdate(x._id, value)
-        .exec()
+      return await this.pointValueModel.findByIdAndUpdate(x._id, value).exec()
     else return await this.pointValueModel.create(value)
   }
 }
