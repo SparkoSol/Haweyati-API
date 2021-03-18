@@ -55,23 +55,35 @@ export class LocationUtils {
           p2lat +
           ',' +
           p2lng +
-          '&key='+process.env.GOOGLE_MAPS_KEY
+          '&key=' +
+          process.env.GOOGLE_MAPS_KEY
       )
       // @ts-ignore
       return data.rows[0].elements[0].distance.text.split(' ')[0]
     } catch (e) {
       throw new HttpException(
-        'Can\'t find distance, try changing your location or contact admin support.',
+        "Can't find distance, try changing your location or contact admin support.",
         HttpStatus.INTERNAL_SERVER_ERROR
       )
     }
   }
 
-  static async findNearestIndexOfCoordinateFromGivenLocation(coordinates: any[], lat: string, lng: string): Promise<number>{
+  static async findNearestIndexOfCoordinateFromGivenLocation(
+    coordinates: any[],
+    lat: string,
+    lng: string
+  ): Promise<number> {
     const distance: number[] = []
 
-    for (const singleCoordinate of coordinates){
-      distance.push(await this.getDistance(singleCoordinate.lat, singleCoordinate.lng, lat, lng))
+    for (const singleCoordinate of coordinates) {
+      distance.push(
+        await this.getDistance(
+          singleCoordinate.lat,
+          singleCoordinate.lng,
+          lat,
+          lng
+        )
+      )
     }
     return distance.indexOf(Math.max(...distance))
   }
